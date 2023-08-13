@@ -30,9 +30,13 @@
 #include <log.h>
 
 #ifdef USE_SOUND
-int sound_enabled = 1;
+    int sound_enabled = 1;
 #else
-int sound_enabled = 0;
+    int sound_enabled = 0;
+#endif
+
+#ifdef USE_SOUND
+    #include <dr_wav.h>
 #endif
 
 struct Sound_source {
@@ -211,16 +215,13 @@ void sound_update() {
 #endif
 }
 
-extern short* drwav_open_and_read_file_s16(const char* filename, unsigned int* channels, unsigned int* sampleRate,
-                                           uint64_t* totalFrameCount);
-
 void sound_load(struct Sound_wav* wav, char* name, float min, float max) {
 #ifdef USE_SOUND
     if (!sound_enabled)
         return;
     unsigned int channels, samplerate;
     uint64_t samplecount;
-    short* samples = drwav_open_and_read_file_s16(name, &channels, &samplerate, &samplecount);
+    short* samples = drwav_open_file_and_read_pcm_frames_s16(name, &channels, &samplerate, &samplecount, NULL);
     if (samples == NULL) {
         log_fatal("Could not load sound %s", name);
         exit(1);
