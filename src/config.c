@@ -39,9 +39,9 @@ struct list config_settings;
 struct list config_file;
 
 static void config_sets(const char* section, const char* name, const char* value) {
-    for(int k = 0; k < list_size(&config_file); k++) {
+    for (int k = 0; k < list_size(&config_file); k++) {
         struct config_file_entry* e = list_get(&config_file, k);
-        if(strcmp(e->name, name) == 0) {
+        if (strcmp(e->name, name) == 0) {
             strncpy(e->value, value, sizeof(e->value) - 1);
             return;
         }
@@ -89,23 +89,23 @@ void config_save() {
     config_seti("client", "chat_shadow", settings.chat_shadow);
     config_seti("client", "show_player_arms", settings.player_arms);
 
-    for(int k = 0; k < list_size(&config_keys); k++) {
+    for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair* e = list_get(&config_keys, k);
-        if(strlen(e->name) > 0)
+        if (strlen(e->name) > 0)
             config_seti("controls", e->name, e->def);
     }
 
     void* f = file_open("config.ini", "w");
-    if(f) {
+    if (f) {
         char last_section[32] = {0};
-        for(int k = 0; k < list_size(&config_file); k++) {
+        for (int k = 0; k < list_size(&config_file); k++) {
             struct config_file_entry* e = list_get(&config_file, k);
-            if(strcmp(e->section, last_section) != 0) {
+            if (strcmp(e->section, last_section) != 0) {
                 file_printf(f, "\r\n[%s]\r\n", e->section);
                 strcpy(last_section, e->section);
             }
             file_printf(f, "%s", e->name);
-            for(int l = 0; l < 31 - strlen(e->name); l++)
+            for (int l = 0; l < 31 - strlen(e->name); l++)
                 file_printf(f, " ");
             file_printf(f, "= %s\r\n", e->value);
         }
@@ -120,54 +120,54 @@ static int config_read_key(void* user, const char* section, const char* name, co
     strncpy(e.value, value, sizeof(e.value) - 1);
     list_add(&config_file, &e);
 
-    if(!strcmp(section, "client")) {
-        if(!strcmp(name, "name")) {
+    if (!strcmp(section, "client")) {
+        if (!strcmp(name, "name")) {
             strcpy(settings.name, value);
-        } else if(!strcmp(name, "xres")) {
+        } else if (!strcmp(name, "xres")) {
             settings.window_width = atoi(value);
-        } else if(!strcmp(name, "yres")) {
+        } else if (!strcmp(name, "yres")) {
             settings.window_height = atoi(value);
-        } else if(!strcmp(name, "windowed")) {
+        } else if (!strcmp(name, "windowed")) {
             settings.fullscreen = !atoi(value);
-        } else if(!strcmp(name, "multisamples")) {
+        } else if (!strcmp(name, "multisamples")) {
             settings.multisamples = atoi(value);
-        } else if(!strcmp(name, "greedy_meshing")) {
+        } else if (!strcmp(name, "greedy_meshing")) {
             settings.greedy_meshing = atoi(value);
-        } else if(!strcmp(name, "vsync")) {
+        } else if (!strcmp(name, "vsync")) {
             settings.vsync = atoi(value);
-        } else if(!strcmp(name, "mouse_sensitivity")) {
+        } else if (!strcmp(name, "mouse_sensitivity")) {
             settings.mouse_sensitivity = atof(value);
-        } else if(!strcmp(name, "show_news")) {
+        } else if (!strcmp(name, "show_news")) {
             settings.show_news = atoi(value);
-        } else if(!strcmp(name, "vol")) {
+        } else if (!strcmp(name, "vol")) {
             settings.volume = max(min(atoi(value), 10), 0);
             sound_volume(settings.volume / 10.0F);
-        } else if(!strcmp(name, "show_fps")) {
+        } else if (!strcmp(name, "show_fps")) {
             settings.show_fps = atoi(value);
-        } else if(!strcmp(name, "voxlap_models")) {
+        } else if (!strcmp(name, "voxlap_models")) {
             settings.voxlap_models = atoi(value);
-        } else if(!strcmp(name, "force_displaylist")) {
+        } else if (!strcmp(name, "force_displaylist")) {
             settings.force_displaylist = atoi(value);
-        } else if(!strcmp(name, "inverty")) {
+        } else if (!strcmp(name, "inverty")) {
             settings.invert_y = atoi(value);
-        } else if(!strcmp(name, "smooth_fog")) {
+        } else if (!strcmp(name, "smooth_fog")) {
             settings.smooth_fog = atoi(value);
-        } else if(!strcmp(name, "ambient_occlusion")) {
+        } else if (!strcmp(name, "ambient_occlusion")) {
             settings.ambient_occlusion = atoi(value);
-        } else if(!strcmp(name, "camera_fov")) {
+        } else if (!strcmp(name, "camera_fov")) {
             settings.camera_fov = fmax(fmin(atof(value), CAMERA_MAX_FOV), CAMERA_DEFAULT_FOV);
-        } else if(!strcmp(name, "hold_down_sights")) {
+        } else if (!strcmp(name, "hold_down_sights")) {
             settings.hold_down_sights = atoi(value);
-        } else if(!strcmp(name, "chat_shadow")) {
+        } else if (!strcmp(name, "chat_shadow")) {
             settings.chat_shadow = atoi(value);
-        } else if(!strcmp(name, "show_player_arms")) {
+        } else if (!strcmp(name, "show_player_arms")) {
             settings.player_arms = atoi(value);
         }
     }
-    if(!strcmp(section, "controls")) {
-        for(int k = 0; k < list_size(&config_keys); k++) {
+    if (!strcmp(section, "controls")) {
+        for (int k = 0; k < list_size(&config_keys); k++) {
             struct config_key_pair* key = list_get(&config_keys, k);
-            if(!strcmp(name, key->name)) {
+            if (!strcmp(name, key->name)) {
                 log_debug("found override for %s, from %i to %i", key->name, key->def, atoi(value));
                 key->def = strtol(value, NULL, 0);
                 break;
@@ -184,17 +184,17 @@ void config_register_key(int internal, int def, const char* name, int toggle, co
     key.def = def;
     key.original = def;
     key.toggle = toggle;
-    if(display)
+    if (display)
         strncpy(key.display, display, sizeof(key.display) - 1);
     else
         *key.display = 0;
 
-    if(name)
+    if (name)
         strncpy(key.name, name, sizeof(key.name) - 1);
     else
         *key.name = 0;
 
-    if(category)
+    if (category)
         strncpy(key.category, category, sizeof(key.category) - 1);
     else
         *key.category = 0;
@@ -204,15 +204,15 @@ void config_register_key(int internal, int def, const char* name, int toggle, co
 int config_key_translate(int key, int dir, int* results) {
     int count = 0;
 
-    for(int k = 0; k < list_size(&config_keys); k++) {
+    for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair* a = list_get(&config_keys, k);
 
-        if(dir && a->internal == key) {
-            if(results)
+        if (dir && a->internal == key) {
+            if (results)
                 results[count] = a->def;
             count++;
-        } else if(!dir && a->def == key) {
-            if(results)
+        } else if (!dir && a->def == key) {
+            if (results)
                 results[count] = a->internal;
             count++;
         }
@@ -222,18 +222,18 @@ int config_key_translate(int key, int dir, int* results) {
 }
 
 struct config_key_pair* config_key(int key) {
-    for(int k = 0; k < list_size(&config_keys); k++) {
+    for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair* a = list_get(&config_keys, k);
-        if(a->internal == key)
+        if (a->internal == key)
             return a;
     }
     return NULL;
 }
 
 void config_key_reset_togglestates() {
-    for(int k = 0; k < list_size(&config_keys); k++) {
+    for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair* a = list_get(&config_keys, k);
-        if(a->toggle)
+        if (a->toggle)
             window_pressed_keys[a->internal] = 0;
     }
 }
@@ -247,7 +247,7 @@ static int config_key_cmp(const void* a, const void* b) {
 }
 
 static void config_label_pixels(char* buffer, size_t length, int value, size_t index) {
-    if(value == 800 || value == 600) {
+    if (value == 800 || value == 600) {
         snprintf(buffer, length, "default: %ipx", value);
     } else {
         snprintf(buffer, length, "%ipx", value);
@@ -255,9 +255,9 @@ static void config_label_pixels(char* buffer, size_t length, int value, size_t i
 }
 
 static void config_label_vsync(char* buffer, size_t length, int value, size_t index) {
-    if(value == 0) {
+    if (value == 0) {
         snprintf(buffer, length, "disabled");
-    } else if(value == 1) {
+    } else if (value == 1) {
         snprintf(buffer, length, "enabled");
     } else {
         snprintf(buffer, length, "max %i fps", value);
@@ -265,7 +265,7 @@ static void config_label_vsync(char* buffer, size_t length, int value, size_t in
 }
 
 static void config_label_msaa(char* buffer, size_t length, int value, size_t index) {
-    if(index == 0) {
+    if (index == 0) {
         snprintf(buffer, length, "No MSAA");
     } else {
         snprintf(buffer, length, "%ix MSAA", value);
@@ -273,12 +273,12 @@ static void config_label_msaa(char* buffer, size_t length, int value, size_t ind
 }
 
 void config_reload() {
-    if(!list_created(&config_file))
+    if (!list_created(&config_file))
         list_create(&config_file, sizeof(struct config_file_entry));
     else
         list_clear(&config_file);
 
-    if(!list_created(&config_keys))
+    if (!list_created(&config_keys))
         list_create(&config_keys, sizeof(struct config_key_pair));
     else
         list_clear(&config_keys);
@@ -387,12 +387,12 @@ void config_reload() {
     list_sort(&config_keys, config_key_cmp);
 
     char* s = file_load("config.ini");
-    if(s) {
+    if (s) {
         ini_parse_string(s, config_read_key, NULL);
         free(s);
     }
 
-    if(!list_created(&config_settings))
+    if (!list_created(&config_settings))
         list_create(&config_settings, sizeof(struct config_setting));
     else
         list_clear(&config_settings);

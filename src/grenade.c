@@ -41,25 +41,25 @@ void grenade_add(struct Grenade* g) {
 }
 
 static int grenade_clipworld(int x, int y, int z) {
-    if(x < 0)
+    if (x < 0)
         x += map_size_x;
-    if(y < 0)
+    if (y < 0)
         y += map_size_z;
-    if(x >= map_size_x)
+    if (x >= map_size_x)
         x -= map_size_x;
-    if(y >= map_size_z)
+    if (y >= map_size_z)
         y -= map_size_z;
 
     int sz;
 
-    if(z < 0)
+    if (z < 0)
         return 0;
     sz = (int)z;
-    if(sz == map_size_y - 1)
+    if (sz == map_size_y - 1)
         sz = map_size_y - 2;
-    else if(sz >= map_size_y - 1)
+    else if (sz >= map_size_y - 1)
         return 1;
-    else if(sz < 0)
+    else if (sz < 0)
         return 0;
     return !map_isair((int)x, (map_size_y - 1) - sz, (int)y);
 }
@@ -83,7 +83,7 @@ static int grenade_move(struct Grenade* g, float dt) {
     g->pos.z += g->velocity.z * f;
     // do rotation
     // FIX ME: Loses orientation after 45 degree bounce off wall
-    // if(g->v.x > 0.1f || g->v.x < -0.1f || g->v.y > 0.1f || g->v.y < -0.1f)
+    // if (g->v.x > 0.1f || g->v.x < -0.1f || g->v.y > 0.1f || g->v.y < -0.1f)
     // {
     // f *= -0.5;
     // }
@@ -94,20 +94,20 @@ static int grenade_move(struct Grenade* g, float dt) {
     int lpy = floor(g->pos.y);
     int lpz = floor(g->pos.z);
 
-    if(grenade_clipworld(lpx, lpy, lpz)) { // hit a wall
+    if (grenade_clipworld(lpx, lpy, lpz)) { // hit a wall
 
         ret = 1;
-        if(fabs(g->velocity.x) > 0.1F || fabs(g->velocity.y) > 0.1F || fabs(g->velocity.z) > 0.1F)
+        if (fabs(g->velocity.x) > 0.1F || fabs(g->velocity.y) > 0.1F || fabs(g->velocity.z) > 0.1F)
             ret = 2; // play sound
 
         int lp2x = floor(fpos.x);
         int lp2y = floor(fpos.y);
         int lp2z = floor(fpos.z);
-        if(lpz != lp2z && ((lpx == lp2x && lpy == lp2y) || !grenade_clipworld(lpx, lpy, lp2z)))
+        if (lpz != lp2z && ((lpx == lp2x && lpy == lp2y) || !grenade_clipworld(lpx, lpy, lp2z)))
             g->velocity.z *= -1;
-        else if(lpx != lp2x && ((lpy == lp2y && lpz == lp2z) || !grenade_clipworld(lp2x, lpy, lpz)))
+        else if (lpx != lp2x && ((lpy == lp2y && lpz == lp2z) || !grenade_clipworld(lp2x, lpy, lpz)))
             g->velocity.x *= -1;
-        else if(lpy != lp2y && ((lpx == lp2x && lpz == lp2z) || !grenade_clipworld(lpx, lp2y, lpz)))
+        else if (lpy != lp2y && ((lpx == lp2x && lpz == lp2z) || !grenade_clipworld(lpx, lp2y, lpz)))
             g->velocity.y *= -1;
         g->pos = fpos; // set back to old position
         g->velocity.x *= 0.36F;
@@ -136,7 +136,7 @@ bool grenade_render_single(void* obj, void* user) {
     matrix_push(matrix_model);
     matrix_translate(matrix_model, g->pos.x,
                      g->pos.y + (model_grenade.zpiv + model_grenade.zsiz * 2) * model_grenade.scale, g->pos.z);
-    if(fabs(g->velocity.x) > 0.05F || fabs(g->velocity.y) > 0.05F || fabs(g->velocity.z) > 0.05F)
+    if (fabs(g->velocity.x) > 0.05F || fabs(g->velocity.y) > 0.05F || fabs(g->velocity.z) > 0.05F)
         matrix_rotate(matrix_model, -window_time() * 720.0F, -g->velocity.z, 0.0F, g->velocity.x);
     matrix_upload();
 
@@ -155,7 +155,7 @@ bool grenade_update_single(void* obj, void* user) {
     struct Grenade* g = (struct Grenade*)obj;
     float dt = *(float*)user;
 
-    if(window_time() - g->created > g->fuse_length) {
+    if (window_time() - g->created > g->fuse_length) {
         sound_create(SOUND_WORLD, grenade_inwater(g) ? &sound_explode_water : &sound_explode, g->pos.x, g->pos.y,
                      g->pos.z);
         particle_create(grenade_inwater(g) ? map_get(g->pos.x, 0, g->pos.z) : 0x505050, g->pos.x, g->pos.y + 1.5F,
@@ -163,7 +163,7 @@ bool grenade_update_single(void* obj, void* user) {
 
         return true;
     } else {
-        if(grenade_move(g, dt) == 2)
+        if (grenade_move(g, dt) == 2)
             sound_create(SOUND_WORLD, &sound_grenade_bounce, g->pos.x, g->pos.y, g->pos.z);
 
         return false;

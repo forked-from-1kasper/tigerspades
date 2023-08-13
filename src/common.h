@@ -125,7 +125,7 @@ int ms_rand(void);
 #include "log.h"
 
 #define CHECK_ALLOCATION_ERROR(ret)                                                        \
-    if(!ret) {                                                                             \
+    if (!ret) {                                                                             \
         log_fatal("Critical error: memory allocation failed (%s:%d)", __func__, __LINE__); \
         exit(1);                                                                           \
     }

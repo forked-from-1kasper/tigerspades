@@ -47,11 +47,11 @@ static float joystick_mouse[2] = {0, 0};
 static GLFWgamepadstate joystick_state;
 
 static void window_impl_joystick(int jid, int event) {
-    if(event == GLFW_CONNECTED) {
+    if (event == GLFW_CONNECTED) {
         joystick_available = true;
         joystick_id = jid;
         log_info("Joystick detected: %s", glfwGetJoystickName(joystick_id));
-    } else if(event == GLFW_DISCONNECTED) {
+    } else if (event == GLFW_DISCONNECTED) {
         joystick_available = false;
         log_info("Joystick removed: %s", glfwGetJoystickName(joystick_id));
     }
@@ -63,23 +63,23 @@ void window_setmouseloc(double x, double y) { }
 
 static void window_impl_mouseclick(GLFWwindow* window, int button, int action, int mods) {
     int b = 0;
-    switch(button) {
+    switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT: b = WINDOW_MOUSE_LMB; break;
         case GLFW_MOUSE_BUTTON_RIGHT: b = WINDOW_MOUSE_RMB; break;
         case GLFW_MOUSE_BUTTON_MIDDLE: b = WINDOW_MOUSE_MMB; break;
     }
 
     int a = -1;
-    switch(action) {
+    switch (action) {
         case GLFW_RELEASE: a = WINDOW_RELEASE; break;
         case GLFW_PRESS: a = WINDOW_PRESS; break;
     }
 
-    if(a >= 0)
+    if (a >= 0)
         mouse_click(hud_window, b, a, mods & GLFW_MOD_CONTROL);
 }
 static void window_impl_mouse(GLFWwindow* window, double x, double y) {
-    if(!joystick_available)
+    if (!joystick_available)
         mouse(hud_window, x, y);
 }
 static void window_impl_mousescroll(GLFWwindow* window, double xoffset, double yoffset) {
@@ -98,24 +98,24 @@ static void window_impl_keys(GLFWwindow* window, int key, int scancode, int acti
     int count = config_key_translate(key, 0, NULL);
 
     int a = -1;
-    switch(action) {
+    switch (action) {
         case GLFW_RELEASE: a = WINDOW_RELEASE; break;
         case GLFW_PRESS: a = WINDOW_PRESS; break;
         case GLFW_REPEAT: a = WINDOW_REPEAT; break;
     }
 
-    if(count > 0) {
+    if (count > 0) {
         int results[count];
         config_key_translate(key, 0, results);
 
-        for(int k = 0; k < count; k++) {
+        for (int k = 0; k < count; k++) {
             keys(hud_window, results[k], scancode, a, mods & GLFW_MOD_CONTROL);
 
-            if(hud_active->input_keyboard)
+            if (hud_active->input_keyboard)
                 hud_active->input_keyboard(results[k], action, mods & GLFW_MOD_CONTROL, key);
         }
     } else {
-        if(hud_active->input_keyboard)
+        if (hud_active->input_keyboard)
             hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, action, mods & GLFW_MOD_CONTROL, key);
     }
 }
@@ -126,11 +126,11 @@ void window_keyname(int keycode, char* output, size_t length) {
 #else
     const char* name = glfwGetKeyName(keycode, 0);
 
-    if(name) {
+    if (name) {
         strncpy(output, name, length);
         output[length - 1] = 0;
     } else {
-        if(length >= 2)
+        if (length >= 2)
             strcpy(output, "?");
     }
 #endif
@@ -152,7 +152,7 @@ int window_key_down(int key) {
 
 void window_mousemode(int mode) {
     int s = glfwGetInputMode(hud_window->impl, GLFW_CURSOR);
-    if((s == GLFW_CURSOR_DISABLED && mode == WINDOW_CURSOR_ENABLED)
+    if ((s == GLFW_CURSOR_DISABLED && mode == WINDOW_CURSOR_ENABLED)
        || (s == GLFW_CURSOR_NORMAL && mode == WINDOW_CURSOR_DISABLED))
         glfwSetInputMode(hud_window->impl, GLFW_CURSOR,
                          mode == WINDOW_CURSOR_ENABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
@@ -167,7 +167,7 @@ void window_swapping(int value) {
 }
 
 void window_title(char* suffix) {
-    if(suffix) {
+    if (suffix) {
         char title[128];
         snprintf(title, sizeof(title) - 1, "BetterSpades %s - %s", BETTERSPADES_VERSION, suffix);
         glfwSetWindowTitle(hud_window->impl, title);
@@ -190,14 +190,14 @@ void window_init() {
 
     glfwSetErrorCallback(window_impl_error);
 
-    if(!glfwInit()) {
+    if (!glfwInit()) {
         log_fatal("GLFW3 init failed");
         exit(1);
     }
 
     glfwSetJoystickCallback(window_impl_joystick);
 
-    if(settings.multisamples > 0) {
+    if (settings.multisamples > 0) {
         glfwWindowHint(GLFW_SAMPLES, settings.multisamples);
     }
 
@@ -211,7 +211,7 @@ void window_init() {
     hud_window->impl
         = glfwCreateWindow(settings.window_width, settings.window_height, "BetterSpades " BETTERSPADES_VERSION,
                            settings.fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
-    if(!hud_window->impl) {
+    if (!hud_window->impl) {
         log_fatal("Could not open window");
         glfwTerminate();
         exit(1);
@@ -231,7 +231,7 @@ void window_init() {
     glfwSetScrollCallback(hud_window->impl, window_impl_mousescroll);
     glfwSetCharCallback(hud_window->impl, window_impl_textinput);
 
-    if(glfwRawMouseMotionSupported())
+    if (glfwRawMouseMotionSupported())
         glfwSetInputMode(hud_window->impl, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 }
 
@@ -239,13 +239,13 @@ void window_fromsettings() {
     glfwWindowHint(GLFW_SAMPLES, settings.multisamples);
     glfwSetWindowSize(hud_window->impl, settings.window_width, settings.window_height);
 
-    if(settings.vsync < 2)
+    if (settings.vsync < 2)
         window_swapping(settings.vsync);
-    if(settings.vsync > 1)
+    if (settings.vsync > 1)
         window_swapping(0);
 
     const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    if(settings.fullscreen)
+    if (settings.fullscreen)
         glfwSetWindowMonitor(hud_window->impl, glfwGetPrimaryMonitor(), 0, 0, settings.window_width,
                              settings.window_height, mode->refreshRate);
     else
@@ -259,24 +259,24 @@ void window_deinit() {
 }
 
 static void gamepad_translate_key(GLFWgamepadstate* state, GLFWgamepadstate* old, int gamepad, enum window_keys key) {
-    if(!old->buttons[gamepad] && state->buttons[gamepad]) {
+    if (!old->buttons[gamepad] && state->buttons[gamepad]) {
         keys(hud_window, key, 0, WINDOW_PRESS, 0);
 
-        if(hud_active->input_keyboard)
+        if (hud_active->input_keyboard)
             hud_active->input_keyboard(key, WINDOW_PRESS, 0, 0);
-    } else if(old->buttons[gamepad] && !state->buttons[gamepad]) {
+    } else if (old->buttons[gamepad] && !state->buttons[gamepad]) {
         keys(hud_window, key, 0, WINDOW_RELEASE, 0);
 
-        if(hud_active->input_keyboard)
+        if (hud_active->input_keyboard)
             hud_active->input_keyboard(key, WINDOW_RELEASE, 0, 0);
     }
 }
 
 static void gamepad_translate_button(GLFWgamepadstate* state, GLFWgamepadstate* old, int gamepad,
                                      enum window_buttons button) {
-    if(!old->buttons[gamepad] && state->buttons[gamepad]) {
+    if (!old->buttons[gamepad] && state->buttons[gamepad]) {
         mouse_click(hud_window, button, WINDOW_PRESS, 0);
-    } else if(old->buttons[gamepad] && !state->buttons[gamepad]) {
+    } else if (old->buttons[gamepad] && !state->buttons[gamepad]) {
         mouse_click(hud_window, button, WINDOW_RELEASE, 0);
     }
 }
@@ -285,10 +285,10 @@ void window_update() {
     glfwSwapBuffers(hud_window->impl);
     glfwPollEvents();
 
-    if(joystick_available && glfwJoystickIsGamepad(joystick_id)) {
+    if (joystick_available && glfwJoystickIsGamepad(joystick_id)) {
         GLFWgamepadstate state;
 
-        if(glfwGetGamepadState(joystick_id, &state)) {
+        if (glfwGetGamepadState(joystick_id, &state)) {
             gamepad_translate_key(&state, &joystick_state, GLFW_GAMEPAD_BUTTON_DPAD_UP, WINDOW_KEY_TOOL1);
             gamepad_translate_key(&state, &joystick_state, GLFW_GAMEPAD_BUTTON_DPAD_DOWN, WINDOW_KEY_TOOL3);
             gamepad_translate_key(&state, &joystick_state, GLFW_GAMEPAD_BUTTON_DPAD_LEFT, WINDOW_KEY_TOOL4);
@@ -326,21 +326,21 @@ int window_closed() {
 #ifdef USE_SDL
 
 void window_textinput(int allow) {
-    if(allow && !SDL_IsTextInputActive())
+    if (allow && !SDL_IsTextInputActive())
         SDL_StartTextInput();
-    if(!allow && SDL_IsTextInputActive())
+    if (!allow && SDL_IsTextInputActive())
         SDL_StopTextInput();
 }
 
 void window_fromsettings() {
     SDL_SetWindowSize(hud_window->impl, settings.window_width, settings.window_height);
 
-    if(settings.vsync < 2)
+    if (settings.vsync < 2)
         window_swapping(settings.vsync);
-    if(settings.vsync > 1)
+    if (settings.vsync > 1)
         window_swapping(0);
 
-    if(settings.fullscreen)
+    if (settings.fullscreen)
         SDL_SetWindowFullscreen(hud_window->impl, SDL_WINDOW_FULLSCREEN);
     else
         SDL_SetWindowFullscreen(hud_window->impl, 0);
@@ -367,7 +367,7 @@ int window_key_down(int key) {
 
 void window_mousemode(int mode) {
     int s = SDL_GetRelativeMouseMode();
-    if((s && mode == WINDOW_CURSOR_ENABLED) || (!s && mode == WINDOW_CURSOR_DISABLED))
+    if ((s && mode == WINDOW_CURSOR_ENABLED) || (!s && mode == WINDOW_CURSOR_DISABLED))
         SDL_SetRelativeMouseMode(mode == WINDOW_CURSOR_ENABLED ? 0 : 1);
 }
 
@@ -379,7 +379,7 @@ void window_setmouseloc(double x, double y) {
 }
 
 void window_mouseloc(double* x, double* y) {
-    if(mx < 0 && my < 0) {
+    if (mx < 0 && my < 0) {
         int xi, yi;
         SDL_GetMouseState(&xi, &yi);
         *x = xi;
@@ -434,26 +434,26 @@ static int quit = 0;
 void window_update() {
     SDL_GL_SwapWindow(hud_window->impl);
     SDL_Event event;
-    while(SDL_PollEvent(&event)) {
-        switch(event.type) {
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
             case SDL_QUIT: quit = 1; break;
             case SDL_KEYDOWN: {
                 int count = config_key_translate(event.key.keysym.sym, 0, NULL);
 
-                if(count > 0) {
+                if (count > 0) {
                     int results[count];
                     config_key_translate(event.key.keysym.sym, 0, results);
 
-                    for(int k = 0; k < count; k++) {
+                    for (int k = 0; k < count; k++) {
                         keys(hud_window, results[k], event.key.keysym.sym, WINDOW_PRESS,
                              event.key.keysym.mod & KMOD_CTRL);
 
-                        if(hud_active->input_keyboard)
+                        if (hud_active->input_keyboard)
                             hud_active->input_keyboard(results[k], WINDOW_PRESS, event.key.keysym.mod & KMOD_CTRL,
                                                        event.key.keysym.sym);
                     }
                 } else {
-                    if(hud_active->input_keyboard)
+                    if (hud_active->input_keyboard)
                         hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, WINDOW_PRESS, event.key.keysym.mod & KMOD_CTRL,
                                                    event.key.keysym.sym);
                 }
@@ -462,20 +462,20 @@ void window_update() {
             case SDL_KEYUP: {
                 int count = config_key_translate(event.key.keysym.sym, 0, NULL);
 
-                if(count > 0) {
+                if (count > 0) {
                     int results[count];
                     config_key_translate(event.key.keysym.sym, 0, results);
 
-                    for(int k = 0; k < count; k++) {
+                    for (int k = 0; k < count; k++) {
                         keys(hud_window, results[k], event.key.keysym.sym, WINDOW_RELEASE,
                              event.key.keysym.mod & KMOD_CTRL);
 
-                        if(hud_active->input_keyboard)
+                        if (hud_active->input_keyboard)
                             hud_active->input_keyboard(results[k], WINDOW_RELEASE, event.key.keysym.mod & KMOD_CTRL,
                                                        event.key.keysym.sym);
                     }
                 } else {
-                    if(hud_active->input_keyboard)
+                    if (hud_active->input_keyboard)
                         hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, WINDOW_RELEASE, event.key.keysym.mod & KMOD_CTRL,
                                                    event.key.keysym.sym);
                 }
@@ -483,7 +483,7 @@ void window_update() {
             }
             case SDL_MOUSEBUTTONDOWN: {
                 int a = 0;
-                switch(event.button.button) {
+                switch (event.button.button) {
                     case SDL_BUTTON_LEFT: a = WINDOW_MOUSE_LMB; break;
                     case SDL_BUTTON_RIGHT: a = WINDOW_MOUSE_RMB; break;
                     case SDL_BUTTON_MIDDLE: a = WINDOW_MOUSE_MMB; break;
@@ -493,7 +493,7 @@ void window_update() {
             }
             case SDL_MOUSEBUTTONUP: {
                 int a = 0;
-                switch(event.button.button) {
+                switch (event.button.button) {
                     case SDL_BUTTON_LEFT: a = WINDOW_MOUSE_LMB; break;
                     case SDL_BUTTON_RIGHT: a = WINDOW_MOUSE_RMB; break;
                     case SDL_BUTTON_MIDDLE: a = WINDOW_MOUSE_MMB; break;
@@ -502,14 +502,14 @@ void window_update() {
                 break;
             }
             case SDL_WINDOWEVENT:
-                if(event.window.event == SDL_WINDOWEVENT_RESIZED
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED
                    || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                     reshape(hud_window, event.window.data1, event.window.data2);
                 }
                 break;
             case SDL_MOUSEWHEEL: mouse_scroll(hud_window, event.wheel.x, event.wheel.y); break;
             case SDL_MOUSEMOTION: {
-                if(SDL_GetRelativeMouseMode()) {
+                if (SDL_GetRelativeMouseMode()) {
                     static int x, y;
                     x += event.motion.xrel;
                     y += event.motion.yrel;
@@ -521,10 +521,10 @@ void window_update() {
             }
             case SDL_TEXTINPUT: text_input(hud_window, event.text.text[0]); break;
             case SDL_FINGERDOWN:
-                if(hud_active->input_touch) {
+                if (hud_active->input_touch) {
                     struct window_finger* f;
-                    for(int k = 0; k < 8; k++) {
-                        if(!fingers[k].full) {
+                    for (int k = 0; k < 8; k++) {
+                        if (!fingers[k].full) {
                             fingers[k].finger = event.tfinger.fingerId;
                             fingers[k].start.x = event.tfinger.x * settings.window_width;
                             fingers[k].start.y = event.tfinger.y * settings.window_height;
@@ -542,10 +542,10 @@ void window_update() {
                 }
                 break;
             case SDL_FINGERUP:
-                if(hud_active->input_touch) {
+                if (hud_active->input_touch) {
                     struct window_finger* f;
-                    for(int k = 0; k < 8; k++) {
-                        if(fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
+                    for (int k = 0; k < 8; k++) {
+                        if (fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
                             fingers[k].full = 0;
                             f = fingers + k;
                             break;
@@ -557,10 +557,10 @@ void window_update() {
                 }
                 break;
             case SDL_FINGERMOTION:
-                if(hud_active->input_touch) {
+                if (hud_active->input_touch) {
                     struct window_finger* f;
-                    for(int k = 0; k < 8; k++) {
-                        if(fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
+                    for (int k = 0; k < 8; k++) {
+                        if (fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
                             f = fingers + k;
                             break;
                         }
@@ -580,7 +580,7 @@ int window_closed() {
 }
 
 void window_title(char* suffix) {
-    if(suffix) {
+    if (suffix) {
         char title[128];
         snprintf(title, sizeof(title) - 1, "BetterSpades %s - %s", BETTERSPADES_VERSION, suffix);
         SDL_SetWindowTitle(hud_window->impl, title);

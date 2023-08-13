@@ -64,16 +64,16 @@ static void ping_lan() {
         .dataLength = 8,
     };
 
-    for(addr.port = 32882; addr.port < 32892; addr.port++)
+    for (addr.port = 32882; addr.port < 32892; addr.port++)
         enet_socket_send(lan, &addr, &buffer, 1);
 }
 
 static bool pings_retry(void* key, void* value, void* user) {
     struct ping_entry* entry = (struct ping_entry*)value;
 
-    if(window_time() - entry->time_start > 2.0F) { // timeout
+    if (window_time() - entry->time_start > 2.0F) { // timeout
         // try up to 3 times after first failed attempt
-        if(entry->trycount >= 3) {
+        if (entry->trycount >= 3) {
             return true;
         } else {
             enet_socket_send(sock, &entry->addr, &(ENetBuffer) {.data = "HELLO", .dataLength = 5}, 1);
@@ -97,9 +97,9 @@ void* ping_update(void* data) {
     HashTable pings;
     ht_setup(&pings, sizeof(uint64_t), sizeof(struct ping_entry), 64);
 
-    while(1) {
+    while (1) {
         size_t drain = channel_size(&ping_queue);
-        for(size_t k = 0; (k < drain) || (!pings.size && window_time() - ping_start >= 8.0F); k++) {
+        for (size_t k = 0; (k < drain) || (!pings.size && window_time() - ping_start >= 8.0F); k++) {
             struct ping_entry entry;
             channel_await(&ping_queue, &entry);
 
@@ -115,16 +115,16 @@ void* ping_update(void* data) {
             .dataLength = sizeof(tmp),
         };
 
-        while(1) {
+        while (1) {
             int recvLength = enet_socket_receive(sock, &from, &buf, 1);
             uint64_t ID = IP_KEY(from);
 
-            if(recvLength != 0) {
+            if (recvLength != 0) {
                 struct ping_entry* entry = ht_lookup(&pings, &ID);
 
-                if(entry) {
-                    if(recvLength > 0) { // received something!
-                        if(!strncmp(buf.data, "HI", recvLength)) {
+                if (entry) {
+                    if (recvLength > 0) { // received something!
+                        if (!strncmp(buf.data, "HI", recvLength)) {
                             ping_result(NULL, window_time() - entry->time_start, entry->aos);
                             ht_erase(&pings, &ID);
                         } else {
@@ -142,9 +142,9 @@ void* ping_update(void* data) {
         ht_iterate_remove(&pings, NULL, pings_retry);
 
         int length = enet_socket_receive(lan, &from, &buf, 1);
-        if(length) {
+        if (length) {
             JSON_Value* js = json_parse_string(buf.data);
-            if(js) {
+            if (js) {
                 JSON_Object* root = json_value_get_object(js);
 
                 struct serverlist_entry e;

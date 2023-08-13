@@ -96,7 +96,7 @@ struct Sound_wav sound_impact;
 
 void sound_volume(float vol) {
 #ifdef USE_SOUND
-    if(sound_enabled)
+    if (sound_enabled)
         alListenerf(AL_GAIN, vol);
 #endif
 }
@@ -104,7 +104,7 @@ void sound_volume(float vol) {
 static void sound_createEx(enum sound_space option, struct Sound_wav* w, float x, float y, float z, float vx, float vy,
                            float vz, int player) {
 #ifdef USE_SOUND
-    if(!sound_enabled)
+    if (!sound_enabled)
         return;
 
     struct Sound_source s = (struct Sound_source) {
@@ -115,7 +115,7 @@ static void sound_createEx(enum sound_space option, struct Sound_wav* w, float x
     alGetError();
     alGenSources(1, &s.openal_handle);
 
-    if(alGetError() == AL_NO_ERROR) {
+    if (alGetError() == AL_NO_ERROR) {
         alSourcef(s.openal_handle, AL_PITCH, 1.0F);
         alSourcef(s.openal_handle, AL_GAIN, 1.0F);
         alSourcef(s.openal_handle, AL_REFERENCE_DISTANCE, s.local ? 0.0F : w->min * SOUND_SCALE);
@@ -130,7 +130,7 @@ static void sound_createEx(enum sound_space option, struct Sound_wav* w, float x
 
         alSourcePlay(s.openal_handle);
 
-        if(alGetError() == AL_NO_ERROR) {
+        if (alGetError() == AL_NO_ERROR) {
             entitysys_add(&sound_sources, &s);
         } else {
             alDeleteSources(1, &s.openal_handle);
@@ -149,7 +149,7 @@ void sound_create(enum sound_space option, struct Sound_wav* w, float x, float y
 
 void sound_velocity(struct Sound_source* s, float vx, float vy, float vz) {
 #ifdef USE_SOUND
-    if(!sound_enabled || s->local)
+    if (!sound_enabled || s->local)
         return;
     alSource3f(s->openal_handle, AL_VELOCITY, vx * SOUND_SCALE, vy * SOUND_SCALE, vz * SOUND_SCALE);
 #endif
@@ -157,7 +157,7 @@ void sound_velocity(struct Sound_source* s, float vx, float vy, float vz) {
 
 void sound_position(struct Sound_source* s, float x, float y, float z) {
 #ifdef USE_SOUND
-    if(!sound_enabled || s->local)
+    if (!sound_enabled || s->local)
         return;
 
     alSource3f(s->openal_handle, AL_POSITION, x * SOUND_SCALE, y * SOUND_SCALE, z * SOUND_SCALE);
@@ -170,12 +170,12 @@ static bool sound_update_single(void* obj, void* user) {
 
     int source_state;
     alGetSourcei(s->openal_handle, AL_SOURCE_STATE, &source_state);
-    if(source_state == AL_STOPPED || (s->stick_to_player >= 0 && !players[s->stick_to_player].connected)) {
+    if (source_state == AL_STOPPED || (s->stick_to_player >= 0 && !players[s->stick_to_player].connected)) {
         alDeleteSources(1, &s->openal_handle);
 
         return true;
     } else {
-        if(s->stick_to_player >= 0) {
+        if (s->stick_to_player >= 0) {
             sound_position(s, players[s->stick_to_player].pos.x, players[s->stick_to_player].pos.y,
                            players[s->stick_to_player].pos.z);
             sound_velocity(s, players[s->stick_to_player].physics.velocity.x,
@@ -190,7 +190,7 @@ static bool sound_update_single(void* obj, void* user) {
 
 void sound_update() {
 #ifdef USE_SOUND
-    if(!sound_enabled)
+    if (!sound_enabled)
         return;
 
     float orientation[] = {
@@ -215,21 +215,21 @@ extern short* drwav_open_and_read_file_s16(const char* filename, unsigned int* c
 
 void sound_load(struct Sound_wav* wav, char* name, float min, float max) {
 #ifdef USE_SOUND
-    if(!sound_enabled)
+    if (!sound_enabled)
         return;
     unsigned int channels, samplerate;
     uint64_t samplecount;
     short* samples = drwav_open_and_read_file_s16(name, &channels, &samplerate, &samplecount);
-    if(samples == NULL) {
+    if (samples == NULL) {
         log_fatal("Could not load sound %s", name);
         exit(1);
     }
 
     short* audio;
-    if(channels > 1) { // convert stereo to mono
+    if (channels > 1) { // convert stereo to mono
         audio = malloc(samplecount * sizeof(short) / 2);
         CHECK_ALLOCATION_ERROR(audio)
-        for(int k = 0; k < samplecount / 2; k++)
+        for (int k = 0; k < samplecount / 2; k++)
             audio[k] = ((int)samples[k * 2] + (int)samples[k * 2 + 1]) / 2; // prevent overflow
         free(samples);
     }
@@ -249,14 +249,14 @@ void sound_init() {
 
     ALCdevice* device = alcOpenDevice(NULL);
 
-    if(!device) {
+    if (!device) {
         sound_enabled = 0;
         log_warn("Could not open sound device!");
         return;
     }
 
     ALCcontext* context = alcCreateContext(device, NULL);
-    if(!alcMakeContextCurrent(context)) {
+    if (!alcMakeContextCurrent(context)) {
         sound_enabled = 0;
         log_warn("Could not enter sound device context!");
         return;

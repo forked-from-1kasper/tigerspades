@@ -59,17 +59,17 @@ struct minheap_block minheap_extract(struct minheap* h) {
 
     // now heapify at root node
     int k = 0;
-    while(1) {
+    while (1) {
         int smallest = k;
-        if(k * 2 + 1 < h->index
+        if (k * 2 + 1 < h->index
            && pos_keyy(h->nodes[k * 2 + 1].pos)
                < pos_keyy(h->nodes[smallest].pos)) // does left child exist and is less than parent?
             smallest = k * 2 + 1;
-        if(k * 2 + 2 < h->index
+        if (k * 2 + 2 < h->index
            && pos_keyy(h->nodes[k * 2 + 2].pos)
                < pos_keyy(h->nodes[smallest].pos)) // does right child exist and is less than parent?
             smallest = k * 2 + 2;
-        if(smallest == k) // parent is smallest, finished!
+        if (smallest == k) // parent is smallest, finished!
             break;
         nodes_swap(h, k, smallest);
         k = smallest;
@@ -82,17 +82,17 @@ static void minheap_increase(struct minheap* h, struct minheap_block* b, int val
     b->pos = pos_key(pos_keyx(b->pos), value, pos_keyy(b->pos));
 
     int k = b - h->nodes;
-    while(1) {
+    while (1) {
         int smallest = k;
-        if(k * 2 + 1 < h->index
+        if (k * 2 + 1 < h->index
            && pos_keyy(h->nodes[k * 2 + 1].pos)
                < pos_keyy(h->nodes[smallest].pos)) // does left child exist and is less than parent?
             smallest = k * 2 + 1;
-        if(k * 2 + 2 < h->index
+        if (k * 2 + 2 < h->index
            && pos_keyy(h->nodes[k * 2 + 2].pos)
                < pos_keyy(h->nodes[smallest].pos)) // does right child exist and is less than parent?
             smallest = k * 2 + 2;
-        if(smallest == k) // parent is smallest, finished!
+        if (smallest == k) // parent is smallest, finished!
             break;
         nodes_swap(h, k, smallest);
         k = smallest;
@@ -103,8 +103,8 @@ static void minheap_decrease(struct minheap* h, struct minheap_block* b, int val
     b->pos = pos_key(pos_keyx(b->pos), value, pos_keyy(b->pos));
 
     int k = b - h->nodes;
-    while(k > 0) {
-        if(pos_keyy(h->nodes[k].pos) < pos_keyy(h->nodes[(k - 1) / 2].pos)) { // is child less than parent?
+    while (k > 0) {
+        if (pos_keyy(h->nodes[k].pos) < pos_keyy(h->nodes[(k - 1) / 2].pos)) { // is child less than parent?
             nodes_swap(h, k, (k - 1) / 2);
             k = (k - 1) / 2; // continue at parent
         } else {
@@ -114,14 +114,14 @@ static void minheap_decrease(struct minheap* h, struct minheap_block* b, int val
 }
 
 void minheap_set(struct minheap* h, struct minheap_block* b, int value) {
-    if(value > pos_keyy(b->pos))
+    if (value > pos_keyy(b->pos))
         minheap_increase(h, b, value);
     else
         minheap_decrease(h, b, value);
 }
 
 struct minheap_block* minheap_put(struct minheap* h, struct minheap_block* b) {
-    if(h->index >= h->length) { // grow buffer
+    if (h->index >= h->length) { // grow buffer
         h->length *= 2;
         h->nodes = realloc(h->nodes, sizeof(struct minheap_block) * h->length);
     }
@@ -129,8 +129,8 @@ struct minheap_block* minheap_put(struct minheap* h, struct minheap_block* b) {
     h->nodes[h->index++] = *b; // place new node at end of heap
 
     int k = h->index - 1;
-    while(k > 0) {
-        if(pos_keyy(h->nodes[k].pos) < pos_keyy(h->nodes[(k - 1) / 2].pos)) { // is child less than parent?
+    while (k > 0) {
+        if (pos_keyy(h->nodes[k].pos) < pos_keyy(h->nodes[(k - 1) / 2].pos)) { // is child less than parent?
             nodes_swap(h, k, (k - 1) / 2);
             k = (k - 1) / 2; // continue at parent
         } else {

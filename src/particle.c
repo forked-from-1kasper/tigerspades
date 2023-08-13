@@ -46,12 +46,12 @@ static bool particle_update_single(void* obj, void* user) {
     float dt = *(float*)user;
     float size = p->size * (1.0F - ((float)(window_time() - p->fade) / 2.0F));
 
-    if(size < 0.01F) {
+    if (size < 0.01F) {
         return true;
     } else {
         float acc_y = -32.0F * dt;
 
-        if(map_isair(p->x, p->y + acc_y * dt - p->size / 2.0F, p->z) && !p->y + acc_y * dt < 0.0F) {
+        if (map_isair(p->x, p->y + acc_y * dt - p->size / 2.0F, p->z) && !p->y + acc_y * dt < 0.0F) {
             p->vy += acc_y;
         }
 
@@ -60,17 +60,17 @@ static bool particle_update_single(void* obj, void* user) {
         float movement_z = p->vz * dt;
         bool on_ground = false;
 
-        if(!map_isair(p->x + movement_x, p->y, p->z)) {
+        if (!map_isair(p->x + movement_x, p->y, p->z)) {
             movement_x = 0.0F;
             p->vx = -p->vx * 0.6F;
             on_ground = true;
         }
-        if(!map_isair(p->x + movement_x, p->y + movement_y, p->z)) {
+        if (!map_isair(p->x + movement_x, p->y + movement_y, p->z)) {
             movement_y = 0.0F;
             p->vy = -p->vy * 0.6F;
             on_ground = true;
         }
-        if(!map_isair(p->x + movement_x, p->y + movement_y, p->z + movement_z)) {
+        if (!map_isair(p->x + movement_x, p->y + movement_y, p->z + movement_z)) {
             movement_z = 0.0F;
             p->vz = -p->vz * 0.6F;
             on_ground = true;
@@ -80,16 +80,16 @@ static bool particle_update_single(void* obj, void* user) {
         float pow4_tys = 1.0F + (0.413432 * dt - 0.916185F) * dt;
 
         // air and ground friction
-        if(on_ground) {
+        if (on_ground) {
             p->vx *= pow1_tys; // pow(0.1F, dt);
             p->vy *= pow1_tys; // pow(0.1F, dt);
             p->vz *= pow1_tys; // pow(0.1F, dt);
 
-            if(abs(p->vx) < 0.1F)
+            if (abs(p->vx) < 0.1F)
                 p->vx = 0.0F;
-            if(abs(p->vy) < 0.1F)
+            if (abs(p->vy) < 0.1F)
                 p->vy = 0.0F;
-            if(abs(p->vz) < 0.1F)
+            if (abs(p->vz) < 0.1F)
                 p->vz = 0.0F;
         } else {
             p->vx *= pow4_tys; // pow(0.4F, dt);
@@ -113,12 +113,12 @@ static bool particle_render_single(void* obj, void* user) {
     struct Particle* p = (struct Particle*)obj;
     struct tesselator* tess = (struct tesselator*)user;
 
-    if(distance2D(camera_x, camera_z, p->x, p->z) > settings.render_distance * settings.render_distance)
+    if (distance2D(camera_x, camera_z, p->x, p->z) > settings.render_distance * settings.render_distance)
         return false;
 
     float size = p->size / 2.0F * (1.0F - ((float)(window_time() - p->fade) / 2.0F));
 
-    if(p->type == 255) {
+    if (p->type == 255) {
         tesselator_set_color(tess, p->color);
 
         tesselator_addf_cube_face(tess, CUBE_FACE_X_N, p->x - size, p->y - size, p->z - size, size * 2.0F);
@@ -130,7 +130,7 @@ static bool particle_render_single(void* obj, void* user) {
     } else {
         struct kv6_t* casing = weapon_casing(p->type);
 
-        if(casing) {
+        if (casing) {
             matrix_push(matrix_model);
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, p->x, p->y, p->z);
@@ -175,7 +175,7 @@ void particle_create_casing(struct Player* p) {
 
 void particle_create(unsigned int color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size) {
-    for(int k = 0; k < amount; k++) {
+    for (int k = 0; k < amount; k++) {
         float vx = (((float)rand() / (float)RAND_MAX) * 2.0F - 1.0F);
         float vy = (((float)rand() / (float)RAND_MAX) * 2.0F - 1.0F);
         float vz = (((float)rand() / (float)RAND_MAX) * 2.0F - 1.0F);

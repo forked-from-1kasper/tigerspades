@@ -69,7 +69,7 @@ void font_select(enum font_type type) {
 }
 
 static struct font_backed_data* font_find(float h) {
-    if(font_current_type == FONT_SMALLFNT)
+    if (font_current_type == FONT_SMALLFNT)
         h *= 1.5F;
 
     struct font_backed_id id = (struct font_backed_id) {
@@ -79,11 +79,11 @@ static struct font_backed_data* font_find(float h) {
 
     struct font_backed_data* f_cached = ht_lookup(&fonts_backed, &id);
 
-    if(f_cached)
+    if (f_cached)
         return f_cached;
 
     void* file;
-    switch(font_current_type) {
+    switch (font_current_type) {
         case FONT_FIXEDSYS: file = font_data_fixedsys; break;
         case FONT_SMALLFNT: file = font_data_smallfnt; break;
         default: return NULL;
@@ -100,14 +100,14 @@ static struct font_backed_data* font_find(float h) {
     int max_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
 
-    while(1) {
+    while (1) {
         temp_bitmap = realloc(temp_bitmap, f.w * f.h);
         CHECK_ALLOCATION_ERROR(temp_bitmap)
         int res = 0;
         res = stbtt_BakeFontBitmap(file, 0, h, temp_bitmap, f.w, f.h, FONT_BAKE_START, 0xFF - FONT_BAKE_START, f.cdata);
-        if(res > 0 || (f.w == max_size && f.h == max_size))
+        if (res > 0 || (f.w == max_size && f.h == max_size))
             break;
-        if(f.h > f.w)
+        if (f.h > f.w)
             f.w *= 2;
         else
             f.h *= 2;
@@ -131,20 +131,20 @@ static struct font_backed_data* font_find(float h) {
 float font_length(float h, char* text) {
     struct font_backed_data* font = font_find(h);
 
-    if(!font)
+    if (!font)
         return 0.0F;
 
     stbtt_aligned_quad q;
     float y = h * 0.75F;
     float x = 0.0F;
     float length = 0.0F;
-    for(size_t k = 0; k < strlen(text); k++) {
-        if(text[k] == '\n') {
+    for (size_t k = 0; k < strlen(text); k++) {
+        if (text[k] == '\n') {
             length = fmax(length, x);
             x = 0.0F;
         }
 
-        if(text[k] >= FONT_BAKE_START)
+        if (text[k] >= FONT_BAKE_START)
             stbtt_GetBakedQuad(font->cdata, font->w, font->h, text[k] - FONT_BAKE_START, &x, &y, &q, 1);
     }
 
@@ -167,19 +167,19 @@ void font_reset() {
 void font_render(float x, float y, float h, char* text) {
     struct font_backed_data* font = font_find(h);
 
-    if(!font)
+    if (!font)
         return;
 
     size_t k = 0;
     float x2 = x;
     float y2 = h * 0.75F;
-    while(*text) {
-        if(*text == '\n') {
+    while (*text) {
+        if (*text == '\n') {
             x2 = x;
             y2 += h;
         }
 
-        if(*text >= FONT_BAKE_START) {
+        if (*text >= FONT_BAKE_START) {
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(font->cdata, font->w, font->h, *text - FONT_BAKE_START, &x2, &y2, &q, 1);
             font_coords_buffer[k + 0] = q.s0 * 8192.0F;

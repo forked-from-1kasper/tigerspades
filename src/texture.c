@@ -96,7 +96,7 @@ int texture_flag_index(const char* country) {
 }
 
 void texture_flag_offset(int index, float* u, float* v) {
-    if(index >= 0) {
+    if (index >= 0) {
         *u = (index % 14) * (18.0F / 256.0F);
         *v = (index / 14) * (12.0F / 256.0F);
     } else {
@@ -107,7 +107,7 @@ void texture_flag_offset(int index, float* u, float* v) {
 
 void texture_filter(struct texture* t, int filter) {
     glBindTexture(GL_TEXTURE_2D, t->texture_id);
-    switch(filter) {
+    switch (filter) {
         case TEXTURE_FILTER_NEAREST:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -126,7 +126,7 @@ int texture_create(struct texture* t, char* filename) {
     int error = lodepng_decode32(&t->pixels, &t->width, &t->height, data, sz);
     free(data);
 
-    if(error) {
+    if (error) {
         log_warn("Could not load texture (%u): %s", error, lodepng_error_text(error));
         return 0;
     }
@@ -144,7 +144,7 @@ int texture_create(struct texture* t, char* filename) {
 }
 
 int texture_create_buffer(struct texture* t, int width, int height, unsigned char* buff, int new) {
-    if(new)
+    if (new)
         glGenTextures(1, &t->texture_id);
     t->width = width;
     t->height = height;
@@ -161,7 +161,7 @@ int texture_create_buffer(struct texture* t, int width, int height, unsigned cha
 }
 
 void texture_delete(struct texture* t) {
-    if(t->pixels)
+    if (t->pixels)
         free(t->pixels);
     glDeleteTextures(1, &t->texture_id);
 }
@@ -239,40 +239,40 @@ void texture_draw_empty_rotated(float x, float y, float w, float h, float angle)
 }
 
 void texture_resize_pow2(struct texture* t, int min_size) {
-    if(!t->pixels)
+    if (!t->pixels)
         return;
     int max_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
     max_size = max(max_size, min_size);
 
     int w = 1, h = 1;
-    if(strstr(glGetString(GL_EXTENSIONS), "ARB_texture_non_power_of_two") != NULL) {
-        if(t->width <= max_size && t->height <= max_size)
+    if (strstr(glGetString(GL_EXTENSIONS), "ARB_texture_non_power_of_two") != NULL) {
+        if (t->width <= max_size && t->height <= max_size)
             return;
         w = t->width;
         h = t->height;
     } else {
-        while(w < t->width)
+        while (w < t->width)
             w += w;
-        while(h < t->height)
+        while (h < t->height)
             h += h;
     }
 
     w = min(w, max_size);
     h = min(h, max_size);
 
-    if(t->width == w && t->height == h)
+    if (t->width == w && t->height == h)
         return;
 
     log_info("texture original: %i:%i now: %i:%i limit: %i", t->width, t->height, w, h, max_size);
 
-    if(!t->pixels)
+    if (!t->pixels)
         return;
 
     unsigned int* pixels_new = malloc(w * h * sizeof(unsigned int));
     CHECK_ALLOCATION_ERROR(pixels_new)
-    for(int y = 0; y < h; y++) {
-        for(int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
             float px = (float)x / (float)w * (float)t->width;
             float py = (float)y / (float)h * (float)t->height;
             float u = px - (int)px;
@@ -307,7 +307,7 @@ void texture_resize_pow2(struct texture* t, int min_size) {
 unsigned int texture_block_color(int x, int y) {
     int base[3][8] = {{15, 31, 31, 31, 0, 0, 0, 31}, {15, 0, 15, 31, 31, 31, 0, 0}, {15, 0, 0, 0, 0, 31, 31, 31}};
 
-    if(x < 4) {
+    if (x < 4) {
         return rgb(base[0][y] + x * (base[0][y] * 2 + 2) * (base[0][y] > 0),
                    base[1][y] + x * (base[1][y] * 2 + 2) * (base[1][y] > 0),
                    base[2][y] + x * (base[2][y] * 2 + 2) * (base[2][y] > 0));
@@ -321,8 +321,8 @@ unsigned int texture_block_color(int x, int y) {
 
 void texture_gradient_fog(unsigned int* gradient) {
     int size = 512;
-    for(int y = 0; y < size; y++) {
-        for(int x = 0; x < size; x++) {
+    for (int y = 0; y < size; y++) {
+        for (int x = 0; x < size; x++) {
             int d = min(sqrt(distance2D(size / 2, size / 2, x, y)) / (float)size * 2.0F * 255.0F, 255);
             gradient[x + y * size] = rgba(d, d, d, 255);
         }
@@ -378,10 +378,10 @@ void texture_init() {
     unsigned int pixels[64 * 64];
     memset(pixels, 0, sizeof(pixels));
 
-    for(int y = 0; y < 8; y++) {
-        for(int x = 0; x < 8; x++) {
-            for(int ys = 0; ys < 6; ys++) {
-                for(int xs = 0; xs < 6; xs++) {
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            for (int ys = 0; ys < 6; ys++) {
+                for (int xs = 0; xs < 6; xs++) {
                     pixels[(x * 8 + xs) + (y * 8 + ys) * 64] = 0xFF000000 | texture_block_color(x, y);
                 }
             }

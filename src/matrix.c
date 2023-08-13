@@ -62,7 +62,7 @@ void matrix_identity(mat4 m) {
 }
 
 void matrix_push(mat4 m) {
-    if(matrix_stack_index >= MATRIX_STACK_DEPTH) {
+    if (matrix_stack_index >= MATRIX_STACK_DEPTH) {
         log_fatal("Matrix stack overflow!");
         return;
     }
@@ -71,7 +71,7 @@ void matrix_push(mat4 m) {
 }
 
 void matrix_pop(mat4 m) {
-    if(matrix_stack_index < 1) {
+    if (matrix_stack_index < 1) {
         log_fatal("Matrix stack underflow!");
         return;
     }
@@ -89,14 +89,14 @@ void matrix_vector(mat4 m, vec4 v) {
 
 void matrix_pointAt(mat4 m, float dx, float dy, float dz) {
     float l = sqrt(dx * dx + dy * dy + dz * dz);
-    if(l) {
+    if (l) {
         dx /= l;
         dy /= l;
         dz /= l;
     }
     float rx = -atan2(dz, dx) * GLM_1_PI * 180.0F;
     matrix_rotate(m, rx, 0.0F, 1.0F, 0.0F);
-    if(dy) {
+    if (dy) {
         float ry = asin(dy) * GLM_1_PI * 180.0F;
         matrix_rotate(m, ry, 0.0F, 0.0F, 1.0F);
     }

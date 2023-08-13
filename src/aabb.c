@@ -52,7 +52,7 @@ bool aabb_intersection_ray(AABB* a, Ray* r, float* distance) {
     tmin = fmax(tmin, fmin(fmin(tz1, tz2), tmax));
     tmax = fmin(tmax, fmax(fmax(tz1, tz2), tmin));
 
-    if(distance)
+    if (distance)
         *distance = fmax(tmin, 0.0) * len3D(r->direction.x, r->direction.y, r->direction.z);
 
     return tmax > fmax(tmin, 0.0);
@@ -93,10 +93,10 @@ bool aabb_intersection_terrain(AABB* a, int miny) {
     int max_y = min(max(ceil(a->max_y) + 1, 0), map_size_y);
     int max_z = min(max(ceil(a->max_z) + 1, 0), map_size_z);
 
-    for(int x = min_x; x < max_x; x++) {
-        for(int z = min_z; z < max_z; z++) {
-            for(int y = min_y; y < max_y; y++) {
-                if(!map_isair(x, y, z)) {
+    for (int x = min_x; x < max_x; x++) {
+        for (int z = min_z; z < max_z; z++) {
+            for (int y = min_y; y < max_y; y++) {
+                if (!map_isair(x, y, z)) {
                     terrain_cube.min_x = x;
                     terrain_cube.min_y = y;
                     terrain_cube.min_z = z;
@@ -104,7 +104,7 @@ bool aabb_intersection_terrain(AABB* a, int miny) {
                     terrain_cube.max_y = y + 1;
                     terrain_cube.max_z = z + 1;
 
-                    if(aabb_intersection(a, &terrain_cube))
+                    if (aabb_intersection(a, &terrain_cube))
                         return true;
                 }
             }

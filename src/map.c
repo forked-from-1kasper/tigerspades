@@ -67,7 +67,7 @@ int map_damage(int x, int y, int z, int damage) {
     uint32_t key = pos_key(x, y, z);
     struct damaged_voxel* voxel = ht_lookup(&map_damaged_voxels, &key);
 
-    if(voxel) {
+    if (voxel) {
         voxel->damage = min(damage + voxel->damage, 100);
         voxel->timer = window_time();
 
@@ -88,9 +88,9 @@ bool map_damage_action(int x, int y, int z) {
     uint32_t key = pos_key(x, y, z);
     struct damaged_voxel* voxel = ht_lookup(&map_damaged_voxels, &key);
 
-    if(!voxel) {
+    if (!voxel) {
         return false;
-    } else if(voxel->damage >= 100 && window_time() - voxel->action_timer > 5.0F) {
+    } else if (voxel->damage >= 100 && window_time() - voxel->action_timer > 5.0F) {
         voxel->action_timer = window_time();
         return true;
     } else {
@@ -113,7 +113,7 @@ static bool damaged_voxel_update(void* key, void* value, void* user) {
     int y = pos_keyy(pos);
     int z = pos_keyz(pos);
 
-    if(window_time() - voxel->timer > 10.0F || map_isair(x, y, z))
+    if (window_time() - voxel->timer > 10.0F || map_isair(x, y, z))
         return true;
 
     tesselator_set_color(tess, rgba(0, 0, 0, voxel->damage * 1.9125F));
@@ -184,32 +184,32 @@ static bool falling_blocks_meshing(void* key, void* value, void* user) {
     float y = y2 - collapsing->p2.y;
     float z = z2 - collapsing->p2.z;
 
-    if(!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 - 1, z2)})) {
+    if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 - 1, z2)})) {
         tesselator_set_color(tess, rgba(red(color) * 0.5F, green(color) * 0.5F, blue(color) * 0.5F, 0xCC));
         tesselator_addf_cube_face(tess, CUBE_FACE_Y_N, x, y, z, 1.0F);
     }
 
-    if(!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 + 1, z2)})) {
+    if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 + 1, z2)})) {
         tesselator_set_color(tess, rgba(red(color), green(color), blue(color), 0xCC));
         tesselator_addf_cube_face(tess, CUBE_FACE_Y_P, x, y, z, 1.0F);
     }
 
-    if(!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 - 1)})) {
+    if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 - 1)})) {
         tesselator_set_color(tess, rgba(red(color) * 0.7F, green(color) * 0.7F, blue(color) * 0.7F, 0xCC));
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_N, x, y, z, 1.0F);
     }
 
-    if(!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 + 1)})) {
+    if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 + 1)})) {
         tesselator_set_color(tess, rgba(red(color) * 0.6F, green(color) * 0.6F, blue(color) * 0.6F, 0xCC));
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_P, x, y, z, 1.0F);
     }
 
-    if(!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 - 1, y2, z2)})) {
+    if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 - 1, y2, z2)})) {
         tesselator_set_color(tess, rgba(red(color) * 0.9F, green(color) * 0.9F, blue(color) * 0.9F, 0xCC));
         tesselator_addf_cube_face(tess, CUBE_FACE_X_N, x, y, z, 1.0F);
     }
 
-    if(!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 + 1, y2, z2)})) {
+    if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 + 1, y2, z2)})) {
         tesselator_set_color(tess, rgba(red(color) * 0.8F, green(color) * 0.8F, blue(color) * 0.8F, 0xCC));
         tesselator_addf_cube_face(tess, CUBE_FACE_X_P, x, y, z, 1.0F);
     }
@@ -232,10 +232,10 @@ static bool falling_blocks_pivot(void* key, void* value, void* user) {
 static const int DIRECTION_MASK[][3] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 
 static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int y, int z) {
-    if(y <= 1)
+    if (y <= 1)
         return false;
 
-    if(map_isair(x, y, z))
+    if (map_isair(x, y, z))
         return false;
 
     struct minheap openlist;
@@ -255,16 +255,16 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
     minheap_put(&openlist, &start);
     ht_insert(&closedlist, &start.pos, &start_color);
 
-    while(!minheap_isempty(&openlist)) { // find all connected blocks
+    while (!minheap_isempty(&openlist)) { // find all connected blocks
         struct minheap_block current = minheap_extract(&openlist);
 
-        if(pos_keyy(current.pos) <= 1) { // stop at indestructible ground layer
+        if (pos_keyy(current.pos) <= 1) { // stop at indestructible ground layer
             minheap_destroy(&openlist);
             ht_destroy(&closedlist);
             return false;
         }
 
-        for(size_t k = 0; k < sizeof(DIRECTION_MASK) / sizeof(*DIRECTION_MASK); k++) {
+        for (size_t k = 0; k < sizeof(DIRECTION_MASK) / sizeof(*DIRECTION_MASK); k++) {
             int dir_block[3] = {
                 pos_keyx(current.pos) + DIRECTION_MASK[k][0],
                 pos_keyy(current.pos) + DIRECTION_MASK[k][1],
@@ -275,7 +275,7 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
                 .pos = pos_key(dir_block[0], dir_block[1], dir_block[2]),
             };
 
-            if(dir_block[0] >= 0 && dir_block[1] >= 0 && dir_block[2] >= 0 && dir_block[0] < map_size_x
+            if (dir_block[0] >= 0 && dir_block[1] >= 0 && dir_block[2] >= 0 && dir_block[0] < map_size_x
                && dir_block[1] < map_size_y && dir_block[2] < map_size_z && !ht_contains(&closedlist, &block.pos)
                && !map_isair(dir_block[0], dir_block[1], dir_block[2])) {
                 minheap_put(&openlist, &block);
@@ -290,7 +290,7 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
     float pivot[3] = {0, 0, 0};
     ht_iterate(&closedlist, pivot, falling_blocks_pivot);
 
-    for(size_t k = 0; k < 3; k++)
+    for (size_t k = 0; k < 3; k++)
         pivot[k] = (pivot[k] / (float)closedlist.size) + 0.5F;
 
     collapsing->voxels = closedlist;
@@ -311,9 +311,9 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
 /*int map_collapsing_cmp(const void* a, const void* b) {
     struct map_collapsing* A = (struct map_collapsing*)a;
     struct map_collapsing* B = (struct map_collapsing*)b;
-    if(A->used && !B->used)
+    if (A->used && !B->used)
         return -1;
-    if(!A->used && B->used)
+    if (!A->used && B->used)
         return 1;
     return distance3D(B->p.x, B->p.y, B->p.z, camera_x, camera_y, camera_z)
         - distance3D(A->p.x, A->p.y, A->p.z, camera_x, camera_y, camera_z);
@@ -328,7 +328,7 @@ static bool falling_blocks_render(void* obj, void* user) {
     matrix_rotate(matrix_model, collapsing->o.y, 0.0F, 1.0F, 0.0F);
     matrix_upload();
 
-    if(!collapsing->has_displaylist) {
+    if (!collapsing->has_displaylist) {
         collapsing->has_displaylist = 1;
         glx_displaylist_create(&collapsing->displaylist, true, false);
         tesselator_glx(&collapsing->mesh_geometry, &collapsing->displaylist);
@@ -397,7 +397,7 @@ static bool falling_blocks_update(void* obj, void* user) {
 
     bool collision = ht_iterate(&collapsing->voxels, (void*[]) {collapsing, &dt}, falling_blocks_collision);
 
-    if(!collision) {
+    if (!collision) {
         collapsing->p.x += collapsing->v.x * dt * 32.0F;
         collapsing->p.y += collapsing->v.y * dt * 32.0F;
         collapsing->p.z += collapsing->v.z * dt * 32.0F;
@@ -409,11 +409,11 @@ static bool falling_blocks_update(void* obj, void* user) {
         collapsing->rotation &= 3;
         sound_create(SOUND_WORLD, &sound_bounce, collapsing->p.x, collapsing->p.y, collapsing->p.z);
 
-        if(absf(collapsing->v.y) < 0.1F) {
+        if (absf(collapsing->v.y) < 0.1F) {
             ht_iterate(&collapsing->voxels, collapsing, falling_blocks_particles);
             ht_destroy(&collapsing->voxels);
 
-            if(collapsing->has_displaylist) {
+            if (collapsing->has_displaylist) {
                 glx_displaylist_destroy(&collapsing->displaylist);
             } else {
                 tesselator_free(&collapsing->mesh_geometry);
@@ -435,7 +435,7 @@ static bool falling_blocks_update(void* obj, void* user) {
 void map_collapsing_update(float dt) {
     size_t drain = channel_size(&map_result_queue);
 
-    for(size_t k = 0; k < drain; k++) {
+    for (size_t k = 0; k < drain; k++) {
         struct map_collapsing res;
         channel_await(&map_result_queue, &res);
 
@@ -448,17 +448,17 @@ void map_collapsing_update(float dt) {
 }
 
 void map_update_physics(int x, int y, int z) {
-    if(x + 1 < map_size_x && !map_isair(x + 1, y, z))
+    if (x + 1 < map_size_x && !map_isair(x + 1, y, z))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x + 1, .y = y, .z = z});
-    if(x >= 1 && !map_isair(x - 1, y, z))
+    if (x >= 1 && !map_isair(x - 1, y, z))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x - 1, .y = y, .z = z});
-    if(z + 1 < map_size_z && !map_isair(x, y, z + 1))
+    if (z + 1 < map_size_z && !map_isair(x, y, z + 1))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y, .z = z + 1});
-    if(z >= 1 && !map_isair(x, y, z - 1))
+    if (z >= 1 && !map_isair(x, y, z - 1))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y, .z = z - 1});
-    if(y >= 3 && !map_isair(x, y - 1, z)) // don't check ground layers
+    if (y >= 3 && !map_isair(x, y - 1, z)) // don't check ground layers
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y - 1, .z = z});
-    if(y + 1 < map_size_y && !map_isair(x, y + 1, z))
+    if (y + 1 < map_size_y && !map_isair(x, y + 1, z))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y + 1, .z = z});
 }
 
@@ -467,8 +467,8 @@ float map_sunblock(int x, int y, int z) {
     int dec = 18;
     int i = 127;
 
-    while(dec && y < map_size_y) {
-        if(!map_isair(x, ++y, --z))
+    while (dec && y < map_size_y) {
+        if (!map_isair(x, ++y, --z))
             i -= dec;
         dec -= 2;
     }
@@ -476,12 +476,12 @@ float map_sunblock(int x, int y, int z) {
 }
 
 void* falling_blocks_worker(void* user) {
-    while(1) {
+    while (1) {
         struct map_work_packet work;
         channel_await(&map_work_queue, &work);
 
         struct map_collapsing collapsing;
-        if(map_update_physics_sub(&collapsing, work.x, work.y, work.z))
+        if (map_update_physics_sub(&collapsing, work.x, work.y, work.z))
             channel_put(&map_result_queue, &collapsing);
     }
 
@@ -530,12 +530,12 @@ unsigned int map_get(int x, int y, int z) {
 }
 
 void map_set(int x, int y, int z, unsigned int color) {
-    if(x < 0 || y < 0 || z < 0 || x >= map_size_x || y >= map_size_y || z >= map_size_z)
+    if (x < 0 || y < 0 || z < 0 || x >= map_size_x || y >= map_size_y || z >= map_size_z)
         return;
 
     pthread_rwlock_wrlock(&map_lock);
 
-    if(color == 0xFFFFFFFF) {
+    if (color == 0xFFFFFFFF) {
         libvxl_map_setair(&map, x, z, map_size_y - 1 - y);
     } else {
         libvxl_map_set(&map, x, z, map_size_y - 1 - y, rgb2bgr(color));
@@ -548,33 +548,33 @@ void map_set(int x, int y, int z, unsigned int color) {
     int x_off = x % CHUNK_SIZE;
     int z_off = z % CHUNK_SIZE;
 
-    if(x > 0 && x_off == 0)
+    if (x > 0 && x_off == 0)
         chunk_block_update(x - 1, y, z);
-    if(z > 0 && z_off == 0)
+    if (z > 0 && z_off == 0)
         chunk_block_update(x, y, z - 1);
-    if(x < map_size_x - 1 && x_off == CHUNK_SIZE - 1)
+    if (x < map_size_x - 1 && x_off == CHUNK_SIZE - 1)
         chunk_block_update(x + 1, y, z);
-    if(z < map_size_z - 1 && z_off == CHUNK_SIZE - 1)
+    if (z < map_size_z - 1 && z_off == CHUNK_SIZE - 1)
         chunk_block_update(x, y, z + 1);
 
-    if(settings.ambient_occlusion) {
-        if(x > 0 && z > 0 && x_off == 0 && z_off == 0)
+    if (settings.ambient_occlusion) {
+        if (x > 0 && z > 0 && x_off == 0 && z_off == 0)
             chunk_block_update(x - 1, y, z - 1);
-        if(x < map_size_x - 1 && z < map_size_z - 1 && x_off == CHUNK_SIZE - 1 && z_off == CHUNK_SIZE - 1)
+        if (x < map_size_x - 1 && z < map_size_z - 1 && x_off == CHUNK_SIZE - 1 && z_off == CHUNK_SIZE - 1)
             chunk_block_update(x + 1, y, z + 1);
-        if(x > 0 && z < map_size_z - 1 && x_off == 0 && z_off == CHUNK_SIZE - 1)
+        if (x > 0 && z < map_size_z - 1 && x_off == 0 && z_off == CHUNK_SIZE - 1)
             chunk_block_update(x - 1, y, z + 1);
-        if(x < map_size_x - 1 && z > 0 && x_off == CHUNK_SIZE - 1 && z_off == 0)
+        if (x < map_size_x - 1 && z > 0 && x_off == CHUNK_SIZE - 1 && z_off == 0)
             chunk_block_update(x + 1, y, z - 1);
     }
 
-    if(x == 0)
+    if (x == 0)
         chunk_block_update(map_size_x - 1, y, z);
-    if(x == map_size_x - 1)
+    if (x == map_size_x - 1)
         chunk_block_update(0, y, z);
-    if(z == 0)
+    if (z == 0)
         chunk_block_update(x, y, map_size_z - 1);
-    if(z == map_size_z - 1)
+    if (z == map_size_z - 1)
         chunk_block_update(x, y, 0);
 }
 
@@ -593,27 +593,27 @@ int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, struct Point* 
     d.y = y2 - y1;
     d.z = z2 - z1;
 
-    if(d.x < 0)
+    if (d.x < 0)
         ixi = -1;
     else
         ixi = 1;
-    if(d.y < 0)
+    if (d.y < 0)
         iyi = -1;
     else
         iyi = 1;
-    if(d.z < 0)
+    if (d.z < 0)
         izi = -1;
     else
         izi = 1;
 
-    if((abs(d.x) >= abs(d.y)) && (abs(d.x) >= abs(d.z))) {
+    if ((abs(d.x) >= abs(d.y)) && (abs(d.x) >= abs(d.z))) {
         dxi = 1024;
         dx = 512;
         dyi = (long)(!d.y ? 0x3fffffff / 512 : abs(d.x * 1024 / d.y));
         dy = dyi / 2;
         dzi = (long)(!d.z ? 0x3fffffff / 512 : abs(d.x * 1024 / d.z));
         dz = dzi / 2;
-    } else if(abs(d.y) >= abs(d.z)) {
+    } else if (abs(d.y) >= abs(d.z)) {
         dyi = 1024;
         dy = 512;
         dxi = (long)(!d.x ? 0x3fffffff / 512 : abs(d.y * 1024 / d.x));
@@ -628,37 +628,37 @@ int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, struct Point* 
         dyi = (long)(!d.y ? 0x3fffffff / 512 : abs(d.z * 1024 / d.y));
         dy = dyi / 2;
     }
-    if(ixi >= 0)
+    if (ixi >= 0)
         dx = dxi - dx;
-    if(iyi >= 0)
+    if (iyi >= 0)
         dy = dyi - dy;
-    if(izi >= 0)
+    if (izi >= 0)
         dz = dzi - dz;
 
-    while(1) {
-        if(cube_array != NULL)
+    while (1) {
+        if (cube_array != NULL)
             cube_array[count] = c;
 
-        if(count++ == 63)
+        if (count++ == 63)
             return count;
 
-        if(c.x == x2 && c.y == y2 && c.z == z2)
+        if (c.x == x2 && c.y == y2 && c.z == z2)
             return count;
 
-        if(dz <= dx && dz <= dy) {
+        if (dz <= dx && dz <= dy) {
             c.z += izi;
-            if(c.z < 0 || c.z >= 64)
+            if (c.z < 0 || c.z >= 64)
                 return count;
             dz += dzi;
         } else {
-            if(dx < dy) {
+            if (dx < dy) {
                 c.x += ixi;
-                if((unsigned long)c.x >= 512)
+                if ((unsigned long)c.x >= 512)
                     return count;
                 dx += dxi;
             } else {
                 c.y += iyi;
-                if((unsigned long)c.y >= 512)
+                if ((unsigned long)c.y >= 512)
                     return count;
                 dy += dyi;
             }

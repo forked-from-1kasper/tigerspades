@@ -34,9 +34,9 @@ static void channel_sanity_checks(struct channel* ch) {
     assert(ch->count <= ch->length);
     assert(ch->length >= ch->initial_length);
 
-    if(ch->loc_remove < ch->loc_insert) {
+    if (ch->loc_remove < ch->loc_insert) {
         assert(ch->loc_insert - ch->loc_remove == ch->count);
-    } else if(ch->loc_insert < ch->loc_remove) {
+    } else if (ch->loc_insert < ch->loc_remove) {
         assert(ch->loc_insert + (ch->length - ch->loc_remove) == ch->count);
     } else {
         assert(ch->count == ch->length || ch->count == 0);
@@ -54,15 +54,15 @@ bool channel_create(struct channel* ch, size_t object_size, size_t length) {
     ch->loc_insert = 0;
     ch->loc_remove = 0;
 
-    if(!ch->queue)
+    if (!ch->queue)
         return false;
 
-    if(pthread_mutex_init(&ch->lock, NULL)) {
+    if (pthread_mutex_init(&ch->lock, NULL)) {
         free(ch->queue);
         return false;
     }
 
-    if(pthread_cond_init(&ch->signal, NULL)) {
+    if (pthread_cond_init(&ch->signal, NULL)) {
         free(ch->queue);
         pthread_mutex_destroy(&ch->lock);
         return false;
@@ -96,7 +96,7 @@ static void channel_grow(struct channel* ch) {
 
     ch->queue = realloc(ch->queue, ch->object_size * length);
 
-    if(ch->loc_insert <= ch->loc_remove) {
+    if (ch->loc_insert <= ch->loc_remove) {
         size_t object_count = ch->length - ch->loc_remove;
         size_t new_remove_loc = length - object_count;
 
@@ -119,14 +119,14 @@ static void channel_shrink(struct channel* ch) {
 
     /* Is the run of elements ending in the to be removed section? Note, that there are only 25% of elements left, so
      * the run can't wrap around to the left. If yes, move all elements to the start. */
-    if(ch->loc_insert > length && ch->loc_remove < ch->loc_insert) {
+    if (ch->loc_insert > length && ch->loc_remove < ch->loc_insert) {
         memmove(ch->queue, (uint8_t*)ch->queue + ch->loc_remove * ch->object_size, ch->count * ch->object_size);
         ch->loc_remove = 0;
         ch->loc_insert = ch->count;
 
         /* Is the run of elements wrapping at the buffer's borders? If yes, copy the right part to the new ending
          * (middle). We won't override existing data, since all elements will only occupy 50% once shrinked. */
-    } else if(ch->loc_insert < ch->loc_remove) {
+    } else if (ch->loc_insert < ch->loc_remove) {
         size_t object_count = ch->length - ch->loc_remove;
         size_t new_remove_loc = length - object_count;
 
@@ -150,7 +150,7 @@ void channel_put(struct channel* ch, void* object) {
     pthread_mutex_lock(&ch->lock);
     channel_sanity_checks(ch);
 
-    if(ch->count >= ch->length)
+    if (ch->count >= ch->length)
         channel_grow(ch);
 
     memcpy((uint8_t*)ch->queue + ch->loc_insert * ch->object_size, object, ch->object_size);
@@ -169,14 +169,14 @@ void channel_await(struct channel* ch, void* object) {
     pthread_mutex_lock(&ch->lock);
     channel_sanity_checks(ch);
 
-    while(!ch->count)
+    while (!ch->count)
         pthread_cond_wait(&ch->signal, &ch->lock);
 
     memcpy(object, (uint8_t*)ch->queue + ch->loc_remove * ch->object_size, ch->object_size);
     ch->loc_remove = (ch->loc_remove + 1) % ch->length;
     ch->count--;
 
-    if(ch->length / 2 >= ch->initial_length && ch->count <= ch->length / 4)
+    if (ch->length / 2 >= ch->initial_length && ch->count <= ch->length / 4)
         channel_shrink(ch);
 
     channel_sanity_checks(ch);

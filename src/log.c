@@ -78,7 +78,7 @@ void log_set_quiet(int enable) {
 }
 
 void log_log(int level, const char* file, int line, const char* fmt, ...) {
-    if(level < L.level)
+    if (level < L.level)
         return;
 
     /* Get current time */
@@ -89,7 +89,7 @@ void log_log(int level, const char* file, int line, const char* fmt, ...) {
     lock();
 
     /* Log to stderr */
-    if(!L.quiet) {
+    if (!L.quiet) {
         va_list args;
         char buf[16];
         buf[strftime(buf, sizeof(buf), "%H:%M:%S", lt)] = '\0';
@@ -136,7 +136,7 @@ void log_log(int level, const char* file, int line, const char* fmt, ...) {
     }
 
     /* Log to file */
-    if(L.fp) {
+    if (L.fp) {
         va_list args;
         char buf[32];
         buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';

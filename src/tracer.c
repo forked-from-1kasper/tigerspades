@@ -51,14 +51,14 @@ static bool tracer_minimap_single(void* obj, void* user) {
     struct Tracer* t = (struct Tracer*)obj;
     struct tracer_minimap_info* info = (struct tracer_minimap_info*)user;
 
-    if(info->large) {
+    if (info->large) {
         float ang = -atan2(t->r.direction.z, t->r.direction.x) - HALFPI;
         texture_draw_rotated(&texture_tracer, info->minimap_x + t->r.origin.x * info->scalef,
                              info->minimap_y - t->r.origin.z * info->scalef, 15 * info->scalef, 15 * info->scalef, ang);
     } else {
         float tracer_x = t->r.origin.x - info->minimap_x;
         float tracer_y = t->r.origin.z - info->minimap_y;
-        if(tracer_x > 0.0F && tracer_x < 128.0F && tracer_y > 0.0F && tracer_y < 128.0F) {
+        if (tracer_x > 0.0F && tracer_x < 128.0F && tracer_y > 0.0F && tracer_y < 128.0F) {
             float ang = -atan2(t->r.direction.z, t->r.direction.x) - HALFPI;
             texture_draw_rotated(&texture_tracer, settings.window_width - 143 * info->scalef + tracer_x * info->scalef,
                                  (585 - tracer_y) * info->scalef, 15 * info->scalef, 15 * info->scalef, ang);
@@ -128,8 +128,8 @@ static bool tracer_update_single(void* obj, void* user) {
     float len = distance3D(t->x, t->y, t->z, t->r.origin.x, t->r.origin.y, t->r.origin.z);
 
     // 128.0[m] / 256.0[m/s] = 0.5[s]
-    if((t->hit.type != CAMERA_HITTYPE_NONE && len > pow(t->hit.distance, 2)) || window_time() - t->created > 0.5F) {
-        if(t->hit.type != CAMERA_HITTYPE_NONE)
+    if ((t->hit.type != CAMERA_HITTYPE_NONE && len > pow(t->hit.distance, 2)) || window_time() - t->created > 0.5F) {
+        if (t->hit.type != CAMERA_HITTYPE_NONE)
             sound_create(SOUND_WORLD, &sound_impact, t->r.origin.x, t->r.origin.y, t->r.origin.z);
 
         return true;

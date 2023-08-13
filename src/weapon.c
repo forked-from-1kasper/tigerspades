@@ -33,20 +33,20 @@ unsigned char weapon_reload_inprogress = 0;
 void weapon_update() {
     float t, delay = weapon_delay(players[local_player_id].weapon);
     int bullets = weapon_can_reload();
-    switch(players[local_player_id].weapon) {
+    switch (players[local_player_id].weapon) {
         case WEAPON_RIFLE: t = 2.5F; break;
         case WEAPON_SMG: t = 2.5F; break;
         case WEAPON_SHOTGUN: t = 0.5F * bullets; break;
     }
 
-    if(weapon_reload_inprogress) {
-        if(players[local_player_id].weapon == WEAPON_SHOTGUN) {
-            if(window_time() - weapon_reload_start >= 0.5F) {
+    if (weapon_reload_inprogress) {
+        if (players[local_player_id].weapon == WEAPON_SHOTGUN) {
+            if (window_time() - weapon_reload_start >= 0.5F) {
                 local_player_ammo++;
                 local_player_ammo_reserved--;
 
                 struct Sound_wav* snd;
-                if(local_player_ammo < 6) {
+                if (local_player_ammo < 6) {
                     weapon_reload_start = window_time();
                     snd = &sound_shotgun_reload;
                 } else {
@@ -56,20 +56,20 @@ void weapon_update() {
                 sound_create(SOUND_LOCAL, snd, 0.0F, 0.0F, 0.0F);
             }
         } else {
-            if(window_time() - weapon_reload_start >= t) {
+            if (window_time() - weapon_reload_start >= t) {
                 local_player_ammo += bullets;
                 local_player_ammo_reserved -= bullets;
                 weapon_reload_inprogress = 0;
             }
         }
-        if(players[local_player_id].held_item == TOOL_GUN) {
+        if (players[local_player_id].held_item == TOOL_GUN) {
             players[local_player_id].item_disabled = window_time();
             players[local_player_id].items_show_start = window_time();
             players[local_player_id].items_show = 1;
         }
     } else {
-        if(screen_current == SCREEN_NONE && window_time() - players[local_player_id].item_disabled >= 0.5F) {
-            if(players[local_player_id].input.buttons.lmb && players[local_player_id].held_item == TOOL_GUN
+        if (screen_current == SCREEN_NONE && window_time() - players[local_player_id].item_disabled >= 0.5F) {
+            if (players[local_player_id].input.buttons.lmb && players[local_player_id].held_item == TOOL_GUN
                && local_player_ammo > 0 && window_time() - weapon_last_shot >= delay) {
                 weapon_shoot();
                 local_player_ammo = max(local_player_ammo - 1, 0);
@@ -80,7 +80,7 @@ void weapon_update() {
 }
 
 float weapon_recoil_anim(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return 0.3F;
         case WEAPON_SMG: return 0.125F;
         case WEAPON_SHOTGUN: return 0.75F;
@@ -89,7 +89,7 @@ float weapon_recoil_anim(int gun) {
 }
 
 int weapon_block_damage(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return 50;
         case WEAPON_SMG: return 34;
         case WEAPON_SHOTGUN: return 20;
@@ -98,7 +98,7 @@ int weapon_block_damage(int gun) {
 }
 
 float weapon_delay(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return 0.5F;
         case WEAPON_SMG: return 0.1F;
         case WEAPON_SHOTGUN: return 1.0F;
@@ -107,7 +107,7 @@ float weapon_delay(int gun) {
 }
 
 struct Sound_wav* weapon_sound(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return &sound_rifle_shoot;
         case WEAPON_SMG: return &sound_smg_shoot;
         case WEAPON_SHOTGUN: return &sound_shotgun_shoot;
@@ -116,7 +116,7 @@ struct Sound_wav* weapon_sound(int gun) {
 }
 
 struct Sound_wav* weapon_sound_reload(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return &sound_rifle_reload;
         case WEAPON_SMG: return &sound_smg_reload;
         case WEAPON_SHOTGUN: return &sound_shotgun_reload;
@@ -126,7 +126,7 @@ struct Sound_wav* weapon_sound_reload(int gun) {
 
 void weapon_spread(struct Player* p, float* d) {
     float spread = 0.0F;
-    switch(p->weapon) {
+    switch (p->weapon) {
         case WEAPON_RIFLE: spread = 0.006F; break;
         case WEAPON_SMG: spread = 0.012F; break;
         case WEAPON_SHOTGUN: spread = 0.024F; break;
@@ -140,7 +140,7 @@ void weapon_spread(struct Player* p, float* d) {
 }
 
 void weapon_recoil(int gun, double* horiz_recoil, double* vert_recoil) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE:
             *horiz_recoil = 0.0001;
             *vert_recoil = 0.050000001;
@@ -158,7 +158,7 @@ void weapon_recoil(int gun, double* horiz_recoil, double* vert_recoil) {
 }
 
 int weapon_ammo(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return 10;
         case WEAPON_SMG: return 30;
         case WEAPON_SHOTGUN: return 6;
@@ -167,7 +167,7 @@ int weapon_ammo(int gun) {
 }
 
 int weapon_ammo_reserved(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return 50;
         case WEAPON_SMG: return 120;
         case WEAPON_SHOTGUN: return 48;
@@ -176,7 +176,7 @@ int weapon_ammo_reserved(int gun) {
 }
 
 struct kv6_t* weapon_casing(int gun) {
-    switch(gun) {
+    switch (gun) {
         case WEAPON_RIFLE: return &model_semi_casing;
         case WEAPON_SMG: return &model_smg_casing;
         case WEAPON_SHOTGUN: return &model_shotgun_casing;
@@ -185,7 +185,7 @@ struct kv6_t* weapon_casing(int gun) {
 }
 
 void weapon_set(bool restock) {
-    if(!restock)
+    if (!restock)
         local_player_ammo = weapon_ammo(players[local_player_id].weapon);
 
     local_player_ammo_reserved = weapon_ammo_reserved(players[local_player_id].weapon);
@@ -193,7 +193,7 @@ void weapon_set(bool restock) {
 }
 
 void weapon_reload() {
-    if(local_player_ammo_reserved == 0 || weapon_reload_inprogress || !weapon_can_reload())
+    if (local_player_ammo_reserved == 0 || weapon_reload_inprogress || !weapon_can_reload())
         return;
 
     weapon_reload_start = window_time();
@@ -210,7 +210,7 @@ void weapon_reload() {
 }
 
 void weapon_reload_abort() {
-    if(weapon_reload_inprogress && players[local_player_id].weapon == WEAPON_SHOTGUN) {
+    if (weapon_reload_inprogress && players[local_player_id].weapon == WEAPON_SHOTGUN) {
         weapon_reload_inprogress = 0;
         players[local_player_id].items_show = 0;
         players[local_player_id].item_showup = 0;
@@ -232,7 +232,7 @@ void weapon_shoot() {
     // https://pastebin.com/raw/TMjKSTXG
     // http://paste.quacknet.org/view/a3ea2743
 
-    for(int i = 0; i < ((players[local_player_id].weapon == WEAPON_SHOTGUN) ? 8 : 1); i++) {
+    for (int i = 0; i < ((players[local_player_id].weapon == WEAPON_SHOTGUN) ? 8 : 1); i++) {
         float o[3] = {players[local_player_id].orientation.x, players[local_player_id].orientation.y,
                       players[local_player_id].orientation.z};
 
@@ -243,7 +243,7 @@ void weapon_shoot() {
                    players[local_player_id].physics.eye.y + player_height(&players[local_player_id]),
                    players[local_player_id].physics.eye.z, o[0], o[1], o[2], 128.0F);
 
-        if(players[local_player_id].input.buttons.packed != network_buttons_last) {
+        if (players[local_player_id].input.buttons.packed != network_buttons_last) {
             struct PacketWeaponInput in;
             in.player_id = local_player_id;
             in.primary = players[local_player_id].input.buttons.lmb;
@@ -259,9 +259,9 @@ void weapon_shoot() {
                 orient.z = htolef(-players[local_player_id].orientation.y);
         network_send(PACKET_ORIENTATIONDATA_ID, &orient, sizeof(orient));
 
-        if(hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
+        if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
             hit.type = CAMERA_HITTYPE_NONE;
-        switch(hit.type) {
+        switch (hit.type) {
             case CAMERA_HITTYPE_PLAYER: {
                 sound_create_sticky((hit.player_section == HITTYPE_HEAD) ? &sound_spade_whack : &sound_hitplayer,
                                     players + hit.player_id, hit.player_id);
@@ -278,7 +278,7 @@ void weapon_shoot() {
             }
             case CAMERA_HITTYPE_BLOCK:
                 map_damage(hit.x, hit.y, hit.z, weapon_block_damage(players[local_player_id].weapon));
-                if(map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
+                if (map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
                     struct PacketBlockAction blk;
                     blk.action_type = ACTION_DESTROY;
                     blk.player_id = local_player_id;
@@ -306,21 +306,21 @@ void weapon_shoot() {
     long triangle_wave = (long)(window_time() * 1000) & 511;
     horiz_recoil *= ((double)triangle_wave - 255.5);
 
-    if(((long)(window_time() * 1000) & 1023) < 512) {
+    if (((long)(window_time() * 1000) & 1023) < 512) {
         horiz_recoil *= -1.0;
     }
 
-    if((players[local_player_id].input.keys.up || players[local_player_id].input.keys.down
+    if ((players[local_player_id].input.keys.up || players[local_player_id].input.keys.down
         || players[local_player_id].input.keys.left || players[local_player_id].input.keys.right)
        && !players[local_player_id].input.buttons.rmb) {
         vert_recoil *= 2.0;
         horiz_recoil *= 2.0;
     }
-    if(players[local_player_id].physics.airborne) {
+    if (players[local_player_id].physics.airborne) {
         vert_recoil *= 2.0;
         horiz_recoil *= 2.0;
     } else {
-        if(players[local_player_id].input.keys.crouch) {
+        if (players[local_player_id].input.keys.crouch) {
             vert_recoil *= 0.5;
             horiz_recoil *= 0.5;
         }

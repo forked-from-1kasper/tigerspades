@@ -22,15 +22,15 @@
 #include "utils.h"
 
 static int base64_map(char c) {
-    if(c >= '0' && c <= '9')
+    if (c >= '0' && c <= '9')
         return c + 4;
-    if(c >= 'A' && c <= 'Z')
+    if (c >= 'A' && c <= 'Z')
         return c - 'A';
-    if(c >= 'a' && c <= 'z')
+    if (c >= 'a' && c <= 'z')
         return c - 'a' + 26;
-    if(c == '+')
+    if (c == '+')
         return 62;
-    if(c == '/')
+    if (c == '/')
         return 63;
     return 0;
 }
@@ -43,13 +43,13 @@ int base64_decode(char* data, int len) {
     int buffer_len = 0;
     int data_index = 0;
     int out_index = 0;
-    for(int k = 0; k < len; k++) {
-        if(buffer_len + 6 < sizeof(int) * 8 && data[data_index] != '=') {
+    for (int k = 0; k < len; k++) {
+        if (buffer_len + 6 < sizeof(int) * 8 && data[data_index] != '=') {
             buffer <<= 6;
             buffer |= base64_map(data[data_index++]);
             buffer_len += 6;
         }
-        for(int b = 0; b < buffer_len / 8; b++) {
+        for (int b = 0; b < buffer_len / 8; b++) {
             data[out_index++] = (buffer >> (buffer_len - 8));
             buffer_len -= 8;
         }
@@ -78,13 +78,13 @@ void ht_iterate_remove(HashTable* ht, void* user, bool (*callback)(void* key, vo
 
     bool removed = false;
 
-    for(size_t chain = 0; chain < ht->capacity; chain++) {
+    for (size_t chain = 0; chain < ht->capacity; chain++) {
         HTNode* node = ht->nodes[chain];
         HTNode* prev = NULL;
 
-        while(node) {
-            if(callback(node->key, node->value, user)) {
-                if(prev) {
+        while (node) {
+            if (callback(node->key, node->value, user)) {
+                if (prev) {
                     prev->next = node->next;
                 } else {
                     ht->nodes[chain] = node->next;
@@ -104,18 +104,18 @@ void ht_iterate_remove(HashTable* ht, void* user, bool (*callback)(void* key, vo
         }
     }
 
-    if(removed && _ht_should_shrink(ht))
+    if (removed && _ht_should_shrink(ht))
         _ht_adjust_capacity(ht);
 }
 
 bool ht_iterate(HashTable* ht, void* user, bool (*callback)(void* key, void* value, void* user)) {
     assert(ht && callback);
 
-    for(size_t chain = 0; chain < ht->capacity; chain++) {
+    for (size_t chain = 0; chain < ht->capacity; chain++) {
         HTNode* node = ht->nodes[chain];
 
-        while(node) {
-            if(!callback(node->key, node->value, user))
+        while (node) {
+            if (!callback(node->key, node->value, user))
                 return true;
             node = node->next;
         }

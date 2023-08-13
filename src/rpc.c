@@ -68,15 +68,15 @@ void rpc_deinit() {
 }
 
 void rpc_setv(enum RPC_VALUE v, char* x) {
-    switch(v) {
+    switch (v) {
         case RPC_VALUE_SERVERNAME:
-            if(strcmp(rpc_state.server_name, x) != 0) {
+            if (strcmp(rpc_state.server_name, x) != 0) {
                 strncpy(rpc_state.server_name, x, sizeof(rpc_state.server_name) - 1);
                 rpc_state.needs_update = 1;
             }
             break;
         case RPC_VALUE_SERVERURL:
-            if(strcmp(rpc_state.server_url, x) != 0) {
+            if (strcmp(rpc_state.server_url, x) != 0) {
                 strncpy(rpc_state.server_url, x, sizeof(rpc_state.server_url) - 1);
                 rpc_state.needs_update = 1;
             }
@@ -85,15 +85,15 @@ void rpc_setv(enum RPC_VALUE v, char* x) {
 }
 
 void rpc_seti(enum RPC_VALUE v, int x) {
-    switch(v) {
+    switch (v) {
         case RPC_VALUE_PLAYERS:
-            if(rpc_state.players != x) {
+            if (rpc_state.players != x) {
                 rpc_state.players = x;
                 rpc_state.needs_update = 1;
             }
             break;
         case RPC_VALUE_SLOTS:
-            if(rpc_state.slots != x) {
+            if (rpc_state.slots != x) {
                 rpc_state.slots = x;
                 rpc_state.needs_update = 1;
             }
@@ -105,20 +105,20 @@ void rpc_update() {
 #ifdef USE_RPC
 
     int online = 0;
-    for(int k = 0; k < PLAYERS_MAX; k++) {
-        if(players[k].connected)
+    for (int k = 0; k < PLAYERS_MAX; k++) {
+        if (players[k].connected)
             online++;
     }
     rpc_seti(RPC_VALUE_PLAYERS, online);
 
-    if(rpc_state.needs_update) {
+    if (rpc_state.needs_update) {
         DiscordRichPresence discordPresence;
         memset(&discordPresence, 0, sizeof(discordPresence));
         discordPresence.largeImageKey = "pic03";
         discordPresence.smallImageKey = "logo";
         discordPresence.smallImageText = BETTERSPADES_VERSION;
         discordPresence.instance = 1;
-        if(rpc_state.slots > 0) {
+        if (rpc_state.slots > 0) {
             discordPresence.state = "Playing";
             discordPresence.partyId = "42";
             discordPresence.partySize = max(rpc_state.players, 1);

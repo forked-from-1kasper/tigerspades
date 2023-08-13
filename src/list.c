@@ -23,7 +23,7 @@ void list_create(struct list* l, size_t element_size) {
 void list_free(struct list* l) {
     assert(l != NULL);
 
-    if(l->data) {
+    if (l->data) {
         free(l->data);
         l->data = NULL;
     }
@@ -32,17 +32,17 @@ void list_free(struct list* l) {
 void* list_find(struct list* l, void* ref, enum list_traverse_direction dir, int (*cmp)(void* obj, void* ref)) {
     assert(l != NULL && cmp != NULL);
 
-    switch(dir) {
+    switch (dir) {
         case LIST_TRAVERSE_FORWARD:
-            for(size_t k = 0; k < l->elements; k++) {
+            for (size_t k = 0; k < l->elements; k++) {
                 void* obj = l->data + l->element_size * k;
 
-                if(cmp(obj, ref))
+                if (cmp(obj, ref))
                     return obj;
             }
             break;
         case LIST_TRAVERSE_BACKWARD:
-            if(!l->elements)
+            if (!l->elements)
                 break;
 
             size_t k = l->elements - 1;
@@ -50,9 +50,9 @@ void* list_find(struct list* l, void* ref, enum list_traverse_direction dir, int
             do {
                 void* obj = l->data + l->element_size * k;
 
-                if(cmp(obj, ref))
+                if (cmp(obj, ref))
                     return obj;
-            } while((k--) > 0);
+            } while ((k--) > 0);
 
             break;
     }
@@ -75,13 +75,13 @@ void* list_get(struct list* l, size_t i) {
 void* list_add(struct list* l, void* e) {
     assert(l != NULL);
 
-    if((l->elements + 1) * l->element_size > l->mem_size) {
+    if ((l->elements + 1) * l->element_size > l->mem_size) {
         l->mem_size += l->element_size * 64;
         l->data = realloc(l->data, l->mem_size);
         CHECK_ALLOCATION_ERROR(l->data)
     }
 
-    if(e)
+    if (e)
         memcpy(l->data + l->elements * l->element_size, e, l->element_size);
     else
         memset(l->data + l->elements * l->element_size, 0, l->element_size);
@@ -92,12 +92,12 @@ void* list_add(struct list* l, void* e) {
 void list_remove(struct list* l, size_t i) {
     assert(l != NULL && i < l->elements);
 
-    if(i < l->elements - 1)
+    if (i < l->elements - 1)
         memmove(list_get(l, i), list_get(l, i + 1), (l->elements - (i + 1)) * l->element_size);
 
     l->elements--;
 
-    if(l->mem_size - 64 * l->element_size > 0
+    if (l->mem_size - 64 * l->element_size > 0
        && (l->elements + 1) * l->element_size < l->mem_size - 96 * l->element_size) {
         l->mem_size -= l->element_size * 64;
         l->data = realloc(l->data, l->mem_size);
@@ -110,7 +110,7 @@ void list_clear(struct list* l) {
 
     void* new = realloc(l->data, l->element_size * 64);
 
-    if(new) {
+    if (new) {
         l->data = new;
         l->mem_size = l->element_size * 64;
     }
