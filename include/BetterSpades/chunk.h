@@ -27,7 +27,8 @@
 
 #include <BetterSpades/glx.h>
 #include <BetterSpades/tesselator.h>
-#include <BetterSpades/libvxl.h>
+
+#include <libvxl.h>
 
 #define CHUNK_SIZE 16
 #define CHUNKS_PER_DIM (512 / CHUNK_SIZE)

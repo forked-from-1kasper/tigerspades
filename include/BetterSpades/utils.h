@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <BetterSpades/hashtable.h>
+#include <hashtable.h>
 
 int base64_decode(char* data, int len);
 
