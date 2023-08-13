@@ -1,20 +1,20 @@
 /*
-	Copyright (c) 2017-2020 ByteBit
+    Copyright (c) 2017-2020 ByteBit
 
-	This file is part of BetterSpades.
+    This file is part of BetterSpades.
 
-	BetterSpades is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    BetterSpades is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	BetterSpades is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    BetterSpades is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef MODEL_H
@@ -35,20 +35,20 @@
 #define KV6_VIS_NEG_Y (1 << 5)
 
 struct kv6_voxel {
-	uint16_t x, y, z;
-	uint8_t visfaces;
-	uint32_t color;
+    uint16_t x, y, z;
+    uint8_t visfaces;
+    uint32_t color;
 };
 
 struct kv6_t {
-	uint16_t xsiz, ysiz, zsiz;
-	float xpiv, ypiv, zpiv;
-	bool has_display_list, colorize;
-	struct glx_displaylist display_list[2];
-	struct kv6_voxel* voxels;
-	int voxel_count;
-	float scale;
-	float red, green, blue;
+    uint16_t xsiz, ysiz, zsiz;
+    float xpiv, ypiv, zpiv;
+    bool has_display_list, colorize;
+    struct glx_displaylist display_list[2];
+    struct kv6_voxel* voxels;
+    int voxel_count;
+    float scale;
+    float red, green, blue;
 };
 
 extern struct kv6_t model_playerdead;

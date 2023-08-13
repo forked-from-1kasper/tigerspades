@@ -1,20 +1,20 @@
 /*
-	Copyright (c) 2017-2020 ByteBit
+    Copyright (c) 2017-2020 ByteBit
 
-	This file is part of BetterSpades.
+    This file is part of BetterSpades.
 
-	BetterSpades is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    BetterSpades is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	BetterSpades is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    BetterSpades is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef SOUND_H
@@ -35,15 +35,15 @@
 #define SOUND_SCALE 0.6F
 
 enum sound_space {
-	SOUND_WORLD,
-	SOUND_LOCAL,
+    SOUND_WORLD,
+    SOUND_LOCAL,
 };
 
 extern int sound_enabled;
 
 struct Sound_wav {
-	int openal_buffer;
-	float min, max;
+    int openal_buffer;
+    float min, max;
 };
 
 extern struct Sound_wav sound_footstep1;

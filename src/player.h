@@ -1,20 +1,20 @@
 /*
-	Copyright (c) 2017-2020 ByteBit
+    Copyright (c) 2017-2020 ByteBit
 
-	This file is part of BetterSpades.
+    This file is part of BetterSpades.
 
-	BetterSpades is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    BetterSpades is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	BetterSpades is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    BetterSpades is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef PLAYER_H
@@ -31,17 +31,17 @@
 #define TEAM_SPECTATOR 255
 
 extern struct GameState {
-	struct Team {
-		char name[11];
-		unsigned char red, green, blue;
-	} team_1;
-	struct Team team_2;
-	unsigned char gamemode_type;
-	union Gamemodes gamemode;
-	struct {
-		unsigned char team_capturing, tent;
-		float progress, rate, update;
-	} progressbar;
+    struct Team {
+        char name[11];
+        unsigned char red, green, blue;
+    } team_1;
+    struct Team team_2;
+    unsigned char gamemode_type;
+    union Gamemodes gamemode;
+    struct {
+        unsigned char team_capturing, tent;
+        float progress, rate, update;
+    } progressbar;
 } gamestate;
 
 #define GAMEMODE_CTF 0
@@ -75,91 +75,91 @@ extern int player_intersection_player;
 extern float player_intersection_dist;
 
 struct player_intersection {
-	bool head;
-	bool torso;
-	bool leg_left;
-	bool leg_right;
-	bool arms;
-	union {
-		struct {
-			float head;
-			float torso;
-			float leg_left;
-			float leg_right;
-			float arms;
-		};
-		float values[5];
-	} distance;
+    bool head;
+    bool torso;
+    bool leg_left;
+    bool leg_right;
+    bool arms;
+    union {
+        struct {
+            float head;
+            float torso;
+            float leg_left;
+            float leg_right;
+            float arms;
+        };
+        float values[5];
+    } distance;
 };
 
 bool player_intersection_exists(struct player_intersection* s);
 int player_intersection_choose(struct player_intersection* s, float* distance);
 
 extern struct Player {
-	char name[17];
-	struct Position {
-		float x, y, z;
-	} pos;
-	struct Orientation {
-		float x, y, z;
-	} orientation;
-	AABB bb_2d;
-	struct Orientation orientation_smooth;
-	struct Position gun_pos;
-	struct Position casing_dir;
-	float gun_shoot_timer;
-	int ammo, ammo_reserved;
-	float spade_use_timer;
-	unsigned char spade_used, spade_use_type;
-	unsigned int score;
-	unsigned char team, weapon, held_item;
-	unsigned char alive, connected;
-	float item_showup, item_disabled, items_show_start;
-	unsigned char items_show;
-	union {
-		unsigned int packed;
-		struct {
-			unsigned char red, green, blue;
-		};
-	} block;
-	struct {
-		union {
-			unsigned char packed; // useful to load PacketInput quickly
-			struct {
-				unsigned char up : 1;
-				unsigned char down : 1;
-				unsigned char left : 1;
-				unsigned char right : 1;
-				unsigned char jump : 1;
-				unsigned char crouch : 1;
-				unsigned char sneak : 1;
-				unsigned char sprint : 1;
-			};
-		} keys;
-		union {
-			unsigned char packed;
-			struct {
-				unsigned char lmb : 1;
-				unsigned char rmb : 1;
-				float lmb_start, rmb_start;
-			};
-		} buttons;
-	} input;
+    char name[17];
+    struct Position {
+        float x, y, z;
+    } pos;
+    struct Orientation {
+        float x, y, z;
+    } orientation;
+    AABB bb_2d;
+    struct Orientation orientation_smooth;
+    struct Position gun_pos;
+    struct Position casing_dir;
+    float gun_shoot_timer;
+    int ammo, ammo_reserved;
+    float spade_use_timer;
+    unsigned char spade_used, spade_use_type;
+    unsigned int score;
+    unsigned char team, weapon, held_item;
+    unsigned char alive, connected;
+    float item_showup, item_disabled, items_show_start;
+    unsigned char items_show;
+    union {
+        unsigned int packed;
+        struct {
+            unsigned char red, green, blue;
+        };
+    } block;
+    struct {
+        union {
+            unsigned char packed; // useful to load PacketInput quickly
+            struct {
+                unsigned char up : 1;
+                unsigned char down : 1;
+                unsigned char left : 1;
+                unsigned char right : 1;
+                unsigned char jump : 1;
+                unsigned char crouch : 1;
+                unsigned char sneak : 1;
+                unsigned char sprint : 1;
+            };
+        } keys;
+        union {
+            unsigned char packed;
+            struct {
+                unsigned char lmb : 1;
+                unsigned char rmb : 1;
+                float lmb_start, rmb_start;
+            };
+        } buttons;
+    } input;
 
-	struct {
-		unsigned char jump, airborne, wade;
-		float lastclimb;
-		struct Velocity {
-			float x, y, z;
-		} velocity;
-		struct Position eye;
-	} physics;
+    struct {
+        unsigned char jump, airborne, wade;
+        float lastclimb;
+        struct Velocity {
+            float x, y, z;
+        } velocity;
+        struct Position eye;
+    } physics;
 
-	struct {
-		float feet_started, feet_started_cycle;
-		char feet_cylce;
-		float tool_started;
-	} sound;
+    struct {
+        float feet_started, feet_started_cycle;
+        char feet_cylce;
+        float tool_started;
+    } sound;
 } players[PLAYERS_MAX];
 // pyspades/pysnip/piqueserver sometimes uses ids that are out of range
 

@@ -2,13 +2,13 @@
 #define LIST_H
 
 struct list {
-	void* data;
-	size_t elements, element_size, mem_size;
+    void* data;
+    size_t elements, element_size, mem_size;
 };
 
 enum list_traverse_direction {
-	LIST_TRAVERSE_FORWARD,
-	LIST_TRAVERSE_BACKWARD,
+    LIST_TRAVERSE_FORWARD,
+    LIST_TRAVERSE_BACKWARD,
 };
 
 int list_created(struct list* l);

@@ -1,20 +1,20 @@
 /*
-	Copyright (c) 2017-2020 ByteBit
+    Copyright (c) 2017-2020 ByteBit
 
-	This file is part of BetterSpades.
+    This file is part of BetterSpades.
 
-	BetterSpades is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    BetterSpades is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	BetterSpades is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    BetterSpades is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef COMMON_H
@@ -73,8 +73,7 @@
 #define absf(a) (((a) > 0) ? (a) : -(a))
 
 #define distance2D(x1, y1, x2, y2) (((x2) - (x1)) * ((x2) - (x1)) + ((y2) - (y1)) * ((y2) - (y1)))
-#define distance3D(x1, y1, z1, x2, y2, z2)                                                                             \
-	(((x2) - (x1)) * ((x2) - (x1)) + ((y2) - (y1)) * ((y2) - (y1)) + ((z2) - (z1)) * ((z2) - (z1)))
+#define distance3D(x1, y1, z1, x2, y2, z2) (((x2) - (x1)) * ((x2) - (x1)) + ((y2) - (y1)) * ((y2) - (y1)) + ((z2) - (z1)) * ((z2) - (z1)))
 #define angle3D(x1, y1, z1, x2, y2, z2) acos((x1) * (x2) + (y1) * (y2) + (z1) * (z2)) // vectors should be normalized
 #define len2D(x, y) sqrt(pow(x, 2) + pow(y, 2))
 #define len3D(x, y, z) sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2))
@@ -125,11 +124,11 @@ int ms_rand(void);
 #include <stdlib.h>
 #include "log.h"
 
-#define CHECK_ALLOCATION_ERROR(ret)                                                                                    \
-	if(!ret) {                                                                                                         \
-		log_fatal("Critical error: memory allocation failed (%s:%d)", __func__, __LINE__);                             \
-		exit(1);                                                                                                       \
-	}
+#define CHECK_ALLOCATION_ERROR(ret)                                                        \
+    if(!ret) {                                                                             \
+        log_fatal("Critical error: memory allocation failed (%s:%d)", __func__, __LINE__); \
+        exit(1);                                                                           \
+    }
 
 float    letohf(float);
 uint32_t letohu32(uint32_t);
