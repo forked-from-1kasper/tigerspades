@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-#include "glx.h"
+#include <BetterSpades/glx.h>
 
 #ifdef OPENGL_ES
 #define TESSELATE_TRIANGLES

@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "channel.h"
+#include <BetterSpades/channel.h>
 
 static void channel_sanity_checks(struct channel* ch) {
     assert(ch != NULL);

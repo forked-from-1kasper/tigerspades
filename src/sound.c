@@ -21,12 +21,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "common.h"
-#include "sound.h"
-#include "config.h"
-#include "log.h"
-#include "camera.h"
-#include "entitysystem.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/entitysystem.h>
+
+#include <log.h>
 
 #ifdef USE_SOUND
 int sound_enabled = 1;

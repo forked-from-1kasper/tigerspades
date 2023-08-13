@@ -22,30 +22,31 @@
 #include <string.h>
 #include <math.h>
 
-#include "lodepng/lodepng.h"
-#include "common.h"
-#include "file.h"
-#include "font.h"
-#include "weapon.h"
-#include "window.h"
-#include "rpc.h"
-#include "network.h"
-#include "sound.h"
-#include "map.h"
-#include "particle.h"
-#include "tracer.h"
-#include "camera.h"
-#include "cameracontroller.h"
-#include "grenade.h"
-#include "player.h"
-#include "hud.h"
-#include "config.h"
-#include "log.h"
-#include "ping.h"
-#include "matrix.h"
-#include "texture.h"
-#include "chunk.h"
-#include "main.h"
+#include <lodepng/lodepng.h>
+#include <log.h>
+
+#include <BetterSpades/common.h>
+#include <BetterSpades/file.h>
+#include <BetterSpades/font.h>
+#include <BetterSpades/weapon.h>
+#include <BetterSpades/window.h>
+#include <BetterSpades/rpc.h>
+#include <BetterSpades/network.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/particle.h>
+#include <BetterSpades/tracer.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/cameracontroller.h>
+#include <BetterSpades/grenade.h>
+#include <BetterSpades/player.h>
+#include <BetterSpades/hud.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/ping.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/chunk.h>
+#include <BetterSpades/main.h>
 
 int fps = 0;
 

@@ -17,26 +17,19 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PARTICLE_H
-#define PARTICLE_H
+#ifndef UTILS_H
+#define UTILS_H
 
-#include "player.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-struct Particle {
-    float x, y, z;
-    float vx, vy, vz;
-    float ox, oy, oz;
-    unsigned char type;
-    float size;
-    float fade;
-    unsigned int color;
-};
+#include <BetterSpades/hashtable.h>
 
-void particle_init(void);
-void particle_update(float dt);
-void particle_render(void);
-void particle_create_casing(struct Player* p);
-void particle_create(unsigned int color, float x, float y, float z, float velocity, float velocity_y, int amount,
-                     float min_size, float max_size);
+int base64_decode(char* data, int len);
+
+int int_cmp(void* first_key, void* second_key, size_t key_size);
+size_t int_hash(void* raw_key, size_t key_size);
+void ht_iterate_remove(HashTable* ht, void* user, bool (*callback)(void* key, void* value, void* user));
+bool ht_iterate(HashTable* ht, void* user, bool (*callback)(void* key, void* value, void* user));
 
 #endif

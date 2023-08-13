@@ -20,7 +20,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "common.h"
+#include <BetterSpades/common.h>
 #include <stddef.h>
 
 struct window_instance {

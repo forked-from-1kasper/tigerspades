@@ -23,10 +23,11 @@
 #include <discord_rpc.h>
 #endif
 
-#include "common.h"
-#include "log.h"
-#include "player.h"
-#include "rpc.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/player.h>
+#include <BetterSpades/rpc.h>
+
+#include <log.h>
 
 struct rpc {
     int needs_update;

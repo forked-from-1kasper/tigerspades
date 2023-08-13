@@ -25,9 +25,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "glx.h"
-#include "tesselator.h"
-#include "libvxl.h"
+#include <BetterSpades/glx.h>
+#include <BetterSpades/tesselator.h>
+#include <BetterSpades/libvxl.h>
 
 #define CHUNK_SIZE 16
 #define CHUNKS_PER_DIM (512 / CHUNK_SIZE)

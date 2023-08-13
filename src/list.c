@@ -2,8 +2,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "common.h"
-#include "list.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/list.h>
 
 int list_created(struct list* l) {
     assert(l != NULL);

@@ -25,9 +25,10 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include "common.h"
-#include "log.h"
-#include "file.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/file.h>
+
+#include <log.h>
 
 struct file_handle {
     void* internal;

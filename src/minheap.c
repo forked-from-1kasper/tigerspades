@@ -23,7 +23,7 @@
 #include <float.h>
 #include <stdint.h>
 
-#include "minheap.h"
+#include <BetterSpades/minheap.h>
 
 static void nodes_swap(struct minheap* h, int a, int b) {
     struct minheap_block tmp;

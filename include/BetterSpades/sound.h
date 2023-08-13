@@ -30,7 +30,7 @@
 #endif
 #endif
 
-#include "player.h"
+#include <BetterSpades/player.h>
 
 #define SOUND_SCALE 0.6F
 

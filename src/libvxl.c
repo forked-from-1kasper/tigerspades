@@ -4,7 +4,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "libvxl.h"
+#include <libvxl.h>
 
 #define LIBVXL_SPAN(base, off) ((struct libvxl_span*)((uint8_t*)(base) + (off)))
 

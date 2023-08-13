@@ -25,29 +25,31 @@
 #include <limits.h>
 #include <ctype.h>
 
-#include "lodepng/lodepng.h"
-#include "main.h"
-#include "file.h"
-#include "common.h"
-#include "list.h"
-#include "matrix.h"
-#include "texture.h"
-#include "hud.h"
-#include "http.h"
-#include "parson.h"
-#include "config.h"
-#include "network.h"
-#include "rpc.h"
-#include "map.h"
-#include "player.h"
-#include "camera.h"
-#include "cameracontroller.h"
-#include "ping.h"
-#include "chunk.h"
-#include "utils.h"
-#include "weapon.h"
-#include "tracer.h"
-#include "font.h"
+#include <lodepng/lodepng.h>
+
+#include <BetterSpades/main.h>
+#include <BetterSpades/file.h>
+#include <BetterSpades/common.h>
+#include <BetterSpades/list.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/hud.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/network.h>
+#include <BetterSpades/rpc.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/player.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/cameracontroller.h>
+#include <BetterSpades/ping.h>
+#include <BetterSpades/chunk.h>
+#include <BetterSpades/utils.h>
+#include <BetterSpades/weapon.h>
+#include <BetterSpades/tracer.h>
+#include <BetterSpades/font.h>
+
+#include <parson.h>
+#include <http.h>
 
 struct hud* hud_active;
 struct window_instance* hud_window;

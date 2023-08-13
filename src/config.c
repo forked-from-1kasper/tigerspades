@@ -24,13 +24,14 @@
 #include <limits.h>
 #include <math.h>
 
-#include "window.h"
-#include "file.h"
-#include "ini.h"
-#include "config.h"
-#include "sound.h"
-#include "model.h"
-#include "camera.h"
+#include <BetterSpades/window.h>
+#include <BetterSpades/file.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/model.h>
+#include <BetterSpades/camera.h>
+
+#include <ini.h>
 
 struct RENDER_OPTIONS settings, settings_tmp;
 struct list config_keys;

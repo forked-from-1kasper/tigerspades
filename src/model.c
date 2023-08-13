@@ -21,17 +21,18 @@
 #include <string.h>
 #include <math.h>
 
-#include "common.h"
-#include "player.h"
-#include "file.h"
-#include "camera.h"
-#include "matrix.h"
-#include "log.h"
-#include "map.h"
-#include "config.h"
-#include "model.h"
-#include "model_normals.h"
-#include "texture.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/player.h>
+#include <BetterSpades/file.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/model.h>
+#include <BetterSpades/model_normals.h>
+#include <BetterSpades/texture.h>
+
+#include <log.h>
 
 struct kv6_t model_playerdead;
 struct kv6_t model_playerhead;

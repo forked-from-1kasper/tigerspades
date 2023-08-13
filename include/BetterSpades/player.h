@@ -22,8 +22,8 @@
 
 #include <stdbool.h>
 
-#include "aabb.h"
-#include "network.h"
+#include <BetterSpades/aabb.h>
+#include <BetterSpades/network.h>
 
 #define PLAYERS_MAX 256 // just because 32 players are not enough
 #define TEAM_1 0

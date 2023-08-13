@@ -17,17 +17,26 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef PARTICLE_H
+#define PARTICLE_H
 
-#include "window.h"
+#include <BetterSpades/player.h>
 
-void reshape(struct window_instance* window, int width, int height);
-void text_input(struct window_instance* window, unsigned int codepoint);
-void keys(struct window_instance* window, int key, int scancode, int action, int mods);
-void mouse_click(struct window_instance* window, int button, int action, int mods);
-void mouse(struct window_instance* window, double x, double y);
-void mouse_scroll(struct window_instance* window, double xoffset, double yoffset);
-void on_error(int i, const char* s);
+struct Particle {
+    float x, y, z;
+    float vx, vy, vz;
+    float ox, oy, oz;
+    unsigned char type;
+    float size;
+    float fade;
+    unsigned int color;
+};
+
+void particle_init(void);
+void particle_update(float dt);
+void particle_render(void);
+void particle_create_casing(struct Player* p);
+void particle_create(unsigned int color, float x, float y, float z, float velocity, float velocity_y, int amount,
+                     float min_size, float max_size);
 
 #endif

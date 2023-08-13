@@ -21,17 +21,17 @@
 #include <string.h>
 #include <math.h>
 
-#include "common.h"
-#include "window.h"
-#include "camera.h"
-#include "map.h"
-#include "matrix.h"
-#include "particle.h"
-#include "model.h"
-#include "weapon.h"
-#include "config.h"
-#include "tesselator.h"
-#include "entitysystem.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/window.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/particle.h>
+#include <BetterSpades/model.h>
+#include <BetterSpades/weapon.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/tesselator.h>
+#include <BetterSpades/entitysystem.h>
 
 struct entity_system particles;
 struct tesselator particle_tesselator;

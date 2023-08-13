@@ -20,9 +20,9 @@
 #ifndef WEAPON_H
 #define WEAPON_H
 
-#include "player.h"
-#include "sound.h"
-#include "model.h"
+#include <BetterSpades/player.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/model.h>
 
 void weapon_update(void);
 void weapon_set(bool restock);

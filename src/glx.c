@@ -20,13 +20,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "common.h"
-#include "camera.h"
-#include "config.h"
-#include "map.h"
-#include "matrix.h"
-#include "texture.h"
-#include "glx.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/glx.h>
 
 // for future opengl-es abstraction layer
 

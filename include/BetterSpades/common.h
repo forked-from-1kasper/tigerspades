@@ -122,7 +122,7 @@ extern int ms_seed;
 int ms_rand(void);
 
 #include <stdlib.h>
-#include "log.h"
+#include <log.h>
 
 #define CHECK_ALLOCATION_ERROR(ret)                                                        \
     if (!ret) {                                                                             \

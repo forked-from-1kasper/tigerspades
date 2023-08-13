@@ -23,15 +23,16 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "window.h"
-#include "ping.h"
-#include "common.h"
-#include "parson.h"
-#include "list.h"
-#include "hud.h"
-#include "channel.h"
-#include "hashtable.h"
-#include "utils.h"
+#include <hashtable.h>
+#include <parson.h>
+
+#include <BetterSpades/window.h>
+#include <BetterSpades/ping.h>
+#include <BetterSpades/common.h>
+#include <BetterSpades/list.h>
+#include <BetterSpades/hud.h>
+#include <BetterSpades/channel.h>
+#include <BetterSpades/utils.h>
 
 struct channel ping_queue;
 ENetSocket sock, lan;

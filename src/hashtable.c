@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 
-#include "hashtable.h"
+#include <hashtable.h>
 
 int ht_setup(HashTable* table,
              size_t key_size,

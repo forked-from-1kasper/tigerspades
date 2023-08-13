@@ -21,16 +21,16 @@
 #include <math.h>
 #include <string.h>
 
-#include "common.h"
-#include "matrix.h"
-#include "window.h"
-#include "tracer.h"
-#include "model.h"
-#include "camera.h"
-#include "texture.h"
-#include "config.h"
-#include "sound.h"
-#include "entitysystem.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/window.h>
+#include <BetterSpades/tracer.h>
+#include <BetterSpades/model.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/entitysystem.h>
 
 struct entity_system tracers;
 

@@ -19,13 +19,13 @@
 
 #include <math.h>
 
-#include "window.h"
-#include "map.h"
-#include "player.h"
-#include "camera.h"
-#include "matrix.h"
-#include "cameracontroller.h"
-#include "config.h"
+#include <BetterSpades/window.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/player.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/cameracontroller.h>
+#include <BetterSpades/config.h>
 
 int cameracontroller_bodyview_mode = 0;
 int cameracontroller_bodyview_player = 0;

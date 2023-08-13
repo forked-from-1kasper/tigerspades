@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
-#include "matrix.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/matrix.h>
 
 mat4 matrix_view;
 mat4 matrix_model;

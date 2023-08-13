@@ -23,23 +23,24 @@
 #include <stdint.h>
 #include <float.h>
 
-#include "window.h"
-#include "hashtable.h"
-#include "sound.h"
-#include "matrix.h"
-#include "glx.h"
-#include "chunk.h"
-#include "common.h"
-#include "map.h"
-#include "camera.h"
-#include "log.h"
-#include "particle.h"
-#include "minheap.h"
-#include "tesselator.h"
-#include "utils.h"
-#include "config.h"
-#include "channel.h"
-#include "entitysystem.h"
+#include <log.h>
+#include <hashtable.h>
+
+#include <BetterSpades/window.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/glx.h>
+#include <BetterSpades/chunk.h>
+#include <BetterSpades/common.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/particle.h>
+#include <BetterSpades/minheap.h>
+#include <BetterSpades/tesselator.h>
+#include <BetterSpades/utils.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/channel.h>
+#include <BetterSpades/entitysystem.h>
 
 int map_size_x = 512;
 int map_size_y = 64;

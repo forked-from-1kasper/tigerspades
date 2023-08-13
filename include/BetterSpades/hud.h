@@ -22,9 +22,9 @@
 
 #include <stdbool.h>
 
-#include "microui.h"
-#include "texture.h"
-#include "window.h"
+#include <microui.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/window.h>
 
 struct hud {
     void (*init)();

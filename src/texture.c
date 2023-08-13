@@ -19,13 +19,13 @@
 
 #include <math.h>
 
-#include "common.h"
-#include "texture.h"
-#include "map.h"
-#include "log.h"
-#include "file.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/file.h>
 
-#include "lodepng/lodepng.c"
+#include <log.h>
+#include <lodepng/lodepng.c>
 
 struct texture texture_splash;
 struct texture texture_minimap;

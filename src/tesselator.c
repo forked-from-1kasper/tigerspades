@@ -21,8 +21,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "common.h"
-#include "tesselator.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/tesselator.h>
 
 static size_t vertex_type_size(enum tesselator_vertex_type type) {
     switch (type) {

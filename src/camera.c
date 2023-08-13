@@ -21,13 +21,13 @@
 #include <string.h>
 #include <float.h>
 
-#include "common.h"
-#include "cameracontroller.h"
-#include "player.h"
-#include "map.h"
-#include "matrix.h"
-#include "camera.h"
-#include "config.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/cameracontroller.h>
+#include <BetterSpades/player.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/config.h>
 
 enum camera_mode camera_mode = CAMERAMODE_SPECTATOR;
 

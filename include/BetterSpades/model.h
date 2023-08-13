@@ -23,9 +23,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "aabb.h"
-#include "glx.h"
-#include "tesselator.h"
+#include <BetterSpades/aabb.h>
+#include <BetterSpades/glx.h>
+#include <BetterSpades/tesselator.h>
 
 #define KV6_VIS_NEG_X (1 << 0)
 #define KV6_VIS_POS_X (1 << 1)

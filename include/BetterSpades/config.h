@@ -22,7 +22,7 @@
 
 #include <stddef.h>
 
-#include "list.h"
+#include <BetterSpades/list.h>
 
 struct config_file_entry {
     char section[32];

@@ -24,18 +24,19 @@
 #include <float.h>
 #include <string.h>
 
-#include "common.h"
-#include "window.h"
-#include "config.h"
-#include "texture.h"
-#include "log.h"
-#include "matrix.h"
-#include "map.h"
-#include "camera.h"
-#include "tesselator.h"
-#include "chunk.h"
-#include "channel.h"
-#include "utils.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/window.h>
+#include <BetterSpades/config.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/tesselator.h>
+#include <BetterSpades/chunk.h>
+#include <BetterSpades/channel.h>
+#include <BetterSpades/utils.h>
+
+#include <log.h>
 
 struct chunk chunks[CHUNKS_PER_DIM * CHUNKS_PER_DIM];
 

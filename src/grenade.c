@@ -19,14 +19,14 @@
 
 #include <math.h>
 
-#include "window.h"
-#include "particle.h"
-#include "matrix.h"
-#include "model.h"
-#include "sound.h"
-#include "grenade.h"
-#include "map.h"
-#include "entitysystem.h"
+#include <BetterSpades/window.h>
+#include <BetterSpades/particle.h>
+#include <BetterSpades/matrix.h>
+#include <BetterSpades/model.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/grenade.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/entitysystem.h>
 
 struct entity_system grenades;
 

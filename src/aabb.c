@@ -21,11 +21,11 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "common.h"
-#include "map.h"
-#include "aabb.h"
-#include "tesselator.h"
-#include "matrix.h"
+#include <BetterSpades/common.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/aabb.h>
+#include <BetterSpades/tesselator.h>
+#include <BetterSpades/matrix.h>
 
 void aabb_render(AABB* a) { }
 

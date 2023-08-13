@@ -17,19 +17,17 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef MAIN_H
+#define MAIN_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <BetterSpades/window.h>
 
-#include "hashtable.h"
-
-int base64_decode(char* data, int len);
-
-int int_cmp(void* first_key, void* second_key, size_t key_size);
-size_t int_hash(void* raw_key, size_t key_size);
-void ht_iterate_remove(HashTable* ht, void* user, bool (*callback)(void* key, void* value, void* user));
-bool ht_iterate(HashTable* ht, void* user, bool (*callback)(void* key, void* value, void* user));
+void reshape(struct window_instance* window, int width, int height);
+void text_input(struct window_instance* window, unsigned int codepoint);
+void keys(struct window_instance* window, int key, int scancode, int action, int mods);
+void mouse_click(struct window_instance* window, int button, int action, int mods);
+void mouse(struct window_instance* window, double x, double y);
+void mouse_scroll(struct window_instance* window, double xoffset, double yoffset);
+void on_error(int i, const char* s);
 
 #endif

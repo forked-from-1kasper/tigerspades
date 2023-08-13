@@ -27,7 +27,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "log.h"
+#include <log.h>
 
 #ifdef WIN32
 #include <windows.h>

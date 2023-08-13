@@ -21,22 +21,23 @@
 #include <math.h>
 #include <string.h>
 
-#include "libdeflate.h"
-#include "texture.h"
-#include "common.h"
-#include "sound.h"
-#include "weapon.h"
-#include "grenade.h"
-#include "camera.h"
-#include "cameracontroller.h"
-#include "file.h"
-#include "hud.h"
-#include "map.h"
-#include "player.h"
-#include "network.h"
-#include "particle.h"
-#include "texture.h"
-#include "chunk.h"
+#include <libdeflate.h>
+
+#include <BetterSpades/texture.h>
+#include <BetterSpades/common.h>
+#include <BetterSpades/sound.h>
+#include <BetterSpades/weapon.h>
+#include <BetterSpades/grenade.h>
+#include <BetterSpades/camera.h>
+#include <BetterSpades/cameracontroller.h>
+#include <BetterSpades/file.h>
+#include <BetterSpades/hud.h>
+#include <BetterSpades/map.h>
+#include <BetterSpades/player.h>
+#include <BetterSpades/network.h>
+#include <BetterSpades/particle.h>
+#include <BetterSpades/texture.h>
+#include <BetterSpades/chunk.h>
 
 void (*packets[256])(void* data, int len) = {NULL};
 

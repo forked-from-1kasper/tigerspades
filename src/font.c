@@ -21,12 +21,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "common.h"
-#include "file.h"
-#include "hashtable.h"
-#include "font.h"
-#include "stb_truetype.h"
-#include "utils.h"
+#include <hashtable.h>
+#include <stb_truetype.h>
+
+#include <BetterSpades/common.h>
+#include <BetterSpades/file.h>
+#include <BetterSpades/font.h>
+#include <BetterSpades/utils.h>
 
 #define FONT_BAKE_START 31
 
