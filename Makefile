@@ -38,7 +38,7 @@ $(OFILES): $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -Wall $(CFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
 
 $(ODEPS): $(BUILDDIR)/%.o: $(DEPSDIR)/%.c
-	mkdir -p §dirname $@§
+	mkdir -p `dirname $@`
 	$(CC) -Wall $(CFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
 
 $(BUILDDIR):
