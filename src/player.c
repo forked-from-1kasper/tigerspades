@@ -341,9 +341,9 @@ void player_render_all() {
 							struct PacketBlockAction blk;
 							blk.action_type = ACTION_DESTROY;
 							blk.player_id = local_player_id;
-							blk.x = hit.x;
-							blk.y = hit.z;
-							blk.z = 63 - hit.y;
+							blk.x = htoles32(hit.x);
+							blk.y = htoles32(hit.z);
+							blk.z = htoles32(63 - hit.y);
 							network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
 							local_player_blocks = min(local_player_blocks + 1, 50);
 							// read_PacketBlockAction(&blk,sizeof(blk));
@@ -381,9 +381,9 @@ void player_render_all() {
 							struct PacketBlockAction blk;
 							blk.action_type = ACTION_SPADE;
 							blk.player_id = local_player_id;
-							blk.x = hit.x;
-							blk.y = hit.z;
-							blk.z = 63 - hit.y;
+							blk.x = htoles32(hit.x);
+							blk.y = htoles32(hit.z);
+							blk.z = htoles32(63 - hit.y);
 							network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
 						}
 					} else {

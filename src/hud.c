@@ -1309,12 +1309,12 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
 				if(amount <= local_player_blocks) {
 					struct PacketBlockLine line;
 					line.player_id = local_player_id;
-					line.sx = local_player_drag_x;
-					line.sy = local_player_drag_z;
-					line.sz = 63 - local_player_drag_y;
-					line.ex = pos[0];
-					line.ey = pos[2];
-					line.ez = 63 - pos[1];
+					line.sx = htoles32(local_player_drag_x);
+					line.sy = htoles32(local_player_drag_z);
+					line.sz = htoles32(63 - local_player_drag_y);
+					line.ex = htoles32(pos[0]);
+					line.ey = htoles32(pos[2]);
+					line.ez = htoles32(63 - pos[1]);
 					network_send(PACKET_BLOCKLINE_ID, &line, sizeof(line));
 					local_player_blocks -= amount;
 				}
@@ -1373,19 +1373,19 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
 					struct PacketGrenade g;
 					g.player_id = local_player_id;
 					g.fuse_length
-						= max(3.0F - (window_time() - players[local_player_id].input.buttons.lmb_start), 0.0F);
-					g.x = players[local_player_id].pos.x;
-					g.y = players[local_player_id].pos.z;
-					g.z = 63.0F - players[local_player_id].pos.y;
-					g.vx = (g.fuse_length == 0.0F) ?
+					  = htolef(max(3.0F - (window_time() - players[local_player_id].input.buttons.lmb_start), 0.0F));
+					g.x = htolef(players[local_player_id].pos.x);
+					g.y = htolef(players[local_player_id].pos.z);
+					g.z = htolef(63.0F - players[local_player_id].pos.y);
+					g.vx = htolef((g.fuse_length == 0.0F) ?
 						0.0F :
-						(players[local_player_id].orientation.x + players[local_player_id].physics.velocity.x);
-					g.vy = (g.fuse_length == 0.0F) ?
+						      (players[local_player_id].orientation.x + players[local_player_id].physics.velocity.x));
+					g.vy = htolef((g.fuse_length == 0.0F) ?
 						0.0F :
-						(players[local_player_id].orientation.z + players[local_player_id].physics.velocity.z);
-					g.vz = (g.fuse_length == 0.0F) ?
+						      (players[local_player_id].orientation.z + players[local_player_id].physics.velocity.z));
+					g.vz = htolef((g.fuse_length == 0.0F) ?
 						0.0F :
-						(-players[local_player_id].orientation.y - players[local_player_id].physics.velocity.y);
+						      (-players[local_player_id].orientation.y - players[local_player_id].physics.velocity.y));
 					network_send(PACKET_GRENADE_ID, &g, sizeof(g));
 					read_PacketGrenade(&g, sizeof(g)); // server won't loop packet back
 					players[local_player_id].item_showup = window_time();

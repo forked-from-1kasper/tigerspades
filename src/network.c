@@ -67,6 +67,45 @@ ENetPeer* peer;
 
 char network_custom_reason[17];
 
+uint32_t letohu32(uint32_t in) {
+    uint32_t out;
+
+    char * inptr = (char*) &in, * outptr = (char*) &out;
+
+    outptr[0] = inptr[3];
+    outptr[1] = inptr[2];
+    outptr[2] = inptr[1];
+    outptr[3] = inptr[0];
+
+    return out;
+}
+
+int letohs32(int in) {
+    int out;
+
+    char * inptr = (char*) &in, * outptr = (char*) &out;
+
+    outptr[0] = inptr[3];
+    outptr[1] = inptr[2];
+    outptr[2] = inptr[1];
+    outptr[3] = inptr[0];
+
+    return out;
+}
+
+float letohf(float in) {
+    float out;
+
+    char * inptr = (char*) &in, * outptr = (char*) &out;
+
+    outptr[0] = inptr[3];
+    outptr[1] = inptr[2];
+    outptr[2] = inptr[1];
+    outptr[3] = inptr[0];
+
+    return out;
+}
+
 const char* network_reason_disconnect(int code) {
 	if(*network_custom_reason)
 		return network_custom_reason;
@@ -167,53 +206,56 @@ void read_PacketChatMessage(void* data, int len) {
 
 void read_PacketBlockAction(void* data, int len) {
 	struct PacketBlockAction* p = (struct PacketBlockAction*)data;
+
+        int x = letohs32(p->x), y = letohs32(p->y), z = letohs32(p->z);
+
 	switch(p->action_type) {
 		case ACTION_DESTROY:
-			if((63 - p->z) > 0) {
-				int col = map_get(p->x, 63 - p->z, p->y);
-				map_set(p->x, 63 - p->z, p->y, 0xFFFFFFFF);
-				map_update_physics(p->x, 63 - p->z, p->y);
-				particle_create(col, p->x + 0.5F, 63 - p->z + 0.5F, p->y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
+			if(63 - z > 0) {
+				int col = map_get(x, 63 - z, y);
+				map_set(x, 63 - z, y, 0xFFFFFFFF);
+				map_update_physics(x, 63 - z, y);
+				particle_create(col, x + 0.5F, 63 - z + 0.5F, y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
 			}
 			break;
 		case ACTION_GRENADE:
-			for(int y = (63 - (p->z)) - 1; y <= (63 - (p->z)) + 1; y++) {
-				for(int z = (p->y) - 1; z <= (p->y) + 1; z++) {
-					for(int x = (p->x) - 1; x <= (p->x) + 1; x++) {
-						if(y > 1) {
-							map_set(x, y, z, 0xFFFFFFFF);
-							map_update_physics(x, y, z);
+			for(int j = (63 - z) - 1; j <= (63 - z) + 1; j++) {
+				for(int k = y - 1; k <= y + 1; k++) {
+					for(int i = x - 1; i <= x + 1; i++) {
+						if(j > 1) {
+							map_set(i, j, k, 0xFFFFFFFF);
+							map_update_physics(i, j, k);
 						}
 					}
 				}
 			}
 			break;
 		case ACTION_SPADE:
-			if((63 - p->z - 1) > 1) {
-				map_set(p->x, 63 - p->z - 1, p->y, 0xFFFFFFFF);
-				map_update_physics(p->x, 63 - p->z - 1, p->y);
+			if((63 - z - 1) > 1) {
+				map_set(x, 63 - z - 1, y, 0xFFFFFFFF);
+				map_update_physics(x, 63 - z - 1, y);
 			}
-			if((63 - p->z + 0) > 1) {
-				int col = map_get(p->x, 63 - p->z, p->y);
-				map_set(p->x, 63 - p->z + 0, p->y, 0xFFFFFFFF);
-				map_update_physics(p->x, 63 - p->z + 0, p->y);
-				particle_create(col, p->x + 0.5F, 63 - p->z + 0.5F, p->y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
+			if((63 - z + 0) > 1) {
+				int col = map_get(x, 63 - z, y);
+				map_set(x, 63 - z + 0, y, 0xFFFFFFFF);
+				map_update_physics(x, 63 - z + 0, y);
+				particle_create(col, x + 0.5F, 63 - z + 0.5F, y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
 			}
-			if((63 - p->z + 1) > 1) {
-				map_set(p->x, 63 - p->z + 1, p->y, 0xFFFFFFFF);
-				map_update_physics(p->x, 63 - p->z + 1, p->y);
+			if((63 - z + 1) > 1) {
+				map_set(x, 63 - z + 1, y, 0xFFFFFFFF);
+				map_update_physics(x, 63 - z + 1, y);
 			}
 			break;
 		case ACTION_BUILD:
 			if(p->player_id < PLAYERS_MAX) {
-				bool play_sound = map_isair(p->x, 63 - p->z, p->y);
+				bool play_sound = map_isair(x, 63 - z, y);
 
-				map_set(p->x, 63 - p->z, p->y,
+				map_set(x, 63 - z, y,
 						players[p->player_id].block.red | (players[p->player_id].block.green << 8)
 							| (players[p->player_id].block.blue << 16));
 
 				if(play_sound)
-					sound_create(SOUND_WORLD, &sound_build, p->x + 0.5F, 63 - p->z + 0.5F, p->y + 0.5F);
+					sound_create(SOUND_WORLD, &sound_build, x + 0.5F, 63 - z + 0.5F, y + 0.5F);
 			}
 			break;
 	}
@@ -224,13 +266,17 @@ void read_PacketBlockLine(void* data, int len) {
 	if(p->player_id >= PLAYERS_MAX) {
 		return;
 	}
-	if(p->sx == p->ex && p->sy == p->ey && p->sz == p->ez) {
-		map_set(p->sx, 63 - p->sz, p->sy,
+
+        int sx = letohs32(p->sx), sy = letohs32(p->sy), sz = letohs32(p->sz);
+        int ex = letohs32(p->ex), ey = letohs32(p->ey), ez = letohs32(p->ez);
+
+	if (sx == ex && sy == ey && sz == ez) {
+		map_set(sx, 63 - sz, sy,
 				players[p->player_id].block.red | (players[p->player_id].block.green << 8)
 					| (players[p->player_id].block.blue << 16));
 	} else {
 		struct Point blocks[64];
-		int len = map_cube_line(p->sx, p->sy, p->sz, p->ex, p->ey, p->ez, blocks);
+		int len = map_cube_line(sx, sy, sz, ex, ey, ez, blocks);
 		while(len > 0) {
 			if(map_isair(blocks[len - 1].x, 63 - blocks[len - 1].z, blocks[len - 1].y)) {
 				map_set(blocks[len - 1].x, 63 - blocks[len - 1].z, blocks[len - 1].y,
@@ -240,8 +286,8 @@ void read_PacketBlockLine(void* data, int len) {
 			len--;
 		}
 	}
-	sound_create(SOUND_WORLD, &sound_build, (p->sx + p->ex) * 0.5F + 0.5F, (63 - p->sz + 63 - p->ez) * 0.5F + 0.5F,
-				 (p->sy + p->ey) * 0.5F + 0.5F);
+	sound_create(SOUND_WORLD, &sound_build, (sx + ex) * 0.5F + 0.5F, (63 - sz + 63 - ez) * 0.5F + 0.5F,
+				 (sy + ey) * 0.5F + 0.5F);
 }
 
 void read_PacketStateData(void* data, int len) {
@@ -369,9 +415,9 @@ void read_PacketCreatePlayer(void* data, int len) {
 		players[p->player_id].team = p->team;
 		players[p->player_id].held_item = TOOL_GUN;
 		players[p->player_id].weapon = p->weapon;
-		players[p->player_id].pos.x = p->x;
-		players[p->player_id].pos.y = 63.0F - p->z;
-		players[p->player_id].pos.z = p->y;
+		players[p->player_id].pos.x = letohf(p->x);
+		players[p->player_id].pos.y = 63.0F - letohf(p->z);
+		players[p->player_id].pos.z = letohf(p->y);
 
 		strncpy(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
 		players[p->player_id].name[sizeof(players[p->player_id].name) - 1] = 0;
@@ -388,9 +434,9 @@ void read_PacketCreatePlayer(void* data, int len) {
 		players[p->player_id].ammo_reserved = weapon_ammo_reserved(p->weapon);
 		if(p->player_id == local_player_id) {
 			if(p->team == TEAM_SPECTATOR) {
-				camera_x = p->x;
-				camera_y = 63.0F - p->z;
-				camera_z = p->y;
+				camera_x = letohf(p->x);
+				camera_y = 63.0F - letohf(p->z);
+				camera_z = letohf(p->y);
 			}
 			camera_mode = (p->team == TEAM_SPECTATOR) ? CAMERAMODE_SPECTATOR : CAMERAMODE_FPS;
 			camera_rot_x = (p->team == TEAM_1) ? 0.5F * PI : 1.5F * PI;
@@ -429,10 +475,10 @@ void read_PacketMapStart(void* data, int len) {
 
 	if(len == sizeof(struct PacketMapStart075)) {
 		struct PacketMapStart075* p = (struct PacketMapStart075*)data;
-		compressed_chunk_data_estimate = p->map_size;
+		compressed_chunk_data_estimate = letohu32(p->map_size);
 	} else {
 		struct PacketMapStart076* p = (struct PacketMapStart076*)data;
-		compressed_chunk_data_estimate = p->map_size;
+		compressed_chunk_data_estimate = letohu32(p->map_size);
 		p->map_name[sizeof(p->map_name) - 1] = 0;
 		log_info("map name: %s", p->map_name);
 		log_info("map crc32: 0x%08X", p->crc32);
@@ -466,16 +512,17 @@ void read_PacketWorldUpdate(void* data, int len) {
 			for(int k = 0; k < (len / sizeof(struct PacketWorldUpdate075)); k++) { // supports up to 256 players
 				struct PacketWorldUpdate075* p
 					= (struct PacketWorldUpdate075*)(data + k * sizeof(struct PacketWorldUpdate075));
+                                float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
 				if(players[k].connected && players[k].alive && k != local_player_id) {
-					if(distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, p->x, 63.0F - p->z, p->y)
+					if(distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
 					   > 0.1F * 0.1F) {
-						players[k].pos.x = p->x;
-						players[k].pos.y = 63.0F - p->z;
-						players[k].pos.z = p->y;
+						players[k].pos.x = x;
+						players[k].pos.y = 63.0F - z;
+						players[k].pos.z = y;
 					}
-					players[k].orientation.x = p->ox;
-					players[k].orientation.y = -p->oz;
-					players[k].orientation.z = p->oy;
+					players[k].orientation.x = letohf(p->ox);
+					players[k].orientation.y = -letohf(p->oz);
+					players[k].orientation.z = letohf(p->oy);
 				}
 			}
 		} else {
@@ -483,17 +530,18 @@ void read_PacketWorldUpdate(void* data, int len) {
 				for(int k = 0; k < (len / sizeof(struct PacketWorldUpdate076)); k++) {
 					struct PacketWorldUpdate076* p
 						= (struct PacketWorldUpdate076*)(data + k * sizeof(struct PacketWorldUpdate076));
+                                        float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
 					if(players[p->player_id].connected && players[p->player_id].alive
 					   && p->player_id != local_player_id) {
-						if(distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, p->x, 63.0F - p->z, p->y)
+						if(distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
 						   > 0.1F * 0.1F) {
-							players[p->player_id].pos.x = p->x;
-							players[p->player_id].pos.y = 63.0F - p->z;
-							players[p->player_id].pos.z = p->y;
+							players[p->player_id].pos.x = x;
+							players[p->player_id].pos.y = 63.0F - z;
+							players[p->player_id].pos.z = y;
 						}
-						players[p->player_id].orientation.x = p->ox;
-						players[p->player_id].orientation.y = -p->oz;
-						players[p->player_id].orientation.z = p->oy;
+						players[p->player_id].orientation.x = letohf(p->ox);
+						players[p->player_id].orientation.y = -letohf(p->oz);
+						players[p->player_id].orientation.z = letohf(p->oy);
 					}
 				}
 			}
@@ -503,16 +551,16 @@ void read_PacketWorldUpdate(void* data, int len) {
 
 void read_PacketPositionData(void* data, int len) {
 	struct PacketPositionData* p = (struct PacketPositionData*)data;
-	players[local_player_id].pos.x = p->x;
-	players[local_player_id].pos.y = 63.0F - p->z;
-	players[local_player_id].pos.z = p->y;
+	players[local_player_id].pos.x = letohf(p->x);
+	players[local_player_id].pos.y = 63.0F - letohf(p->z);
+	players[local_player_id].pos.z = letohf(p->y);
 }
 
 void read_PacketOrientationData(void* data, int len) {
 	struct PacketOrientationData* p = (struct PacketOrientationData*)data;
-	players[local_player_id].orientation.x = p->x;
-	players[local_player_id].orientation.y = -p->z;
-	players[local_player_id].orientation.z = p->y;
+	players[local_player_id].orientation.x = letohf(p->x);
+	players[local_player_id].orientation.y = -letohf(p->z);
+	players[local_player_id].orientation.z = letohf(p->y);
 }
 
 void read_PacketSetColor(void* data, int len) {
@@ -625,13 +673,13 @@ void read_PacketGrenade(void* data, int len) {
 
 	grenade_add(&(struct Grenade) {
 		.team = players[p->player_id].team,
-		.fuse_length = p->fuse_length,
-		.pos.x = p->x,
-		.pos.y = 63.0F - p->z,
-		.pos.z = p->y,
-		.velocity.x = p->vx,
-		.velocity.y = -p->vz,
-		.velocity.z = p->vy,
+		.fuse_length = letohf(p->fuse_length),
+		.pos.x = letohf(p->x),
+		.pos.y = 63.0F - letohf(p->z),
+		.pos.z = letohf(p->y),
+		.velocity.x = letohf(p->vx),
+		.velocity.y = -letohf(p->vz),
+		.velocity.z = letohf(p->vy),
 	});
 }
 
@@ -642,9 +690,9 @@ void read_PacketSetHP(void* data, int len) {
 		local_player_last_damage_timer = window_time();
 		sound_create(SOUND_LOCAL, &sound_hitplayer, 0.0F, 0.0F, 0.0F);
 	}
-	local_player_last_damage_x = p->x;
-	local_player_last_damage_y = 63.0F - p->z;
-	local_player_last_damage_z = p->y;
+	local_player_last_damage_x = letohf(p->x);
+	local_player_last_damage_y = 63.0F - letohf(p->z);
+	local_player_last_damage_z = letohf(p->y);
 }
 
 void read_PacketRestock(void* data, int len) {
@@ -685,33 +733,33 @@ void read_PacketMoveObject(void* data, int len) {
 	if(gamestate.gamemode_type == GAMEMODE_CTF) {
 		switch(p->object_id) {
 			case TEAM_1_BASE:
-				gamestate.gamemode.ctf.team_1_base.x = p->x;
-				gamestate.gamemode.ctf.team_1_base.y = p->y;
-				gamestate.gamemode.ctf.team_1_base.z = p->z;
+				gamestate.gamemode.ctf.team_1_base.x = letohf(p->x);
+				gamestate.gamemode.ctf.team_1_base.y = letohf(p->y);
+				gamestate.gamemode.ctf.team_1_base.z = letohf(p->z);
 				break;
 			case TEAM_2_BASE:
-				gamestate.gamemode.ctf.team_2_base.x = p->x;
-				gamestate.gamemode.ctf.team_2_base.y = p->y;
-				gamestate.gamemode.ctf.team_2_base.z = p->z;
+				gamestate.gamemode.ctf.team_2_base.x = letohf(p->x);
+				gamestate.gamemode.ctf.team_2_base.y = letohf(p->y);
+				gamestate.gamemode.ctf.team_2_base.z = letohf(p->z);
 				break;
 			case TEAM_1_FLAG:
 				gamestate.gamemode.ctf.team_1_intel = 0;
-				gamestate.gamemode.ctf.team_1_intel_location.dropped.x = p->x;
-				gamestate.gamemode.ctf.team_1_intel_location.dropped.y = p->y;
-				gamestate.gamemode.ctf.team_1_intel_location.dropped.z = p->z;
+				gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->x);
+				gamestate.gamemode.ctf.team_1_intel_location.dropped.y = letohf(p->y);
+				gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->z);
 				break;
 			case TEAM_2_FLAG:
 				gamestate.gamemode.ctf.team_2_intel = 0;
-				gamestate.gamemode.ctf.team_2_intel_location.dropped.x = p->x;
-				gamestate.gamemode.ctf.team_2_intel_location.dropped.y = p->y;
-				gamestate.gamemode.ctf.team_2_intel_location.dropped.z = p->z;
+				gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->x);
+				gamestate.gamemode.ctf.team_2_intel_location.dropped.y = letohf(p->y);
+				gamestate.gamemode.ctf.team_2_intel_location.dropped.z = letohf(p->z);
 				break;
 		}
 	}
 	if(gamestate.gamemode_type == GAMEMODE_TC && p->object_id < gamestate.gamemode.tc.territory_count) {
-		gamestate.gamemode.tc.territory[p->object_id].x = p->x;
-		gamestate.gamemode.tc.territory[p->object_id].y = p->y;
-		gamestate.gamemode.tc.territory[p->object_id].z = p->z;
+		gamestate.gamemode.tc.territory[p->object_id].x = letohf(p->x);
+		gamestate.gamemode.tc.territory[p->object_id].y = letohf(p->y);
+		gamestate.gamemode.tc.territory[p->object_id].z = letohf(p->z);
 		gamestate.gamemode.tc.territory[p->object_id].team = p->team;
 	}
 }
@@ -757,16 +805,16 @@ void read_PacketIntelDrop(void* data, int len) {
 		switch(players[p->player_id].team) {
 			case TEAM_1:
 				gamestate.gamemode.ctf.team_2_intel = 0; // drop opposing team's intel
-				gamestate.gamemode.ctf.team_2_intel_location.dropped.x = p->x;
-				gamestate.gamemode.ctf.team_2_intel_location.dropped.y = p->y;
-				gamestate.gamemode.ctf.team_2_intel_location.dropped.z = p->z;
+				gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->x);
+				gamestate.gamemode.ctf.team_2_intel_location.dropped.y = letohf(p->y);
+				gamestate.gamemode.ctf.team_2_intel_location.dropped.z = letohf(p->z);
 				sprintf(drop_str, "%s has dropped the %s Intel", players[p->player_id].name, gamestate.team_2.name);
 				break;
 			case TEAM_2:
 				gamestate.gamemode.ctf.team_1_intel = 0;
-				gamestate.gamemode.ctf.team_1_intel_location.dropped.x = p->x;
-				gamestate.gamemode.ctf.team_1_intel_location.dropped.y = p->y;
-				gamestate.gamemode.ctf.team_1_intel_location.dropped.z = p->z;
+				gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->x);
+				gamestate.gamemode.ctf.team_1_intel_location.dropped.y = letohf(p->y);
+				gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->z);
 				sprintf(drop_str, "%s has dropped the %s Intel", players[p->player_id].name, gamestate.team_1.name);
 				break;
 		}
@@ -1106,9 +1154,9 @@ int network_update() {
 				network_pos_update = window_time();
 				memcpy(&network_pos_last, &players[local_player_id].pos, sizeof(struct Position));
 				struct PacketPositionData pos;
-				pos.x = players[local_player_id].pos.x;
-				pos.y = players[local_player_id].pos.z;
-				pos.z = 63.0F - players[local_player_id].pos.y;
+				pos.x = htolef(players[local_player_id].pos.x);
+				pos.y = htolef(players[local_player_id].pos.z);
+				pos.z = htolef(63.0F - players[local_player_id].pos.y);
 				network_send(PACKET_POSITIONDATA_ID, &pos, sizeof(pos));
 			}
 			if(window_time() - network_orient_update > (1.0F / 120.0F)
@@ -1119,9 +1167,9 @@ int network_update() {
 				network_orient_update = window_time();
 				memcpy(&network_orient_last, &players[local_player_id].orientation, sizeof(struct Orientation));
 				struct PacketOrientationData orient;
-				orient.x = players[local_player_id].orientation.x;
-				orient.y = players[local_player_id].orientation.z;
-				orient.z = -players[local_player_id].orientation.y;
+				orient.x = htolef(players[local_player_id].orientation.x);
+				orient.y = htolef(players[local_player_id].orientation.z);
+				orient.z = htolef(-players[local_player_id].orientation.y);
 				network_send(PACKET_ORIENTATIONDATA_ID, &orient, sizeof(orient));
 			}
 		}

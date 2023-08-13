@@ -235,9 +235,9 @@ void display() {
 						struct PacketBlockAction blk;
 						blk.player_id = local_player_id;
 						blk.action_type = ACTION_BUILD;
-						blk.x = pos[0];
-						blk.y = pos[2];
-						blk.z = 63 - pos[1];
+						blk.x = htoles32(pos[0]);
+						blk.y = htoles32(pos[2]);
+						blk.z = htoles32(63 - pos[1]);
 						network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
 						// read_PacketBlockAction(&blk,sizeof(blk));
 					}
@@ -247,9 +247,9 @@ void display() {
 					local_player_grenades = max(local_player_grenades - 1, 0);
 					struct PacketGrenade g;
 					g.player_id = local_player_id;
-					g.x = players[local_player_id].pos.x;
-					g.y = players[local_player_id].pos.z;
-					g.z = 63.0F - players[local_player_id].pos.y;
+					g.x = htolef(players[local_player_id].pos.x);
+					g.y = htolef(players[local_player_id].pos.z);
+					g.z = htolef(63.0F - players[local_player_id].pos.y);
 					g.fuse_length = g.vx = g.vy = g.vz = 0.0F;
 					network_send(PACKET_GRENADE_ID, &g, sizeof(g));
 					read_PacketGrenade(&g, sizeof(g));

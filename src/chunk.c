@@ -607,7 +607,7 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
 
 				tesselator_addi(tess, (int16_t[]) {x, y, z, x, y + 1, z, x + 1, y + 1, z, x + 1, y, z},
 								(uint32_t[]) {
-									rgba(r * 0.875F * A, g * 0.875F * A, b * 0.875F * A, 255),
+								        rgba(r * 0.875F * A, g * 0.875F * A, b * 0.875F * A, 255),
 									rgba(r * 0.875F * B, g * 0.875F * B, b * 0.875F * B, 255),
 									rgba(r * 0.875F * C, g * 0.875F * C, b * 0.875F * C, 255),
 									rgba(r * 0.875F * D, g * 0.875F * D, b * 0.875F * D, 255),

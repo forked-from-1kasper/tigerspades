@@ -151,8 +151,21 @@ void tesselator_glx(struct tesselator* t, struct glx_displaylist* x) {
 #endif
 }
 
+uint32_t u32rev(uint32_t in) {
+    uint32_t out;
+
+    char * inptr = (char*) &in, * outptr = (char*) &out;
+
+    outptr[0] = inptr[3];
+    outptr[1] = inptr[2];
+    outptr[2] = inptr[1];
+    outptr[3] = inptr[0];
+
+    return out;
+}
+
 void tesselator_set_color(struct tesselator* t, uint32_t color) {
-	t->color = color;
+    t->color = color;
 }
 
 void tesselator_set_normal(struct tesselator* t, int8_t x, int8_t y, int8_t z) {
@@ -193,6 +206,12 @@ static void tesselator_check_space(struct tesselator* t) {
 
 static void tesselator_emit_color(struct tesselator* t, uint32_t* colors) {
 #ifdef TESSELATE_QUADS
+        uint32_t * dest = t->colors + t->quad_count * 4;
+        //dest[0] = u32rev(colors[0]);
+	//dest[1] = u32rev(colors[1]);
+	//dest[2] = u32rev(colors[2]);
+	//dest[3] = u32rev(colors[3]);
+
 	memcpy(t->colors + t->quad_count * 4, colors, sizeof(uint32_t) * 4);
 #endif
 

@@ -167,7 +167,7 @@ void kv6_load(struct kv6_t* kv6, void* bytes, float scale) {
 		CHECK_ALLOCATION_ERROR(kv6->voxels)
 
 		for(size_t k = 0; k < kv6->voxel_count; k++) {
-			uint32_t color = buffer_read32(bytes, index);
+		        uint32_t color = buffer_read32(bytes, index);
 			index += 4;
 			uint16_t zpos = buffer_read16(bytes, index);
 			index += 2;

@@ -254,9 +254,9 @@ void weapon_shoot() {
 		}
 
 		struct PacketOrientationData orient;
-		orient.x = players[local_player_id].orientation.x;
-		orient.y = players[local_player_id].orientation.z;
-		orient.z = -players[local_player_id].orientation.y;
+		orient.x = htolef(players[local_player_id].orientation.x);
+		orient.y = htolef(players[local_player_id].orientation.z);
+                orient.z = htolef(-players[local_player_id].orientation.y);
 		network_send(PACKET_ORIENTATIONDATA_ID, &orient, sizeof(orient));
 
 		if(hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
@@ -282,9 +282,9 @@ void weapon_shoot() {
 					struct PacketBlockAction blk;
 					blk.action_type = ACTION_DESTROY;
 					blk.player_id = local_player_id;
-					blk.x = hit.x;
-					blk.y = hit.z;
-					blk.z = 63 - hit.y;
+					blk.x = htoles32(hit.x);
+					blk.y = htoles32(hit.z);
+					blk.z = htoles32(63 - hit.y);
 					network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
 					// read_PacketBlockAction(&blk,sizeof(blk));
 				} else {

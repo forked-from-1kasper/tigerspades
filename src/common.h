@@ -80,6 +80,7 @@
 #define len3D(x, y, z) sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2))
 
 #define rgba(r, g, b, a) (((int)(a) << 24) | ((int)(b) << 16) | ((int)(g) << 8) | (int)(r))
+#define abgr(r, g, b, a) (((int)(r) << 24) | ((int)(g) << 16) | ((int)(b) << 8) | (int)(a))
 #define rgb(r, g, b) (((b) << 16) | ((g) << 8) | (r))
 #define rgb2bgr(col) rgb(blue(col), green(col), red(col))
 #define red(col) ((col)&0xFF)
@@ -129,5 +130,13 @@ int ms_rand(void);
 		log_fatal("Critical error: memory allocation failed (%s:%d)", __func__, __LINE__);                             \
 		exit(1);                                                                                                       \
 	}
+
+float    letohf(float);
+uint32_t letohu32(uint32_t);
+int      letohs32(int);
+
+#define htolef   letohf
+#define htoleu32 letohu32
+#define htoles32 letohs32
 
 #endif
