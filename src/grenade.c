@@ -130,7 +130,7 @@ static int grenade_inwater(struct Grenade* g) {
 }
 
 bool grenade_render_single(void* obj, void* user) {
-    struct Grenade* g = (struct Grenade*)obj;
+    struct Grenade* g = (struct Grenade*) obj;
 
     // TODO: position grenade on ground properly
     matrix_push(matrix_model);
@@ -151,6 +151,8 @@ void grenade_render() {
     entitysys_iterate(&grenades, NULL, grenade_render_single);
 }
 
+RGBA gray = {0x50, 0x50, 0x50, 0xFF};
+
 bool grenade_update_single(void* obj, void* user) {
     struct Grenade* g = (struct Grenade*)obj;
     float dt = *(float*)user;
@@ -158,7 +160,7 @@ bool grenade_update_single(void* obj, void* user) {
     if (window_time() - g->created > g->fuse_length) {
         sound_create(SOUND_WORLD, grenade_inwater(g) ? &sound_explode_water : &sound_explode, g->pos.x, g->pos.y,
                      g->pos.z);
-        particle_create(grenade_inwater(g) ? map_get(g->pos.x, 0, g->pos.z) : 0x505050, g->pos.x, g->pos.y + 1.5F,
+        particle_create(grenade_inwater(g) ? map_get(g->pos.x, 0, g->pos.z) : gray, g->pos.x, g->pos.y + 1.5F,
                         g->pos.z, 20.0F, 1.5F, 64, 0.1F, 0.5F);
 
         return true;

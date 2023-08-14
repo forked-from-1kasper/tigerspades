@@ -169,11 +169,11 @@ void particle_create_casing(struct Player* p) {
                       .vz = p->casing_dir.z * 3.5F,
                       .fade = window_time(),
                       .type = p->weapon,
-                      .color = 0x00FFFF,
+                      .color = (RGBA) {0xFF, 0xFF, 0x00, 0xFF},
                   });
 }
 
-void particle_create(unsigned int color, float x, float y, float z, float velocity, float velocity_y, int amount,
+void particle_create(RGBA color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size) {
     for (int k = 0; k < amount; k++) {
         float vx = (((float)rand() / (float)RAND_MAX) * 2.0F - 1.0F);

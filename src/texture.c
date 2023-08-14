@@ -301,30 +301,38 @@ void texture_resize_pow2(struct texture* t, int min_size) {
     t->width = w;
     t->height = h;
     free(t->pixels);
-    t->pixels = (unsigned char*)pixels_new;
+    t->pixels = (unsigned char*) pixels_new;
 }
 
-unsigned int texture_block_color(int x, int y) {
+void writeRGBA(uint32_t * dest, RGBA color) {
+    *((uint8_t*) dest + 0) = color.r;
+    *((uint8_t*) dest + 1) = color.g;
+    *((uint8_t*) dest + 2) = color.b;
+    *((uint8_t*) dest + 3) = color.a;
+}
+
+RGBA texture_block_color(int x, int y) {
     int base[3][8] = {{15, 31, 31, 31, 0, 0, 0, 31}, {15, 0, 15, 31, 31, 31, 0, 0}, {15, 0, 0, 0, 0, 31, 31, 31}};
 
-    if (x < 4) {
-        return rgb(base[0][y] + x * (base[0][y] * 2 + 2) * (base[0][y] > 0),
-                   base[1][y] + x * (base[1][y] * 2 + 2) * (base[1][y] > 0),
-                   base[2][y] + x * (base[2][y] * 2 + 2) * (base[2][y] > 0));
-    } else {
-        return rgb(
-            min(base[0][y] + x * (base[0][y] * 2 + 2) * (base[0][y] > 0) + ((x - 3) * 64 - 33) * (!base[0][y]), 255),
-            min(base[1][y] + x * (base[1][y] * 2 + 2) * (base[1][y] > 0) + ((x - 3) * 64 - 33) * (!base[1][y]), 255),
-            min(base[2][y] + x * (base[2][y] * 2 + 2) * (base[2][y] > 0) + ((x - 3) * 64 - 33) * (!base[2][y]), 255));
+    uint32_t r = base[0][y] + x * (base[0][y] * 2 + 2) * (base[0][y] > 0);
+    uint32_t g = base[1][y] + x * (base[1][y] * 2 + 2) * (base[1][y] > 0);
+    uint32_t b = base[2][y] + x * (base[2][y] * 2 + 2) * (base[2][y] > 0);
+
+    if (x >= 4) {
+        r += ((x - 3) * 64 - 33) * (!base[0][y]);
+        g += ((x - 3) * 64 - 33) * (!base[1][y]);
+        b += ((x - 3) * 64 - 33) * (!base[2][y]);
     }
+
+    return (RGBA) {min(r, 255), min(g, 255), min(b, 255), 255};
 }
 
-void texture_gradient_fog(unsigned int* gradient) {
+void texture_gradient_fog(unsigned int * gradient) {
     int size = 512;
     for (int y = 0; y < size; y++) {
         for (int x = 0; x < size; x++) {
-            int d = min(sqrt(distance2D(size / 2, size / 2, x, y)) / (float)size * 2.0F * 255.0F, 255);
-            gradient[x + y * size] = rgba(d, d, d, 255);
+            int d = min(sqrt(distance2D(size / 2, size / 2, x, y)) / (float) size * 2.0F * 255.0F, 255);
+            writeRGBA(gradient + x + y * size, (RGBA) {d, d, d, 255});
         }
     }
 }
@@ -378,24 +386,20 @@ void texture_init() {
     unsigned int pixels[64 * 64];
     memset(pixels, 0, sizeof(pixels));
 
-    for (int y = 0; y < 8; y++) {
-        for (int x = 0; x < 8; x++) {
-            for (int ys = 0; ys < 6; ys++) {
-                for (int xs = 0; xs < 6; xs++) {
-                    pixels[(x * 8 + xs) + (y * 8 + ys) * 64] = 0xFF000000 | texture_block_color(x, y);
-                }
-            }
-        }
-    }
+    for (int y = 0; y < 8; y++)
+        for (int x = 0; x < 8; x++)
+            for (int ys = 0; ys < 6; ys++)
+                for (int xs = 0; xs < 6; xs++)
+                    writeRGBA(pixels + (x * 8 + xs) + (y * 8 + ys) * 64, texture_block_color(x, y));
 
-    texture_create_buffer(&texture_color_selection, 64, 64, (unsigned char*)pixels, 1);
+    texture_create_buffer(&texture_color_selection, 64, 64, (unsigned char*) pixels, 1);
 
     texture_create_buffer(&texture_minimap, map_size_x, map_size_z, NULL, 1);
 
-    unsigned int* gradient = malloc(512 * 512 * sizeof(unsigned int));
+    unsigned int * gradient = malloc(512 * 512 * sizeof(unsigned int));
     CHECK_ALLOCATION_ERROR(gradient)
     texture_gradient_fog(gradient);
-    texture_create_buffer(&texture_gradient, 512, 512, (unsigned char*)gradient, 1);
+    texture_create_buffer(&texture_gradient, 512, 512, (unsigned char*) gradient, 1);
     texture_filter(&texture_gradient, TEXTURE_FILTER_LINEAR);
 
     texture_create_buffer(&texture_dummy, 1, 1, (unsigned char[]) {0, 0, 0, 0}, 1);

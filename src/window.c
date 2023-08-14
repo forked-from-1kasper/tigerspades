@@ -39,6 +39,27 @@
 #include <kernel/OS.h>
 #endif
 
+void window_keyname(int keycode, char* output, size_t length) {
+    #if defined(OS_WINDOWS) && defined(USE_GLFW)
+        GetKeyNameTextA(glfwGetKeyScancode(keycode) << 16, output, length);
+    #else
+        #ifdef USE_GLFW
+            const char * keyname = glfwGeyKeyName(keycode, 0);
+        #endif
+
+        #ifdef USE_SDL
+            const char * keyname = SDL_GetKeyName(keycode);
+        #endif
+
+        if (keyname != NULL && *keyname != 0) {
+            strncpy(output, keyname, length);
+            output[length - 1] = 0;
+        } else {
+            snprintf(output, length, "<%d>", keycode);
+        }
+    #endif
+}
+
 #ifdef USE_GLFW
 
 static bool joystick_available = false;
@@ -118,22 +139,6 @@ static void window_impl_keys(GLFWwindow* window, int key, int scancode, int acti
         if (hud_active->input_keyboard)
             hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, action, mods & GLFW_MOD_CONTROL, key);
     }
-}
-
-void window_keyname(int keycode, char* output, size_t length) {
-#ifdef OS_WINDOWS
-    GetKeyNameTextA(glfwGetKeyScancode(keycode) << 16, output, length);
-#else
-    const char* name = glfwGetKeyName(keycode, 0);
-
-    if (name) {
-        strncpy(output, name, length);
-        output[length - 1] = 0;
-    } else {
-        if (length >= 2)
-            strcpy(output, "?");
-    }
-#endif
 }
 
 float window_time() {
@@ -344,11 +349,6 @@ void window_fromsettings() {
         SDL_SetWindowFullscreen(hud_window->impl, SDL_WINDOW_FULLSCREEN);
     else
         SDL_SetWindowFullscreen(hud_window->impl, 0);
-}
-
-void window_keyname(int keycode, char* output, size_t length) {
-    strncpy(output, SDL_GetKeyName(keycode), length);
-    output[length - 1] = 0;
 }
 
 float window_time() {

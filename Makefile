@@ -48,10 +48,10 @@ $(GAMEDIR): $(BINARY)
 	mkdir -p $(GAMEDIR)
 	cp $(BINARY) $(GAMEDIR)
 	cp -r $(RESDIR)/* $(GAMEDIR)
+	unzip -o $(RESPACK) -d $(GAMEDIR) || true
 
 $(RESPACK):
 	curl -o $(RESPACK) $(PACKURL)
-	unzip -o $(RESPACK) -d $(GAMEDIR) || true
 
 clean:
 	rm -rf $(OFILES) $(ODEPS) $(BINARY)

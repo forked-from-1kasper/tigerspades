@@ -29,14 +29,14 @@ struct Particle {
     unsigned char type;
     float size;
     float fade;
-    unsigned int color;
+    RGBA color;
 };
 
 void particle_init(void);
 void particle_update(float dt);
 void particle_render(void);
 void particle_create_casing(struct Player* p);
-void particle_create(unsigned int color, float x, float y, float z, float velocity, float velocity_y, int amount,
+void particle_create(RGBA color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size);
 
 #endif

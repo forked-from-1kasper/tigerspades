@@ -202,7 +202,7 @@ void* chunk_generate(void* data) {
         size_t chunk_y = work.chunk_y * CHUNK_SIZE;
         uint32_t last_position = 0;
         for (int k = blocks.blocks_sorted_count - 1; k >= 0; k--) {
-            struct libvxl_block* blk = blocks.blocks_sorted + k;
+            struct libvxl_block * blk = blocks.blocks_sorted + k;
 
             if (blk->position != last_position || k == blocks.blocks_sorted_count - 1) {
                 last_position = blk->position;
@@ -210,13 +210,13 @@ void* chunk_generate(void* data) {
                 int x = key_getx(blk->position);
                 int z = key_gety(blk->position);
 
-                uint32_t* out = result.minimap_data + (x - chunk_x + (z - chunk_y) * CHUNK_SIZE);
+                uint32_t * out = result.minimap_data + (x - chunk_x + (z - chunk_y) * CHUNK_SIZE);
+                uint32_t color = letohu32(blk->color);
+                uint8_t r = blue(color), g = green(color), b = red(color); // that’s not funny
 
-                if ((x % 64) > 0 && (z % 64) > 0) {
-                    *out = rgb2bgr(blk->color) | 0xFF000000;
-                } else {
-                    *out = rgba(255, 255, 255, 255);
-                }
+                if ((x % 64) > 0 && (z % 64) > 0)
+                    writeRGBA(out, (RGBA) {r, g, b, 255});
+                else *out = 0xFFFFFFFF;
             }
         }
 
@@ -227,6 +227,8 @@ void* chunk_generate(void* data) {
 
     return NULL;
 }
+
+#define copy_chunk_get_color(b, x, y, z) letohu32(libvxl_copy_chunk_get_color(b, x, y, z))
 
 void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, size_t start_z, struct tesselator* tess,
                            int* max_height) {
@@ -242,14 +244,11 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
         for (int x = start_x; x < start_x + CHUNK_SIZE; x++) {
             for (int y = 0; y < map_size_y; y++) {
                 if (!solid_array_isair(blocks, x, y, z)) {
-                    if (*max_height < y) {
+                    if (*max_height < y)
                         *max_height = y;
-                    }
 
-                    uint32_t col = libvxl_copy_chunk_get_color(blocks, x, z, map_size_y - 1 - y);
-                    int r = blue(col);
-                    int g = green(col);
-                    int b = red(col);
+                    uint32_t col = copy_chunk_get_color(blocks, x, z, map_size_y - 1 - y);
+                    int r = blue(col), g = green(col), b = red(col);
 
                     if ((z == 0 && solid_array_isair(blocks, x, y, map_size_z - 1))
                        || (z > 0 && solid_array_isair(blocks, x, y, z - 1))) {
@@ -259,7 +258,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
 
                             for (int a = 1; a < map_size_y - y; a++) {
                                 if (!solid_array_isair(blocks, x, y + a, z)
-                                   && libvxl_copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
+                                   && copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
                                    && checked_voxels2[0][y + a + (x - start_x) * map_size_y] == 0
                                    && ((z == 0 && solid_array_isair(blocks, x, y + a, map_size_z - 1))
                                        || (z > 0 && solid_array_isair(blocks, x, y + a, z - 1))))
@@ -272,7 +271,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 int a;
                                 for (a = 0; a < len_y; a++) {
                                     if (solid_array_isair(blocks, x + b, y + a, z)
-                                       || libvxl_copy_chunk_get_color(blocks, x + b, z, map_size_y - 1 - (y + a)) != col
+                                       || copy_chunk_get_color(blocks, x + b, z, map_size_y - 1 - (y + a)) != col
                                        || checked_voxels2[0][y + a + (x + b - start_x) * map_size_y] != 0
                                        || !((z == 0 && solid_array_isair(blocks, x + b, y + a, map_size_z - 1))
                                             || (z > 0 && solid_array_isair(blocks, x + b, y + a, z - 1))))
@@ -288,7 +287,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 for (int a = 0; a < len_y; a++)
                                     checked_voxels2[0][y + a + (x + b - start_x) * map_size_y] = 1;
 
-                            tesselator_set_color(tess, rgba(r * 0.875F, g * 0.875F, b * 0.875F, 255));
+                            tesselator_set_color(tess, (RGBA) {r * 0.875F, g * 0.875F, b * 0.875F, 255});
                             tesselator_addi_simple(
                                 tess, (int16_t[]) {x, y, z, x, y + len_y, z, x + len_x, y + len_y, z, x + len_x, y, z});
                         }
@@ -302,7 +301,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
 
                             for (int a = 1; a < map_size_y - y; a++) {
                                 if (!solid_array_isair(blocks, x, y + a, z)
-                                   && libvxl_copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
+                                   && copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
                                    && checked_voxels2[1][y + a + (x - start_x) * map_size_y] == 0
                                    && ((z == map_size_z - 1 && solid_array_isair(blocks, x, y + a, 0))
                                        || (z < map_size_z - 1 && solid_array_isair(blocks, x, y + a, z + 1))))
@@ -315,7 +314,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 int a;
                                 for (a = 0; a < len_y; a++) {
                                     if (solid_array_isair(blocks, x + b, y + a, z)
-                                       || libvxl_copy_chunk_get_color(blocks, x + b, z, map_size_y - 1 - (y + a)) != col
+                                       || copy_chunk_get_color(blocks, x + b, z, map_size_y - 1 - (y + a)) != col
                                        || checked_voxels2[1][y + a + (x + b - start_x) * map_size_y] != 0
                                        || !((z == map_size_z - 1 && solid_array_isair(blocks, x + b, y + a, 0))
                                             || (z < map_size_z - 1 && solid_array_isair(blocks, x + b, y + a, z + 1))))
@@ -331,7 +330,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 for (int a = 0; a < len_y; a++)
                                     checked_voxels2[1][y + a + (x + b - start_x) * map_size_y] = 1;
 
-                            tesselator_set_color(tess, rgba(r * 0.625F, g * 0.625F, b * 0.625F, 255));
+                            tesselator_set_color(tess, (RGBA) {r * 0.625F, g * 0.625F, b * 0.625F, 255});
                             tesselator_addi_simple(tess,
                                                    (int16_t[]) {x, y, z + 1, x + len_x, y, z + 1, x + len_x, y + len_y,
                                                                 z + 1, x, y + len_y, z + 1});
@@ -353,10 +352,8 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                         *max_height = y;
                     }
 
-                    unsigned int col = libvxl_copy_chunk_get_color(blocks, x, z, map_size_y - 1 - y);
-                    int r = blue(col);
-                    int g = green(col);
-                    int b = red(col);
+                    unsigned int col = copy_chunk_get_color(blocks, x, z, map_size_y - 1 - y);
+                    int r = blue(col), g = green(col), b = red(col);
 
                     if ((x == 0 && solid_array_isair(blocks, map_size_x - 1, y, z))
                        || (x > 0 && solid_array_isair(blocks, x - 1, y, z))) {
@@ -366,7 +363,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
 
                             for (int a = 1; a < map_size_y - y; a++) {
                                 if (!solid_array_isair(blocks, x, y + a, z)
-                                   && libvxl_copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
+                                   && copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
                                    && checked_voxels2[0][y + a + (z - start_z) * map_size_y] == 0
                                    && ((x == 0 && solid_array_isair(blocks, map_size_x - 1, y + a, z))
                                        || (x > 0 && solid_array_isair(blocks, x - 1, y + a, z))))
@@ -379,7 +376,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 int a;
                                 for (a = 0; a < len_y; a++) {
                                     if (solid_array_isair(blocks, x, y + a, z + b)
-                                       || libvxl_copy_chunk_get_color(blocks, x, z + b, map_size_y - 1 - (y + a)) != col
+                                       || copy_chunk_get_color(blocks, x, z + b, map_size_y - 1 - (y + a)) != col
                                        || checked_voxels2[0][y + a + (z + b - start_z) * map_size_y] != 0
                                        || !((x == 0 && solid_array_isair(blocks, map_size_x - 1, y + a, z + b))
                                             || (x > 0 && solid_array_isair(blocks, x - 1, y + a, z + b))))
@@ -395,7 +392,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 for (int a = 0; a < len_y; a++)
                                     checked_voxels2[0][y + a + (z + b - start_z) * map_size_y] = 1;
 
-                            tesselator_set_color(tess, rgba(r * 0.75F, g * 0.75F, b * 0.75F, 255));
+                            tesselator_set_color(tess, (RGBA) {r * 0.75F, g * 0.75F, b * 0.75F, 255});
                             tesselator_addi_simple(
                                 tess, (int16_t[]) {x, y, z, x, y, z + len_z, x, y + len_y, z + len_z, x, y + len_y, z});
                         }
@@ -409,7 +406,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
 
                             for (int a = 1; a < map_size_y - y; a++) {
                                 if (!solid_array_isair(blocks, x, y + a, z)
-                                   && libvxl_copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
+                                   && copy_chunk_get_color(blocks, x, z, map_size_y - 1 - (y + a)) == col
                                    && checked_voxels2[1][y + a + (z - start_z) * map_size_y] == 0
                                    && ((x == map_size_x - 1 && solid_array_isair(blocks, 0, y + a, z))
                                        || (x < map_size_x - 1 && solid_array_isair(blocks, x + 1, y + a, z))))
@@ -422,7 +419,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 int a;
                                 for (a = 0; a < len_y; a++) {
                                     if (solid_array_isair(blocks, x, y + a, z + b)
-                                       || libvxl_copy_chunk_get_color(blocks, x, z + b, map_size_y - 1 - (y + a)) != col
+                                       || copy_chunk_get_color(blocks, x, z + b, map_size_y - 1 - (y + a)) != col
                                        || checked_voxels2[1][y + a + (z + b - start_z) * map_size_y] != 0
                                        || !((x == map_size_x - 1 && solid_array_isair(blocks, 0, y + a, z + b))
                                             || (x < map_size_x - 1 && solid_array_isair(blocks, x + 1, y + a, z + b))))
@@ -438,7 +435,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 for (unsigned char a = 0; a < len_y; a++)
                                     checked_voxels2[1][y + a + (z + b - start_z) * map_size_y] = 1;
 
-                            tesselator_set_color(tess, rgba(r * 0.75F, g * 0.75F, b * 0.75F, 255));
+                            tesselator_set_color(tess, (RGBA) {r * 0.75F, g * 0.75F, b * 0.75F, 255});
                             tesselator_addi_simple(tess,
                                                    (int16_t[]) {x + 1, y, z, x + 1, y + len_y, z, x + 1, y + len_y,
                                                                 z + len_z, x + 1, y, z + len_z});
@@ -460,7 +457,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                         *max_height = y;
                     }
 
-                    unsigned int col = libvxl_copy_chunk_get_color(blocks, x, z, map_size_y - 1 - y);
+                    unsigned int col = copy_chunk_get_color(blocks, x, z, map_size_y - 1 - y);
                     int r = blue(col);
                     int g = green(col);
                     int b = red(col);
@@ -472,7 +469,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
 
                             for (int a = 1; a < (start_x + CHUNK_SIZE - x); a++) {
                                 if (!solid_array_isair(blocks, x + a, y, z)
-                                   && libvxl_copy_chunk_get_color(blocks, x + a, z, map_size_y - 1 - y) == col
+                                   && copy_chunk_get_color(blocks, x + a, z, map_size_y - 1 - y) == col
                                    && checked_voxels[0][(x + a - start_x) + (z - start_z) * CHUNK_SIZE] == 0
                                    && (y == map_size_y - 1 || solid_array_isair(blocks, x + a, y + 1, z)))
                                     len_x++;
@@ -484,7 +481,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 int a;
                                 for (a = 0; a < len_x; a++) {
                                     if (solid_array_isair(blocks, x + a, y, z + b)
-                                       || libvxl_copy_chunk_get_color(blocks, x + a, z + b, map_size_y - 1 - y) != col
+                                       || copy_chunk_get_color(blocks, x + a, z + b, map_size_y - 1 - y) != col
                                        || checked_voxels[0][(x + a - start_x) + (z + b - start_z) * CHUNK_SIZE] != 0
                                        || !(y == map_size_y - 1 || solid_array_isair(blocks, x + a, y + 1, z + b)))
                                         break;
@@ -499,7 +496,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 for (int a = 0; a < len_x; a++)
                                     checked_voxels[0][(x + a - start_x) + (z + b - start_z) * CHUNK_SIZE] = 1;
 
-                            tesselator_set_color(tess, rgba(r, g, b, 255));
+                            tesselator_set_color(tess, (RGBA) {r, g, b, 255});
                             tesselator_addi_simple(tess,
                                                    (int16_t[]) {x, y + 1, z, x, y + 1, z + len_z, x + len_x, y + 1,
                                                                 z + len_z, x + len_x, y + 1, z});
@@ -513,7 +510,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
 
                             for (int a = 1; a < (start_x + CHUNK_SIZE - x); a++) {
                                 if (!solid_array_isair(blocks, x + a, y, z)
-                                   && libvxl_copy_chunk_get_color(blocks, x + a, z, map_size_y - 1 - y) == col
+                                   && copy_chunk_get_color(blocks, x + a, z, map_size_y - 1 - y) == col
                                    && checked_voxels[1][(x + a - start_x) + (z - start_z) * CHUNK_SIZE] == 0
                                    && (y > 0 && solid_array_isair(blocks, x + a, y - 1, z)))
                                     len_x++;
@@ -525,7 +522,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 int a;
                                 for (a = 0; a < len_x; a++) {
                                     if (solid_array_isair(blocks, x + a, y, z + b)
-                                       || libvxl_copy_chunk_get_color(blocks, x + a, z + b, map_size_y - 1 - y) != col
+                                       || copy_chunk_get_color(blocks, x + a, z + b, map_size_y - 1 - y) != col
                                        || checked_voxels[1][(x + a - start_x) + (z + b - start_z) * CHUNK_SIZE] != 0
                                        || !(y > 0 && solid_array_isair(blocks, x + a, y - 1, z + b)))
                                         break;
@@ -540,7 +537,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
                                 for (int a = 0; a < len_x; a++)
                                     checked_voxels[1][(x + a - start_x) + (z + b - start_z) * CHUNK_SIZE] = 1;
 
-                            tesselator_set_color(tess, rgba(r * 0.5F, g * 0.5F, b * 0.5F, 255));
+                            tesselator_set_color(tess, (RGBA) {r * 0.5F, g * 0.5F, b * 0.5F, 255});
                             tesselator_addi_simple(
                                 tess, (int16_t[]) {x, y, z, x + len_x, y, z, x + len_x, y, z + len_z, x, y, z + len_z});
                         }
@@ -569,11 +566,11 @@ static float vertexAO(int side1, int side2, int corner) {
     return 0.75F - (!side1 + !side2 + !corner) * 0.25F + 0.25F;
 }
 
-void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* tess, int* max_height, int ao) {
+void chunk_generate_naive(struct libvxl_chunk_copy * blocks, struct tesselator * tess, int * max_height, int ao) {
     *max_height = 0;
 
     for (size_t k = 0; k < blocks->blocks_sorted_count; k++) {
-        struct libvxl_block* blk = blocks->blocks_sorted + k;
+        struct libvxl_block * blk = blocks->blocks_sorted + k;
 
         int x = key_getx(blk->position);
         int y = map_size_y - 1 - key_getz(blk->position);
@@ -581,7 +578,7 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
 
         *max_height = max(*max_height, y);
 
-        uint32_t col = blk->color;
+        uint32_t col = letohu32(blk->color);
         int r = blue(col);
         int g = green(col);
         int b = red(col);
@@ -607,15 +604,15 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
                                solid_array_isair(blocks, x + 1, y - 1, z - 1));
 
                 tesselator_addi(tess, (int16_t[]) {x, y, z, x, y + 1, z, x + 1, y + 1, z, x + 1, y, z},
-                                (uint32_t[]) {
-                                    rgba(r * 0.875F * A, g * 0.875F * A, b * 0.875F * A, 255),
-                                    rgba(r * 0.875F * B, g * 0.875F * B, b * 0.875F * B, 255),
-                                    rgba(r * 0.875F * C, g * 0.875F * C, b * 0.875F * C, 255),
-                                    rgba(r * 0.875F * D, g * 0.875F * D, b * 0.875F * D, 255),
+                                (RGBA[]) {
+                                    {r * 0.875F * A, g * 0.875F * A, b * 0.875F * A, 255},
+                                    {r * 0.875F * B, g * 0.875F * B, b * 0.875F * B, 255},
+                                    {r * 0.875F * C, g * 0.875F * C, b * 0.875F * C, 255},
+                                    {r * 0.875F * D, g * 0.875F * D, b * 0.875F * D, 255},
                                 },
                                 NULL);
             } else {
-                tesselator_set_color(tess, rgba(r * 0.875F, g * 0.875F, b * 0.875F, 255));
+                tesselator_set_color(tess, (RGBA) {r * 0.875F, g * 0.875F, b * 0.875F, 255});
                 tesselator_addi_cube_face(tess, CUBE_FACE_Z_N, x, y, z);
             }
         }
@@ -635,15 +632,15 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
                     = vertexAO(solid_array_isair(blocks, x - 1, y, z + 1), solid_array_isair(blocks, x, y + 1, z + 1),
                                solid_array_isair(blocks, x - 1, y + 1, z + 1));
                 tesselator_addi(tess, (int16_t[]) {x, y, z + 1, x + 1, y, z + 1, x + 1, y + 1, z + 1, x, y + 1, z + 1},
-                                (uint32_t[]) {
-                                    rgba(r * 0.625F * A, g * 0.625F * A, b * 0.625F * A, 255),
-                                    rgba(r * 0.625F * B, g * 0.625F * B, b * 0.625F * B, 255),
-                                    rgba(r * 0.625F * C, g * 0.625F * C, b * 0.625F * C, 255),
-                                    rgba(r * 0.625F * D, g * 0.625F * D, b * 0.625F * D, 255),
+                                (RGBA[]) {
+                                    {r * 0.625F * A, g * 0.625F * A, b * 0.625F * A, 255},
+                                    {r * 0.625F * B, g * 0.625F * B, b * 0.625F * B, 255},
+                                    {r * 0.625F * C, g * 0.625F * C, b * 0.625F * C, 255},
+                                    {r * 0.625F * D, g * 0.625F * D, b * 0.625F * D, 255},
                                 },
                                 NULL);
             } else {
-                tesselator_set_color(tess, rgba(r * 0.625F, g * 0.625F, b * 0.625F, 255));
+                tesselator_set_color(tess, (RGBA) {r * 0.625F, g * 0.625F, b * 0.625F, 255});
                 tesselator_addi_cube_face(tess, CUBE_FACE_Z_P, x, y, z);
             }
         }
@@ -664,15 +661,15 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
                                solid_array_isair(blocks, x - 1, y + 1, z - 1));
 
                 tesselator_addi(tess, (int16_t[]) {x, y, z, x, y, z + 1, x, y + 1, z + 1, x, y + 1, z},
-                                (uint32_t[]) {
-                                    rgba(r * 0.75F * A, g * 0.75F * A, b * 0.75F * A, 255),
-                                    rgba(r * 0.75F * B, g * 0.75F * B, b * 0.75F * B, 255),
-                                    rgba(r * 0.75F * C, g * 0.75F * C, b * 0.75F * C, 255),
-                                    rgba(r * 0.75F * D, g * 0.75F * D, b * 0.75F * D, 255),
+                                (RGBA[]) {
+                                    {r * 0.75F * A, g * 0.75F * A, b * 0.75F * A, 255},
+                                    {r * 0.75F * B, g * 0.75F * B, b * 0.75F * B, 255},
+                                    {r * 0.75F * C, g * 0.75F * C, b * 0.75F * C, 255},
+                                    {r * 0.75F * D, g * 0.75F * D, b * 0.75F * D, 255},
                                 },
                                 NULL);
             } else {
-                tesselator_set_color(tess, rgba(r * 0.75F, g * 0.75F, b * 0.75F, 255));
+                tesselator_set_color(tess, (RGBA) {r * 0.75F, g * 0.75F, b * 0.75F, 255});
                 tesselator_addi_cube_face(tess, CUBE_FACE_X_N, x, y, z);
             }
         }
@@ -693,15 +690,15 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
                                solid_array_isair(blocks, x + 1, y - 1, z + 1));
 
                 tesselator_addi(tess, (int16_t[]) {x + 1, y, z, x + 1, y + 1, z, x + 1, y + 1, z + 1, x + 1, y, z + 1},
-                                (uint32_t[]) {
-                                    rgba(r * 0.75F * A, g * 0.75F * A, b * 0.75F * A, 255),
-                                    rgba(r * 0.75F * B, g * 0.75F * B, b * 0.75F * B, 255),
-                                    rgba(r * 0.75F * C, g * 0.75F * C, b * 0.75F * C, 255),
-                                    rgba(r * 0.75F * D, g * 0.75F * D, b * 0.75F * D, 255),
+                                (RGBA[]) {
+                                    {r * 0.75F * A, g * 0.75F * A, b * 0.75F * A, 255},
+                                    {r * 0.75F * B, g * 0.75F * B, b * 0.75F * B, 255},
+                                    {r * 0.75F * C, g * 0.75F * C, b * 0.75F * C, 255},
+                                    {r * 0.75F * D, g * 0.75F * D, b * 0.75F * D, 255},
                                 },
                                 NULL);
             } else {
-                tesselator_set_color(tess, rgba(r * 0.75F, g * 0.75F, b * 0.75F, 255));
+                tesselator_set_color(tess, (RGBA) {r * 0.75F, g * 0.75F, b * 0.75F, 255});
                 tesselator_addi_cube_face(tess, CUBE_FACE_X_P, x, y, z);
             }
         }
@@ -722,15 +719,15 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
                                solid_array_isair(blocks, x + 1, y + 1, z - 1));
 
                 tesselator_addi(tess, (int16_t[]) {x, y + 1, z, x, y + 1, z + 1, x + 1, y + 1, z + 1, x + 1, y + 1, z},
-                                (uint32_t[]) {
-                                    rgba(r * A, g * A, b * A, 255),
-                                    rgba(r * B, g * B, b * B, 255),
-                                    rgba(r * C, g * C, b * C, 255),
-                                    rgba(r * D, g * D, b * D, 255),
+                                (RGBA[]) {
+                                    {r * A, g * A, b * A, 255},
+                                    {r * B, g * B, b * B, 255},
+                                    {r * C, g * C, b * C, 255},
+                                    {r * D, g * D, b * D, 255},
                                 },
                                 NULL);
             } else {
-                tesselator_set_color(tess, rgba(r, g, b, 255));
+                tesselator_set_color(tess, (RGBA) {r, g, b, 255});
                 tesselator_addi_cube_face(tess, CUBE_FACE_Y_P, x, y, z);
             }
         }
@@ -751,15 +748,15 @@ void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* t
                                solid_array_isair(blocks, x - 1, y - 1, z + 1));
 
                 tesselator_addi(tess, (int16_t[]) {x, y, z, x + 1, y, z, x + 1, y, z + 1, x, y, z + 1},
-                                (uint32_t[]) {
-                                    rgba(r * 0.5F * A, g * 0.5F * A, b * 0.5F * A, 255),
-                                    rgba(r * 0.5F * B, g * 0.5F * B, b * 0.5F * B, 255),
-                                    rgba(r * 0.5F * C, g * 0.5F * C, b * 0.5F * C, 255),
-                                    rgba(r * 0.5F * D, g * 0.5F * D, b * 0.5F * D, 255),
+                                (RGBA[]) {
+                                    {r * 0.5F * A, g * 0.5F * A, b * 0.5F * A, 255},
+                                    {r * 0.5F * B, g * 0.5F * B, b * 0.5F * B, 255},
+                                    {r * 0.5F * C, g * 0.5F * C, b * 0.5F * C, 255},
+                                    {r * 0.5F * D, g * 0.5F * D, b * 0.5F * D, 255},
                                 },
                                 NULL);
             } else {
-                tesselator_set_color(tess, rgba(r * 0.5F, g * 0.5F, b * 0.5F, 255));
+                tesselator_set_color(tess, (RGBA) {r * 0.5F, g * 0.5F, b * 0.5F, 255});
                 tesselator_addi_cube_face(tess, CUBE_FACE_Y_N, x, y, z);
             }
         }

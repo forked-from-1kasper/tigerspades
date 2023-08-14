@@ -205,16 +205,17 @@ void read_PacketChatMessage(void* data, int len) {
     chat_add(0, color, m);
 }
 
+RGBA white = {0xFF, 0xFF, 0xFF, 0xFF};
 void read_PacketBlockAction(void* data, int len) {
     struct PacketBlockAction* p = (struct PacketBlockAction*)data;
 
-        int x = letohs32(p->x), y = letohs32(p->y), z = letohs32(p->z);
+    int x = letohs32(p->x), y = letohs32(p->y), z = letohs32(p->z);
 
     switch (p->action_type) {
         case ACTION_DESTROY:
             if (63 - z > 0) {
-                int col = map_get(x, 63 - z, y);
-                map_set(x, 63 - z, y, 0xFFFFFFFF);
+                RGBA col = map_get(x, 63 - z, y);
+                map_set(x, 63 - z, y, white);
                 map_update_physics(x, 63 - z, y);
                 particle_create(col, x + 0.5F, 63 - z + 0.5F, y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
             }
@@ -224,7 +225,7 @@ void read_PacketBlockAction(void* data, int len) {
                 for (int k = y - 1; k <= y + 1; k++) {
                     for (int i = x - 1; i <= x + 1; i++) {
                         if (j > 1) {
-                            map_set(i, j, k, 0xFFFFFFFF);
+                            map_set(i, j, k, white);
                             map_update_physics(i, j, k);
                         }
                     }
@@ -233,17 +234,17 @@ void read_PacketBlockAction(void* data, int len) {
             break;
         case ACTION_SPADE:
             if ((63 - z - 1) > 1) {
-                map_set(x, 63 - z - 1, y, 0xFFFFFFFF);
+                map_set(x, 63 - z - 1, y, white);
                 map_update_physics(x, 63 - z - 1, y);
             }
             if ((63 - z + 0) > 1) {
-                int col = map_get(x, 63 - z, y);
-                map_set(x, 63 - z + 0, y, 0xFFFFFFFF);
+                RGBA col = map_get(x, 63 - z, y);
+                map_set(x, 63 - z + 0, y, white);
                 map_update_physics(x, 63 - z + 0, y);
                 particle_create(col, x + 0.5F, 63 - z + 0.5F, y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
             }
             if ((63 - z + 1) > 1) {
-                map_set(x, 63 - z + 1, y, 0xFFFFFFFF);
+                map_set(x, 63 - z + 1, y, white);
                 map_update_physics(x, 63 - z + 1, y);
             }
             break;
@@ -251,9 +252,10 @@ void read_PacketBlockAction(void* data, int len) {
             if (p->player_id < PLAYERS_MAX) {
                 bool play_sound = map_isair(x, 63 - z, y);
 
-                map_set(x, 63 - z, y,
-                        players[p->player_id].block.red | (players[p->player_id].block.green << 8)
-                            | (players[p->player_id].block.blue << 16));
+                RGBA color = {players[p->player_id].block.red,  players[p->player_id].block.green,
+                              players[p->player_id].block.blue, 255};
+
+                map_set(x, 63 - z, y, color);
 
                 if (play_sound)
                     sound_create(SOUND_WORLD, &sound_build, x + 0.5F, 63 - z + 0.5F, y + 0.5F);
@@ -264,25 +266,23 @@ void read_PacketBlockAction(void* data, int len) {
 
 void read_PacketBlockLine(void* data, int len) {
     struct PacketBlockLine* p = (struct PacketBlockLine*)data;
-    if (p->player_id >= PLAYERS_MAX) {
-        return;
-    }
+    if (p->player_id >= PLAYERS_MAX) return;
 
     int sx = letohs32(p->sx), sy = letohs32(p->sy), sz = letohs32(p->sz);
     int ex = letohs32(p->ex), ey = letohs32(p->ey), ez = letohs32(p->ez);
 
+    RGBA color = {players[p->player_id].block.red,  players[p->player_id].block.green,
+                  players[p->player_id].block.blue, 255};
+
+
     if (sx == ex && sy == ey && sz == ez) {
-        map_set(sx, 63 - sz, sy,
-                players[p->player_id].block.red | (players[p->player_id].block.green << 8)
-                    | (players[p->player_id].block.blue << 16));
+        map_set(sx, 63 - sz, sy, color);
     } else {
         struct Point blocks[64];
         int len = map_cube_line(sx, sy, sz, ex, ey, ez, blocks);
         while (len > 0) {
             if (map_isair(blocks[len - 1].x, 63 - blocks[len - 1].z, blocks[len - 1].y)) {
-                map_set(blocks[len - 1].x, 63 - blocks[len - 1].z, blocks[len - 1].y,
-                        players[p->player_id].block.red | (players[p->player_id].block.green << 8)
-                            | (players[p->player_id].block.blue << 16));
+                map_set(blocks[len - 1].x, 63 - blocks[len - 1].z, blocks[len - 1].y, color);
             }
             len--;
         }
@@ -513,7 +513,7 @@ void read_PacketWorldUpdate(void* data, int len) {
             for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate075)); k++) { // supports up to 256 players
                 struct PacketWorldUpdate075* p
                     = (struct PacketWorldUpdate075*)(data + k * sizeof(struct PacketWorldUpdate075));
-                                float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
+                float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                 if (players[k].connected && players[k].alive && k != local_player_id) {
                     if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
                        > 0.1F * 0.1F) {
@@ -531,7 +531,7 @@ void read_PacketWorldUpdate(void* data, int len) {
                 for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate076)); k++) {
                     struct PacketWorldUpdate076* p
                         = (struct PacketWorldUpdate076*)(data + k * sizeof(struct PacketWorldUpdate076));
-                                        float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
+                    float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                     if (players[p->player_id].connected && players[p->player_id].alive
                        && p->player_id != local_player_id) {
                         if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)

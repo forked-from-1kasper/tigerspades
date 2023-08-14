@@ -138,4 +138,7 @@ int      letohs32(int);
 #define htoleu32 letohu32
 #define htoles32 letohs32
 
+typedef struct { uint8_t r, g, b, a; } RGBA;
+void writeRGBA(uint32_t *, RGBA);
+
 #endif

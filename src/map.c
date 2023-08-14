@@ -117,7 +117,7 @@ static bool damaged_voxel_update(void* key, void* value, void* user) {
     if (window_time() - voxel->timer > 10.0F || map_isair(x, y, z))
         return true;
 
-    tesselator_set_color(tess, rgba(0, 0, 0, voxel->damage * 1.9125F));
+    tesselator_set_color(tess, (RGBA) {0, 0, 0, voxel->damage * 1.9125F});
 
     tesselator_addi_cube_face(tess, CUBE_FACE_Z_N, x, y, z);
     tesselator_addi_cube_face(tess, CUBE_FACE_Z_P, x, y, z);
@@ -186,32 +186,32 @@ static bool falling_blocks_meshing(void* key, void* value, void* user) {
     float z = z2 - collapsing->p2.z;
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 - 1, z2)})) {
-        tesselator_set_color(tess, rgba(red(color) * 0.5F, green(color) * 0.5F, blue(color) * 0.5F, 0xCC));
+        tesselator_set_color(tess, (RGBA) {red(color) * 0.5F, green(color) * 0.5F, blue(color) * 0.5F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Y_N, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 + 1, z2)})) {
-        tesselator_set_color(tess, rgba(red(color), green(color), blue(color), 0xCC));
+        tesselator_set_color(tess, (RGBA) {red(color), green(color), blue(color), 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Y_P, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 - 1)})) {
-        tesselator_set_color(tess, rgba(red(color) * 0.7F, green(color) * 0.7F, blue(color) * 0.7F, 0xCC));
+        tesselator_set_color(tess, (RGBA) {red(color) * 0.7F, green(color) * 0.7F, blue(color) * 0.7F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_N, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 + 1)})) {
-        tesselator_set_color(tess, rgba(red(color) * 0.6F, green(color) * 0.6F, blue(color) * 0.6F, 0xCC));
+        tesselator_set_color(tess, (RGBA) {red(color) * 0.6F, green(color) * 0.6F, blue(color) * 0.6F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_P, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 - 1, y2, z2)})) {
-        tesselator_set_color(tess, rgba(red(color) * 0.9F, green(color) * 0.9F, blue(color) * 0.9F, 0xCC));
+        tesselator_set_color(tess, (RGBA) {red(color) * 0.9F, green(color) * 0.9F, blue(color) * 0.9F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_X_N, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 + 1, y2, z2)})) {
-        tesselator_set_color(tess, rgba(red(color) * 0.8F, green(color) * 0.8F, blue(color) * 0.8F, 0xCC));
+        tesselator_set_color(tess, (RGBA) {red(color) * 0.8F, green(color) * 0.8F, blue(color) * 0.8F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_X_P, x, y, z, 1.0F);
     }
 
@@ -222,7 +222,7 @@ static bool falling_blocks_pivot(void* key, void* value, void* user) {
     float* pivot = (float*)user;
     uint32_t pos = *(uint32_t*)key;
 
-    map_set(pos_keyx(pos), pos_keyy(pos), pos_keyz(pos), 0xFFFFFFFF);
+    map_set(pos_keyx(pos), pos_keyy(pos), pos_keyz(pos), (RGBA) {0xFF, 0xFF, 0xFF, 0xFF});
     pivot[0] += pos_keyx(pos);
     pivot[1] += pos_keyy(pos);
     pivot[2] += pos_keyz(pos);
@@ -251,7 +251,7 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
         .pos = pos_key(x, y, z),
     };
 
-    uint32_t start_color = map_get(x, y, z);
+    uint32_t start_color; writeRGBA(&start_color, map_get(x, y, z));
 
     minheap_put(&openlist, &start);
     ht_insert(&closedlist, &start.pos, &start_color);
@@ -280,7 +280,7 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
                && dir_block[1] < map_size_y && dir_block[2] < map_size_z && !ht_contains(&closedlist, &block.pos)
                && !map_isair(dir_block[0], dir_block[1], dir_block[2])) {
                 minheap_put(&openlist, &block);
-                uint32_t color = map_get(dir_block[0], dir_block[1], dir_block[2]);
+                uint32_t color; writeRGBA(&color, map_get(dir_block[0], dir_block[1], dir_block[2]));
                 ht_insert(&closedlist, &block.pos, &color);
             }
         }
@@ -372,14 +372,15 @@ static bool falling_blocks_collision(void* key, void* value, void* user) {
 }
 
 static bool falling_blocks_particles(void* key, void* value, void* user) {
-    uint32_t pos = *(uint32_t*)key;
-    uint32_t color = *(uint32_t*)value;
+    uint32_t pos = *(uint32_t*) key;
+    uint32_t color = *(uint32_t*) value;
     struct map_collapsing* collapsing = (struct map_collapsing*)user;
 
     vec4 v = {pos_keyx(pos) - collapsing->p2.x + 0.5F, pos_keyy(pos) - collapsing->p2.y + 0.5F,
               pos_keyz(pos) - collapsing->p2.z + 0.5F, 1.0F};
     matrix_vector(matrix_model, v);
-    particle_create(color, v[0], v[1], v[2], 2.5F, 1.0F, 2, 0.25F, 0.4F);
+    particle_create((RGBA) {red(color), green(color), blue(color), alpha(color)},
+                    v[0], v[1], v[2], 2.5F, 1.0F, 2, 0.25F, 0.4F);
 
     return true;
 }
@@ -523,23 +524,26 @@ bool map_isair(int x, int y, int z) {
     return result;
 }
 
-unsigned int map_get(int x, int y, int z) {
+RGBA map_get(int x, int y, int z) {
     pthread_rwlock_rdlock(&map_lock);
     unsigned int result = libvxl_map_get(&map, x, z, map_size_y - 1 - y);
     pthread_rwlock_unlock(&map_lock);
-    return rgb2bgr(result);
+
+    return (RGBA) {blue(result), green(result), red(result), 255};
 }
 
-void map_set(int x, int y, int z, unsigned int color) {
+void map_set(int x, int y, int z, RGBA color) {
     if (x < 0 || y < 0 || z < 0 || x >= map_size_x || y >= map_size_y || z >= map_size_z)
         return;
 
     pthread_rwlock_wrlock(&map_lock);
 
-    if (color == 0xFFFFFFFF) {
+    uint32_t value; writeRGBA(&value, color);
+
+    if (value == 0xFFFFFFFF) {
         libvxl_map_setair(&map, x, z, map_size_y - 1 - y);
     } else {
-        libvxl_map_set(&map, x, z, map_size_y - 1 - y, rgb2bgr(color));
+        libvxl_map_set(&map, x, z, map_size_y - 1 - y, rgb2bgr(value));
     }
 
     pthread_rwlock_unlock(&map_lock);
