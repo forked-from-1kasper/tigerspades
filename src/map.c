@@ -527,10 +527,10 @@ bool map_isair(int x, int y, int z) {
 
 RGBA map_get(int x, int y, int z) {
     pthread_rwlock_rdlock(&map_lock);
-    unsigned int result = letohu32(libvxl_map_get(&map, x, z, map_size_y - 1 - y));
+    uint32_t result = libvxl_map_get(&map, x, z, map_size_y - 1 - y);
     pthread_rwlock_unlock(&map_lock);
 
-    return (RGBA) {blue(result), green(result), red(result), 255};
+    return readBGR(&result);
 }
 
 void map_set(int x, int y, int z, RGBA color) {
@@ -539,12 +539,12 @@ void map_set(int x, int y, int z, RGBA color) {
 
     pthread_rwlock_wrlock(&map_lock);
 
-    uint32_t value; writeRGBA(&value, color);
+    uint32_t value; writeBGR(&value, color);
 
     if (value == 0xFFFFFFFF) {
         libvxl_map_setair(&map, x, z, map_size_y - 1 - y);
     } else {
-        libvxl_map_set(&map, x, z, map_size_y - 1 - y, htoleu32(value));
+        libvxl_map_set(&map, x, z, map_size_y - 1 - y, value);
     }
 
     pthread_rwlock_unlock(&map_lock);

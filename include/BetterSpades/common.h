@@ -140,5 +140,7 @@ int      letohs32(int);
 
 typedef struct { uint8_t r, g, b, a; } RGBA;
 void writeRGBA(uint32_t *, RGBA);
+void writeBGR(uint32_t *, RGBA);
+RGBA readBGR(uint32_t *);
 
 #endif
