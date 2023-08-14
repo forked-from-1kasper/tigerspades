@@ -87,7 +87,7 @@ int map_damage(int x, int y, int z, int damage) {
 
 bool map_damage_action(int x, int y, int z) {
     uint32_t key = pos_key(x, y, z);
-    struct damaged_voxel* voxel = ht_lookup(&map_damaged_voxels, &key);
+    struct damaged_voxel * voxel = ht_lookup(&map_damaged_voxels, &key);
 
     if (!voxel) {
         return false;
@@ -101,15 +101,15 @@ bool map_damage_action(int x, int y, int z) {
 
 int map_damage_get(int x, int y, int z) {
     uint32_t key = pos_key(x, y, z);
-    struct damaged_voxel* voxel = ht_lookup(&map_damaged_voxels, &key);
+    struct damaged_voxel * voxel = ht_lookup(&map_damaged_voxels, &key);
 
     return voxel ? voxel->damage : 0;
 }
 
-static bool damaged_voxel_update(void* key, void* value, void* user) {
-    uint32_t pos = *(uint32_t*)key;
-    struct damaged_voxel* voxel = (struct damaged_voxel*)value;
-    struct tesselator* tess = (struct tesselator*)user;
+static bool damaged_voxel_update(void * key, void * value, void * user) {
+    uint32_t pos = *(uint32_t*) key;
+    struct damaged_voxel * voxel = (struct damaged_voxel*) value;
+    struct tesselator * tess = (struct tesselator*) user;
     int x = pos_keyx(pos);
     int y = pos_keyy(pos);
     int z = pos_keyz(pos);
@@ -171,11 +171,11 @@ struct map_collapsing {
 
 struct entity_system map_collapsing_structures;
 
-static bool falling_blocks_meshing(void* key, void* value, void* user) {
-    uint32_t pos = *(uint32_t*)key;
-    uint32_t color = *(uint32_t*)value;
-    struct map_collapsing* collapsing = ((struct map_collapsing**)user)[0];
-    struct tesselator* tess = ((struct tesselator**)user)[1];
+static bool falling_blocks_meshing(void * key, void * value, void * user) {
+    uint32_t pos = *(uint32_t*) key;
+    RGBA color = *(RGBA*) value;
+    struct map_collapsing * collapsing = ((struct map_collapsing**) user)[0];
+    struct tesselator * tess = ((struct tesselator**) user)[1];
 
     int x2 = pos_keyx(pos);
     int y2 = pos_keyy(pos);
@@ -185,42 +185,44 @@ static bool falling_blocks_meshing(void* key, void* value, void* user) {
     float y = y2 - collapsing->p2.y;
     float z = z2 - collapsing->p2.z;
 
+    uint8_t r = color.r, g = color.g, b = color.b;
+
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 - 1, z2)})) {
-        tesselator_set_color(tess, (RGBA) {red(color) * 0.5F, green(color) * 0.5F, blue(color) * 0.5F, 0xCC});
+        tesselator_set_color(tess, (RGBA) {r * 0.5F, g * 0.5F, b * 0.5F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Y_N, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2 + 1, z2)})) {
-        tesselator_set_color(tess, (RGBA) {red(color), green(color), blue(color), 0xCC});
+        tesselator_set_color(tess, (RGBA) {r, g, b, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Y_P, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 - 1)})) {
-        tesselator_set_color(tess, (RGBA) {red(color) * 0.7F, green(color) * 0.7F, blue(color) * 0.7F, 0xCC});
+        tesselator_set_color(tess, (RGBA) {r * 0.7F, g * 0.7F, b * 0.7F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_N, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2, y2, z2 + 1)})) {
-        tesselator_set_color(tess, (RGBA) {red(color) * 0.6F, green(color) * 0.6F, blue(color) * 0.6F, 0xCC});
+        tesselator_set_color(tess, (RGBA) {r * 0.6F, g * 0.6F, b * 0.6F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_P, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 - 1, y2, z2)})) {
-        tesselator_set_color(tess, (RGBA) {red(color) * 0.9F, green(color) * 0.9F, blue(color) * 0.9F, 0xCC});
+        tesselator_set_color(tess, (RGBA) {r * 0.9F, g * 0.9F, b * 0.9F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_X_N, x, y, z, 1.0F);
     }
 
     if (!ht_contains(&collapsing->voxels, (uint32_t[]) {pos_key(x2 + 1, y2, z2)})) {
-        tesselator_set_color(tess, (RGBA) {red(color) * 0.8F, green(color) * 0.8F, blue(color) * 0.8F, 0xCC});
+        tesselator_set_color(tess, (RGBA) {r * 0.8F, g * 0.8F, b * 0.8F, 0xCC});
         tesselator_addf_cube_face(tess, CUBE_FACE_X_P, x, y, z, 1.0F);
     }
 
     return true;
 }
 
-static bool falling_blocks_pivot(void* key, void* value, void* user) {
-    float* pivot = (float*)user;
-    uint32_t pos = *(uint32_t*)key;
+static bool falling_blocks_pivot(void * key, void * value, void * user) {
+    float * pivot = (float*) user;
+    uint32_t pos = *(uint32_t*) key;
 
     map_set(pos_keyx(pos), pos_keyy(pos), pos_keyz(pos), (RGBA) {0xFF, 0xFF, 0xFF, 0xFF});
     pivot[0] += pos_keyx(pos);
@@ -232,7 +234,7 @@ static bool falling_blocks_pivot(void* key, void* value, void* user) {
 
 static const int DIRECTION_MASK[][3] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 
-static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int y, int z) {
+static bool map_update_physics_sub(struct map_collapsing * collapsing, int x, int y, int z) {
     if (y <= 1)
         return false;
 
@@ -243,7 +245,7 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
     minheap_create(&openlist);
 
     HashTable closedlist;
-    ht_setup(&closedlist, sizeof(uint32_t), sizeof(uint32_t), 256);
+    ht_setup(&closedlist, sizeof(uint32_t), sizeof(RGBA), 256);
     closedlist.compare = int_cmp;
     closedlist.hash = int_hash;
 
@@ -251,7 +253,7 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
         .pos = pos_key(x, y, z),
     };
 
-    uint32_t start_color; writeRGBA(&start_color, map_get(x, y, z));
+    RGBA start_color = map_get(x, y, z);
 
     minheap_put(&openlist, &start);
     ht_insert(&closedlist, &start.pos, &start_color);
@@ -280,7 +282,7 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
                && dir_block[1] < map_size_y && dir_block[2] < map_size_z && !ht_contains(&closedlist, &block.pos)
                && !map_isair(dir_block[0], dir_block[1], dir_block[2])) {
                 minheap_put(&openlist, &block);
-                uint32_t color; writeRGBA(&color, map_get(dir_block[0], dir_block[1], dir_block[2]));
+                RGBA color = map_get(dir_block[0], dir_block[1], dir_block[2]);
                 ht_insert(&closedlist, &block.pos, &color);
             }
         }
@@ -320,8 +322,8 @@ static bool map_update_physics_sub(struct map_collapsing* collapsing, int x, int
         - distance3D(A->p.x, A->p.y, A->p.z, camera_x, camera_y, camera_z);
 }*/
 
-static bool falling_blocks_render(void* obj, void* user) {
-    struct map_collapsing* collapsing = (struct map_collapsing*)obj;
+static bool falling_blocks_render(void * obj, void * user) {
+    struct map_collapsing * collapsing = (struct map_collapsing*) obj;
 
     matrix_identity(matrix_model);
     matrix_translate(matrix_model, collapsing->p.x, collapsing->p.y, collapsing->p.z);
@@ -357,8 +359,8 @@ void map_collapsing_render() {
     glDisable(GL_BLEND);
 }
 
-static bool falling_blocks_collision(void* key, void* value, void* user) {
-    uint32_t pos = *(uint32_t*)key;
+static bool falling_blocks_collision(void * key, void * value, void* user) {
+    uint32_t pos = *(uint32_t*) key;
     struct map_collapsing* collapsing = ((struct map_collapsing**)user)[0];
     float dt = *(((float**)user)[1]);
 
@@ -371,23 +373,22 @@ static bool falling_blocks_collision(void* key, void* value, void* user) {
     return map_isair(v[0], v[1], v[2]);
 }
 
-static bool falling_blocks_particles(void* key, void* value, void* user) {
+static bool falling_blocks_particles(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;
-    uint32_t color = *(uint32_t*) value;
-    struct map_collapsing* collapsing = (struct map_collapsing*)user;
+    RGBA color = *(RGBA*) value;
+    struct map_collapsing* collapsing = (struct map_collapsing*) user;
 
     vec4 v = {pos_keyx(pos) - collapsing->p2.x + 0.5F, pos_keyy(pos) - collapsing->p2.y + 0.5F,
               pos_keyz(pos) - collapsing->p2.z + 0.5F, 1.0F};
     matrix_vector(matrix_model, v);
-    particle_create((RGBA) {red(color), green(color), blue(color), alpha(color)},
-                    v[0], v[1], v[2], 2.5F, 1.0F, 2, 0.25F, 0.4F);
+    particle_create(color, v[0], v[1], v[2], 2.5F, 1.0F, 2, 0.25F, 0.4F);
 
     return true;
 }
 
-static bool falling_blocks_update(void* obj, void* user) {
-    struct map_collapsing* collapsing = (struct map_collapsing*)obj;
-    float dt = *(float*)user;
+static bool falling_blocks_update(void * obj, void * user) {
+    struct map_collapsing * collapsing = (struct map_collapsing*) obj;
+    float dt = *(float*) user;
 
     collapsing->v.y -= dt;
 
@@ -526,7 +527,7 @@ bool map_isair(int x, int y, int z) {
 
 RGBA map_get(int x, int y, int z) {
     pthread_rwlock_rdlock(&map_lock);
-    unsigned int result = libvxl_map_get(&map, x, z, map_size_y - 1 - y);
+    unsigned int result = letohu32(libvxl_map_get(&map, x, z, map_size_y - 1 - y));
     pthread_rwlock_unlock(&map_lock);
 
     return (RGBA) {blue(result), green(result), red(result), 255};
@@ -543,7 +544,7 @@ void map_set(int x, int y, int z, RGBA color) {
     if (value == 0xFFFFFFFF) {
         libvxl_map_setair(&map, x, z, map_size_y - 1 - y);
     } else {
-        libvxl_map_set(&map, x, z, map_size_y - 1 - y, rgb2bgr(value));
+        libvxl_map_set(&map, x, z, map_size_y - 1 - y, htoleu32(value));
     }
 
     pthread_rwlock_unlock(&map_lock);
@@ -685,9 +686,9 @@ int map_dirt_color(int x, int y, int z) {
     int dirt_base_color = dirt_color_table[vertical_slice];
     int dirt_next_color = dirt_color_table[vertical_slice + 1];
 
-    int red = lerp(dirt_base_color & 0xFF0000, dirt_next_color & 0xFF0000, lerp_amt) >> 16;
+    int red   = lerp(dirt_base_color & 0xFF0000, dirt_next_color & 0xFF0000, lerp_amt) >> 16;
     int green = lerp(dirt_base_color & 0x00FF00, dirt_next_color & 0x00FF00, lerp_amt) >> 8;
-    int blue = lerp(dirt_base_color & 0x0000FF, dirt_next_color & 0x0000FF, lerp_amt);
+    int blue  = lerp(dirt_base_color & 0x0000FF, dirt_next_color & 0x0000FF, lerp_amt);
 
     int rng = ms_rand() % 8;
     red += 4 * abs((x % 8) - 4) + rng;

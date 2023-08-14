@@ -559,10 +559,7 @@ void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, siz
 
 // credit: https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
 static float vertexAO(int side1, int side2, int corner) {
-    if (!side1 && !side2) {
-        return 0.25F;
-    }
-
+    if (!side1 && !side2) return 0.25F;
     return 0.75F - (!side1 + !side2 + !corner) * 0.25F + 0.25F;
 }
 
@@ -579,9 +576,7 @@ void chunk_generate_naive(struct libvxl_chunk_copy * blocks, struct tesselator *
         *max_height = max(*max_height, y);
 
         uint32_t col = letohu32(blk->color);
-        int r = blue(col);
-        int g = green(col);
-        int b = red(col);
+        int r = blue(col), g = green(col), b = red(col);
 
         float shade = solid_sunblock(blocks, x, y, z);
         r *= shade;

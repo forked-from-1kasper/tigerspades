@@ -274,7 +274,6 @@ void read_PacketBlockLine(void* data, int len) {
     RGBA color = {players[p->player_id].block.red,  players[p->player_id].block.green,
                   players[p->player_id].block.blue, 255};
 
-
     if (sx == ex && sy == ey && sz == ez) {
         map_set(sx, 63 - sz, sy, color);
     } else {
@@ -512,7 +511,7 @@ void read_PacketWorldUpdate(void* data, int len) {
         if (is_075) {
             for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate075)); k++) { // supports up to 256 players
                 struct PacketWorldUpdate075* p
-                    = (struct PacketWorldUpdate075*)(data + k * sizeof(struct PacketWorldUpdate075));
+                    = (struct PacketWorldUpdate075*) (data + k * sizeof(struct PacketWorldUpdate075));
                 float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                 if (players[k].connected && players[k].alive && k != local_player_id) {
                     if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
@@ -530,7 +529,7 @@ void read_PacketWorldUpdate(void* data, int len) {
             if (is_076) {
                 for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate076)); k++) {
                     struct PacketWorldUpdate076* p
-                        = (struct PacketWorldUpdate076*)(data + k * sizeof(struct PacketWorldUpdate076));
+                        = (struct PacketWorldUpdate076*) (data + k * sizeof(struct PacketWorldUpdate076));
                     float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                     if (players[p->player_id].connected && players[p->player_id].alive
                        && p->player_id != local_player_id) {
@@ -564,12 +563,12 @@ void read_PacketOrientationData(void* data, int len) {
     players[local_player_id].orientation.z = letohf(p->y);
 }
 
-void read_PacketSetColor(void* data, int len) {
-    struct PacketSetColor* p = (struct PacketSetColor*)data;
+void read_PacketSetColor(void * data, int len) {
+    struct PacketSetColor * p = (struct PacketSetColor*) data;
     if (p->player_id < PLAYERS_MAX) {
-        players[p->player_id].block.red = p->red;
+        players[p->player_id].block.red   = p->red;
         players[p->player_id].block.green = p->green;
-        players[p->player_id].block.blue = p->blue;
+        players[p->player_id].block.blue  = p->blue;
     }
 }
 
