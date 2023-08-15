@@ -139,7 +139,7 @@ void kv6_rebuild_complete() {
     kv6_rebuild(&model_shotgun_casing);
 }
 
-void kv6_load(struct kv6_t* kv6, void* bytes, float scale) {
+void kv6_load(struct kv6_t * kv6, void * bytes, float scale) {
     kv6->colorize = false;
     kv6->has_display_list = false;
     kv6->scale = scale;
@@ -168,7 +168,7 @@ void kv6_load(struct kv6_t* kv6, void* bytes, float scale) {
         CHECK_ALLOCATION_ERROR(kv6->voxels)
 
         for (size_t k = 0; k < kv6->voxel_count; k++) {
-                uint32_t color = buffer_read32(bytes, index);
+            uint32_t color = buffer_read32(bytes, index);
             index += 4;
             uint16_t zpos = buffer_read16(bytes, index);
             index += 2;
@@ -184,7 +184,7 @@ void kv6_load(struct kv6_t* kv6, void* bytes, float scale) {
 
         index += 4 * kv6->xsiz;
 
-        struct kv6_voxel* voxel = kv6->voxels;
+        struct kv6_voxel * voxel = kv6->voxels;
 
         for (size_t x = 0; x < kv6->xsiz; x++) {
             for (size_t y = 0; y < kv6->ysiz; y++) {

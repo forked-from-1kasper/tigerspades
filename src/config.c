@@ -167,7 +167,7 @@ static int config_read_key(void* user, const char* section, const char* name, co
     }
     if (!strcmp(section, "controls")) {
         for (int k = 0; k < list_size(&config_keys); k++) {
-            struct config_key_pair* key = list_get(&config_keys, k);
+            struct config_key_pair * key = list_get(&config_keys, k);
             if (!strcmp(name, key->name)) {
                 log_debug("found override for %s, from %i to %i", key->name, key->def, atoi(value));
                 key->def = strtol(value, NULL, 0);
@@ -178,8 +178,8 @@ static int config_read_key(void* user, const char* section, const char* name, co
     return 1;
 }
 
-void config_register_key(int internal, int def, const char* name, int toggle, const char* display,
-                         const char* category) {
+void config_register_key(int internal, int def, const char * name, int toggle, const char * display,
+                         const char * category) {
     struct config_key_pair key;
     key.internal = internal;
     key.def = def;

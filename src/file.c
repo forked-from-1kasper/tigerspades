@@ -31,7 +31,7 @@
 #include <log.h>
 
 struct file_handle {
-    void* internal;
+    void * internal;
     int type;
 };
 
@@ -40,7 +40,7 @@ enum {
     FILE_SDL,
 };
 
-void file_url(char* url) {
+void file_url(char * url) {
     char cmd[strlen(url) + 16];
 #ifdef OS_WINDOWS
     sprintf(cmd, "start %s", url);
@@ -56,7 +56,7 @@ void file_url(char* url) {
 #endif
 }
 
-int file_dir_exists(const char* path) {
+int file_dir_exists(const char * path) {
 #ifndef USE_ANDROID_FILE
     DIR* d = opendir(path);
 #else
@@ -72,7 +72,7 @@ int file_dir_exists(const char* path) {
     }
 }
 
-int file_dir_create(const char* path) {
+int file_dir_create(const char * path) {
 #ifndef USE_ANDROID_FILE
 #ifdef OS_WINDOWS
     mkdir(path);
@@ -87,7 +87,7 @@ int file_dir_create(const char* path) {
     return 1;
 }
 
-int file_exists(const char* name) {
+int file_exists(const char * name) {
 #ifdef USE_ANDROID_FILE
     void* f = file_open(name, "rb");
     if (f == NULL)
@@ -99,13 +99,13 @@ int file_exists(const char* name) {
 #endif
 }
 
-int file_size(const char* name) {
+int file_size(const char * name) {
 #ifdef USE_ANDROID_FILE
-    struct file_handle* f = (struct file_handle*)file_open(name, "rb");
+    struct file_handle * f = (struct file_handle*) file_open(name, "rb");
     if (!f)
         return 0;
     if (f->type == FILE_SDL) {
-        int size = SDL_RWsize((struct SDL_RWops*)f->internal);
+        int size = SDL_RWsize((struct SDL_RWops*) f->internal);
         file_close(f);
         return size;
     }
@@ -117,9 +117,8 @@ int file_size(const char* name) {
     }
     return 0;
 #else
-    FILE* f = fopen(name, "rb");
-    if (!f)
-        return 0;
+    FILE * f = fopen(name, "rb");
+    if (!f) return 0;
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
     fclose(f);
@@ -127,24 +126,24 @@ int file_size(const char* name) {
 #endif
 }
 
-unsigned char* file_load(const char* name) {
+unsigned char * file_load(const char * name) {
 #ifdef USE_ANDROID_FILE
     int size = file_size(name);
-    struct file_handle* f = (struct file_handle*)file_open(name, "rb");
+    struct file_handle * f = (struct file_handle*) file_open(name, "rb");
     if (!f)
         return NULL;
-    unsigned char* data = malloc(size + 1);
+    unsigned char * data = malloc(size + 1);
     CHECK_ALLOCATION_ERROR(data)
     data[size] = 0;
     if (f->type == FILE_SDL) {
         int offset = 0;
         while (1) {
-            int read = SDL_RWread((struct SDL_RWops*)f->internal, data + offset, 1, size - offset);
+            int read = SDL_RWread((struct SDL_RWops*) f->internal, data + offset, 1, size - offset);
             if (!read)
                 break;
             offset += read;
         }
-        SDL_RWclose((struct SDL_RWops*)f->internal);
+        SDL_RWclose((struct SDL_RWops*) f->internal);
         if (!offset) {
             free(data);
             return NULL;
@@ -156,7 +155,7 @@ unsigned char* file_load(const char* name) {
     }
     return data;
 #else
-    FILE* f;
+    FILE * f;
     f = fopen(name, "rb");
     if (!f) {
         log_fatal("ERROR: failed to open '%s', exiting", name);
@@ -164,7 +163,7 @@ unsigned char* file_load(const char* name) {
     }
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    unsigned char* data = malloc(size + 1);
+    unsigned char * data = malloc(size + 1);
     CHECK_ALLOCATION_ERROR(data)
     data[size] = 0;
     fseek(f, 0, SEEK_SET);
@@ -174,7 +173,7 @@ unsigned char* file_load(const char* name) {
 #endif
 }
 
-void* file_open(const char* name, const char* mode) {
+void * file_open(const char * name, const char * mode) {
 #ifdef USE_ANDROID_FILE
     struct file_handle* handle = malloc(sizeof(struct file_handle));
     handle->internal = (strchr(mode, 'r') != NULL) ? SDL_RWFromFile(name, mode) : NULL;
@@ -184,7 +183,7 @@ void* file_open(const char* name, const char* mode) {
         sprintf(str, "/sdcard/BetterSpades/%s", name);
         handle->internal = fopen(str, mode);
         handle->type = FILE_STD;
-        // log_warn("open %s %i",str,handle->internal);
+        // log_warn("open %s %i", str, handle->internal);
     }
     if (!handle->internal) {
         free(handle);
@@ -196,56 +195,57 @@ void* file_open(const char* name, const char* mode) {
 #endif
 }
 
-void file_printf(void* file, const char* fmt, ...) {
+void file_printf(void * file, const char * fmt, ...) {
     va_list args;
     va_start(args, fmt);
 #ifdef USE_ANDROID_FILE
-    struct file_handle* f = (struct file_handle*)file;
+    struct file_handle * f = (struct file_handle*) file;
     if (f->type == FILE_SDL) {
         char str[256];
         vsprintf(str, fmt, args);
         int written = 0;
         int total = strlen(str);
         while (written < total)
-            written += SDL_RWwrite((struct SDL_RWops*)f->internal, str + written, 1, total - written);
+            written += SDL_RWwrite((struct SDL_RWops*) f->internal, str + written, 1, total - written);
     }
     if (f->type == FILE_STD) {
         log_warn("%i %i", f->internal, f);
-        vfprintf((FILE*)f->internal, fmt, args);
+        vfprintf((FILE*) f->internal, fmt, args);
     }
 #else
-    vfprintf((FILE*)file, fmt, args);
+    vfprintf((FILE*) file, fmt, args);
 #endif
     va_end(args);
 }
 
-void file_close(void* file) {
+void file_close(void * file) {
 #ifdef USE_ANDROID_FILE
-    struct file_handle* f = (struct file_handle*)file;
+    struct file_handle * f = (struct file_handle*) file;
     if (f->type == FILE_SDL) {
-        SDL_RWclose((struct SDL_RWops*)f->internal);
+        SDL_RWclose((struct SDL_RWops*) f->internal);
     }
     if (f->type == FILE_STD) {
-        fclose((FILE*)f->internal);
+        fclose((FILE*) f->internal);
     }
     free(f);
 #else
-    fclose((FILE*)file);
+    fclose((FILE*) file);
 #endif
 }
 
-float buffer_readf(unsigned char* buffer, int index) {
-    return ((float*)(buffer + index))[0];
+float buffer_readf(unsigned char * buffer, int index) {
+    return letohf(*((float*) (buffer + index)));
 }
 
-unsigned int buffer_read32(unsigned char* buffer, int index) {
+// kv6 models are stored little-endian, so this code is always correct
+unsigned int buffer_read32(unsigned char * buffer, int index) {
     return (buffer[index + 3] << 24) | (buffer[index + 2] << 16) | (buffer[index + 1] << 8) | buffer[index];
 }
 
-unsigned short buffer_read16(unsigned char* buffer, int index) {
+unsigned short buffer_read16(unsigned char * buffer, int index) {
     return (buffer[index + 1] << 8) | buffer[index];
 }
 
-unsigned char buffer_read8(unsigned char* buffer, int index) {
+unsigned char buffer_read8(unsigned char * buffer, int index) {
     return buffer[index];
 }
