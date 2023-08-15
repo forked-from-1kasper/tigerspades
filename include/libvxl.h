@@ -30,7 +30,11 @@
 //! @brief The default color to use when a block is solid, but has no color
 //!
 //! This is the case for e.g. underground blocks which are not visible from the surface
-#define DEFAULT_COLOR(x,y,z)	0x674028
+#ifdef __BIG_ENDIAN__
+    #define DEFAULT_COLOR(x, y, z) 0x284067FF
+#else
+    #define DEFAULT_COLOR(x, y, z) 0xFF674028
+#endif
 
 //! @brief Used to map coordinates to a key
 //!
