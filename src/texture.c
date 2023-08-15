@@ -304,31 +304,6 @@ void texture_resize_pow2(struct texture* t, int min_size) {
     t->pixels = (unsigned char*) pixels_new;
 }
 
-void writeRGBA(uint32_t * dest, RGBA color) {
-    *((uint8_t*) dest + 0) = color.r;
-    *((uint8_t*) dest + 1) = color.g;
-    *((uint8_t*) dest + 2) = color.b;
-    *((uint8_t*) dest + 3) = color.a;
-}
-
-void writeBGR(uint32_t * dest, RGBA color) {
-    *((uint8_t*) dest + 0) = color.b;
-    *((uint8_t*) dest + 1) = color.g;
-    *((uint8_t*) dest + 2) = color.r;
-    *((uint8_t*) dest + 3) = 255;
-}
-
-RGBA readBGR(uint32_t * src) {
-    RGBA retval;
-
-    retval.b = *((uint8_t*) src + 0);
-    retval.g = *((uint8_t*) src + 1);
-    retval.r = *((uint8_t*) src + 2);
-    retval.a = 255;
-
-    return retval;
-}
-
 RGBA texture_block_color(int x, int y) {
     int base[3][8] = {{15, 31, 31, 31, 0, 0, 0, 31}, {15, 0, 15, 31, 31, 31, 0, 0}, {15, 0, 0, 0, 0, 31, 31, 31}};
 

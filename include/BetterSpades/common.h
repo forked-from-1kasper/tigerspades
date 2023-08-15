@@ -125,18 +125,28 @@ int ms_rand(void);
 #include <log.h>
 
 #define CHECK_ALLOCATION_ERROR(ret)                                                        \
-    if (!ret) {                                                                             \
+    if (!ret) {                                                                            \
         log_fatal("Critical error: memory allocation failed (%s:%d)", __func__, __LINE__); \
         exit(1);                                                                           \
     }
 
-float    letohf(float);
-uint32_t letohu32(uint32_t);
-int      letohs32(int);
+#ifdef __BIG_ENDIAN__
+    float    letohf(float);
+    uint32_t letohu32(uint32_t);
+    int      letohs32(int);
 
-#define htolef   letohf
-#define htoleu32 letohu32
-#define htoles32 letohs32
+    #define htolef(x)   letohf(x)
+    #define htoleu32(x) letohu32(x)
+    #define htoles32(x) letohs32(x)
+#else
+    #define letohf(x) (x)
+    #define letohu32(x) (x)
+    #define letohs32(x) (x)
+
+    #define htolef(x) (x)
+    #define htoleu32(x) (x)
+    #define htoles32(x) (x)
+#endif
 
 typedef struct { uint8_t r, g, b, a; } RGBA;
 void writeRGBA(uint32_t *, RGBA);

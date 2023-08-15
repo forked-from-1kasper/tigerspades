@@ -68,45 +68,6 @@ ENetPeer* peer;
 
 char network_custom_reason[17];
 
-uint32_t letohu32(uint32_t in) {
-    uint32_t out;
-
-    char * inptr = (char*) &in, * outptr = (char*) &out;
-
-    outptr[0] = inptr[3];
-    outptr[1] = inptr[2];
-    outptr[2] = inptr[1];
-    outptr[3] = inptr[0];
-
-    return out;
-}
-
-int letohs32(int in) {
-    int out;
-
-    char * inptr = (char*) &in, * outptr = (char*) &out;
-
-    outptr[0] = inptr[3];
-    outptr[1] = inptr[2];
-    outptr[2] = inptr[1];
-    outptr[3] = inptr[0];
-
-    return out;
-}
-
-float letohf(float in) {
-    float out;
-
-    char * inptr = (char*) &in, * outptr = (char*) &out;
-
-    outptr[0] = inptr[3];
-    outptr[1] = inptr[2];
-    outptr[2] = inptr[1];
-    outptr[3] = inptr[0];
-
-    return out;
-}
-
 const char* network_reason_disconnect(int code) {
     if (*network_custom_reason)
         return network_custom_reason;

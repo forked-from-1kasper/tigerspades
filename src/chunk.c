@@ -207,14 +207,11 @@ void* chunk_generate(void* data) {
             if (blk->position != last_position || k == blocks.blocks_sorted_count - 1) {
                 last_position = blk->position;
 
-                int x = key_getx(blk->position);
-                int z = key_gety(blk->position);
-
+                int x = key_getx(blk->position), z = key_gety(blk->position);
                 uint32_t * out = result.minimap_data + (x - chunk_x + (z - chunk_y) * CHUNK_SIZE);
-                RGBA color = readBGR(&blk->color);
 
                 if ((x % 64) > 0 && (z % 64) > 0)
-                    writeRGBA(out, color);
+                    writeRGBA(out, readBGR(&blk->color));
                 else *out = 0xFFFFFFFF;
             }
         }
