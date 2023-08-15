@@ -787,7 +787,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
             if (players[local_id].held_item == TOOL_BLOCK) {
                 for (int y = 0; y < 8; y++) {
                     for (int x = 0; x < 8; x++) {
-                        RGBA color = texture_block_color(x, y);
+                        TrueColor color = texture_block_color(x, y);
 
                         if (color.r == players[local_id].block.red   &&
                             color.g == players[local_id].block.green &&
@@ -1586,7 +1586,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 int y;
                 for (y = 0; y < 8; y++) {
                     for (int x = 0; x < 8; x++) {
-                        RGBA color = texture_block_color(x, y);
+                        TrueColor color = texture_block_color(x, y);
 
                         if (color.r == players[local_player_id].block.red   &&
                             color.g == players[local_player_id].block.green &&
@@ -1625,7 +1625,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                     }
                 }
                 if (y < 10) {
-                    RGBA color = texture_block_color(3, 0);
+                    TrueColor color = texture_block_color(3, 0);
                     players[local_player_id].block.red   = color.r;
                     players[local_player_id].block.green = color.g;
                     players[local_player_id].block.blue  = color.b;
@@ -1789,7 +1789,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 switch (hit.type) {
                     case CAMERA_HITTYPE_BLOCK: {
                         float dmg = (100.0F - map_damage_get(hit.x, hit.y, hit.z)) / 100.0F * 0.75F + 0.25F;
-                        RGBA color = map_get(hit.x, hit.y, hit.z);
+                        TrueColor color = map_get(hit.x, hit.y, hit.z);
                         players[local_player_id].block.red   = color.r * dmg;
                         players[local_player_id].block.green = color.g * dmg;
                         players[local_player_id].block.blue  = color.b * dmg;
@@ -1811,7 +1811,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
     } else {
         if (action != WINDOW_RELEASE) {
             if (key == WINDOW_KEY_V && mods) {
-                const char* clipboard = window_clipboard();
+                const char * clipboard = window_clipboard();
                 if (clipboard)
                     strcat(chat[0][0], clipboard);
             }
@@ -1837,9 +1837,9 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
     }
 }
 
-static void hud_ingame_touch(void* finger, int action, float x, float y, float dx, float dy) {
+static void hud_ingame_touch(void * finger, int action, float x, float y, float dx, float dy) {
     window_setmouseloc(x, y);
-    struct window_finger* f = (struct window_finger*)finger;
+    struct window_finger * f = (struct window_finger*) finger;
 
     if (action != TOUCH_MOVE) {
         int k = 0;

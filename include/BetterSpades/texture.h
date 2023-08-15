@@ -25,7 +25,7 @@
 struct texture {
     int width, height;
     int texture_id;
-    unsigned char* pixels;
+    unsigned char * pixels;
 };
 
 extern struct texture texture_splash;
@@ -73,20 +73,20 @@ extern struct texture texture_ui_knob;
 #define TEXTURE_FILTER_NEAREST 0
 #define TEXTURE_FILTER_LINEAR 1
 
-int texture_flag_index(const char* country);
-void texture_flag_offset(int index, float* u, float* v);
-void texture_filter(struct texture* t, int filter);
+int texture_flag_index(const char * country);
+void texture_flag_offset(int index, float * u, float * v);
+void texture_filter(struct texture * t, int filter);
 void texture_init(void);
-int texture_create(struct texture* t, char* filename);
-int texture_create_buffer(struct texture* t, int width, int height, unsigned char* buff, int new);
-void texture_delete(struct texture* t);
-void texture_draw(struct texture* t, float x, float y, float w, float h);
-void texture_draw_sector(struct texture* t, float x, float y, float w, float h, float u, float v, float us, float vs);
+int texture_create(struct texture * t, char * filename);
+int texture_create_buffer(struct texture * t, int width, int height, unsigned char * buff, int new);
+void texture_delete(struct texture * t);
+void texture_draw(struct texture * t, float x, float y, float w, float h);
+void texture_draw_sector(struct texture * t, float x, float y, float w, float h, float u, float v, float us, float vs);
 void texture_draw_empty(float x, float y, float w, float h);
 void texture_draw_empty_rotated(float x, float y, float w, float h, float angle);
-void texture_draw_rotated(struct texture* t, float x, float y, float w, float h, float angle);
-void texture_resize_pow2(struct texture* t, int min_size);
-RGBA texture_block_color(int x, int y);
+void texture_draw_rotated(struct texture * t, float x, float y, float w, float h, float angle);
+void texture_resize_pow2(struct texture * t, int min_size);
+TrueColor texture_block_color(int x, int y);
 void texture_gradient_fog(unsigned int *);
 
 #endif

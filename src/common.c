@@ -15,22 +15,22 @@ BSWAP32(uint32_t, letohu32)
 BSWAP32(int,      letohs32)
 BSWAP32(float,    letohf)
 
-void writeRGBA(uint32_t * dest, RGBA color) {
+void writeRGBA(uint32_t * dest, TrueColor color) {
     *((uint8_t*) dest + 0) = color.r;
     *((uint8_t*) dest + 1) = color.g;
     *((uint8_t*) dest + 2) = color.b;
     *((uint8_t*) dest + 3) = color.a;
 }
 
-void writeBGR(uint32_t * dest, RGBA color) {
+void writeBGR(uint32_t * dest, TrueColor color) {
     *((uint8_t*) dest + 0) = color.b;
     *((uint8_t*) dest + 1) = color.g;
     *((uint8_t*) dest + 2) = color.r;
     *((uint8_t*) dest + 3) = 255;
 }
 
-RGBA readBGR(uint32_t * src) {
-    RGBA retval;
+TrueColor readBGR(uint32_t * src) {
+    TrueColor retval;
 
     retval.b = *((uint8_t*) src + 0);
     retval.g = *((uint8_t*) src + 1);

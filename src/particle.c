@@ -41,9 +41,9 @@ void particle_init() {
     tesselator_create(&particle_tesselator, VERTEX_FLOAT, 0);
 }
 
-static bool particle_update_single(void* obj, void* user) {
-    struct Particle* p = (struct Particle*)obj;
-    float dt = *(float*)user;
+static bool particle_update_single(void * obj, void * user) {
+    struct Particle * p = (struct Particle*) obj;
+    float dt = *(float*) user;
     float size = p->size * (1.0F - ((float)(window_time() - p->fade) / 2.0F));
 
     if (size < 0.01F) {
@@ -109,9 +109,9 @@ void particle_update(float dt) {
     entitysys_iterate(&particles, &dt, particle_update_single);
 }
 
-static bool particle_render_single(void* obj, void* user) {
-    struct Particle* p = (struct Particle*)obj;
-    struct tesselator* tess = (struct tesselator*)user;
+static bool particle_render_single(void * obj, void * user) {
+    struct Particle * p = (struct Particle*) obj;
+    struct tesselator * tess = (struct tesselator*) user;
 
     if (distance2D(camera_x, camera_z, p->x, p->z) > settings.render_distance * settings.render_distance)
         return false;
@@ -128,7 +128,7 @@ static bool particle_render_single(void* obj, void* user) {
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_N, p->x - size, p->y - size, p->z - size, size * 2.0F);
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_P, p->x - size, p->y - size, p->z - size, size * 2.0F);
     } else {
-        struct kv6_t* casing = weapon_casing(p->type);
+        struct kv6_t * casing = weapon_casing(p->type);
 
         if (casing) {
             matrix_push(matrix_model);
@@ -154,7 +154,7 @@ void particle_render() {
     tesselator_draw(&particle_tesselator, 1);
 }
 
-void particle_create_casing(struct Player* p) {
+void particle_create_casing(struct Player * p) {
     entitysys_add(&particles,
                   &(struct Particle) {
                       .size = 0.1F,
@@ -169,16 +169,16 @@ void particle_create_casing(struct Player* p) {
                       .vz = p->casing_dir.z * 3.5F,
                       .fade = window_time(),
                       .type = p->weapon,
-                      .color = (RGBA) {0xFF, 0xFF, 0x00, 0xFF},
+                      .color = (TrueColor) {0xFF, 0xFF, 0x00, 0xFF},
                   });
 }
 
-void particle_create(RGBA color, float x, float y, float z, float velocity, float velocity_y, int amount,
+void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size) {
     for (int k = 0; k < amount; k++) {
-        float vx = (((float)rand() / (float)RAND_MAX) * 2.0F - 1.0F);
-        float vy = (((float)rand() / (float)RAND_MAX) * 2.0F - 1.0F);
-        float vz = (((float)rand() / (float)RAND_MAX) * 2.0F - 1.0F);
+        float vx = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);
+        float vy = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);
+        float vz = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);
         float len = len3D(vx, vy, vz);
 
         vx = (vx / len) * velocity;

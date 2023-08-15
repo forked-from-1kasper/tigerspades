@@ -151,7 +151,7 @@ void tesselator_glx(struct tesselator* t, struct glx_displaylist* x) {
 #endif
 }
 
-void tesselator_set_color(struct tesselator* t, RGBA color) {
+void tesselator_set_color(struct tesselator* t, TrueColor color) {
     t->color = color;
 }
 
@@ -191,7 +191,7 @@ static void tesselator_check_space(struct tesselator* t) {
     }
 }
 
-static void tesselator_emit_color(struct tesselator * t, RGBA * colors) {
+static void tesselator_emit_color(struct tesselator * t, TrueColor * colors) {
 #ifdef TESSELATE_QUADS
     uint32_t * dest = t->colors + t->quad_count * 4;
 
@@ -222,7 +222,7 @@ static void tesselator_emit_normals(struct tesselator * t, int8_t * normals) {
     }
 }
 
-void tesselator_addi(struct tesselator * t, int16_t * coords, RGBA * colors, int8_t * normals) {
+void tesselator_addi(struct tesselator * t, int16_t * coords, TrueColor * colors, int8_t * normals) {
     assert(t->vertex_type == VERTEX_INT);
 
     tesselator_check_space(t);
@@ -242,7 +242,7 @@ void tesselator_addi(struct tesselator * t, int16_t * coords, RGBA * colors, int
     t->quad_count++;
 }
 
-void tesselator_addf(struct tesselator * t, float * coords, RGBA * colors, int8_t * normals) {
+void tesselator_addf(struct tesselator * t, float * coords, TrueColor * colors, int8_t * normals) {
     assert(t->vertex_type == VERTEX_FLOAT);
 
     tesselator_check_space(t);
@@ -263,7 +263,7 @@ void tesselator_addf(struct tesselator * t, float * coords, RGBA * colors, int8_
 }
 
 void tesselator_addi_simple(struct tesselator * t, int16_t * coords) {
-    tesselator_addi(t, coords, (RGBA[]) {t->color, t->color, t->color, t->color},
+    tesselator_addi(t, coords, (TrueColor[]) {t->color, t->color, t->color, t->color},
                     t->has_normal ? (int8_t[]) {t->normal[0], t->normal[1], t->normal[2], t->normal[0], t->normal[1],
                                                 t->normal[2], t->normal[0], t->normal[1], t->normal[2], t->normal[0],
                                                 t->normal[1], t->normal[2]} :
@@ -271,14 +271,14 @@ void tesselator_addi_simple(struct tesselator * t, int16_t * coords) {
 }
 
 void tesselator_addf_simple(struct tesselator * t, float * coords) {
-    tesselator_addf(t, coords, (RGBA[]) {t->color, t->color, t->color, t->color},
+    tesselator_addf(t, coords, (TrueColor[]) {t->color, t->color, t->color, t->color},
                     t->has_normal ? (int8_t[]) {t->normal[0], t->normal[1], t->normal[2], t->normal[0], t->normal[1],
                                                 t->normal[2], t->normal[0], t->normal[1], t->normal[2], t->normal[0],
                                                 t->normal[1], t->normal[2]} :
                                     NULL);
 }
 
-void tesselator_addi_cube_face_adv(struct tesselator* t, enum tesselator_cube_face face, int16_t x, int16_t y,
+void tesselator_addi_cube_face_adv(struct tesselator * t, enum tesselator_cube_face face, int16_t x, int16_t y,
                                    int16_t z, int16_t sx, int16_t sy, int16_t sz) {
     switch (face) {
         case CUBE_FACE_Z_N:

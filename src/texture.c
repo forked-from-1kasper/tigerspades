@@ -304,7 +304,7 @@ void texture_resize_pow2(struct texture * t, int min_size) {
     t->pixels = (unsigned char*) pixels_new;
 }
 
-RGBA texture_block_color(int x, int y) {
+TrueColor texture_block_color(int x, int y) {
     int base[3][8] = {{15, 31, 31, 31, 0, 0, 0, 31}, {15, 0, 15, 31, 31, 31, 0, 0}, {15, 0, 0, 0, 0, 31, 31, 31}};
 
     uint32_t r = base[0][y] + x * (base[0][y] * 2 + 2) * (base[0][y] > 0);
@@ -317,7 +317,7 @@ RGBA texture_block_color(int x, int y) {
         b += ((x - 3) * 64 - 33) * (!base[2][y]);
     }
 
-    return (RGBA) {min(r, 255), min(g, 255), min(b, 255), 255};
+    return (TrueColor) {min(r, 255), min(g, 255), min(b, 255), 255};
 }
 
 void texture_gradient_fog(unsigned int * gradient) {
@@ -325,7 +325,7 @@ void texture_gradient_fog(unsigned int * gradient) {
     for (int y = 0; y < size; y++) {
         for (int x = 0; x < size; x++) {
             int d = min(sqrt(distance2D(size / 2, size / 2, x, y)) / (float) size * 2.0F * 255.0F, 255);
-            writeRGBA(gradient + x + y * size, (RGBA) {d, d, d, 255});
+            writeRGBA(gradient + x + y * size, (TrueColor) {d, d, d, 255});
         }
     }
 }

@@ -148,9 +148,11 @@ int ms_rand(void);
     #define htoles32(x) (x)
 #endif
 
-typedef struct { uint8_t r, g, b, a; } RGBA;
-void writeRGBA(uint32_t *, RGBA);
-void writeBGR(uint32_t *, RGBA);
-RGBA readBGR(uint32_t *);
+typedef struct { uint8_t r, g, b, a; } TrueColor;
+
+void writeRGBA(uint32_t *, TrueColor);
+void writeBGR(uint32_t *, TrueColor);
+
+TrueColor readBGR(uint32_t *);
 
 #endif

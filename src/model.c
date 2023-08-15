@@ -335,14 +335,14 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
             uint8_t marked[kv6->voxel_count];
             memset(marked, 0, sizeof(uint8_t) * kv6->voxel_count);
 
-            struct kv6_voxel* voxel = kv6->voxels;
+            struct kv6_voxel * voxel = kv6->voxels;
             for (size_t k = 0; k < kv6->voxel_count; k++, voxel++) {
                 int b = red(voxel->color);
                 int g = green(voxel->color);
                 int r = blue(voxel->color);
                 int a = alpha(voxel->color);
 
-                struct tesselator* tess = &tess_color;
+                struct tesselator * tess = &tess_color;
 
                 if ((r | g | b) == 0) {
                     tess = &tess_team;
@@ -357,7 +357,7 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
                     size_t max_x, max_z;
                     greedy_mesh(kv6, voxel, marked, &max_x, &max_z, KV6_VIS_POS_Y);
 
-                    tesselator_set_color(tess, (RGBA) {r, g, b, 0});
+                    tesselator_set_color(tess, (TrueColor) {r, g, b, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Y_P, voxel->x, voxel->z, voxel->y, max_x, 1, max_z);
                 }
 
@@ -365,7 +365,7 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
                     size_t max_x, max_z;
                     greedy_mesh(kv6, voxel, marked, &max_x, &max_z, KV6_VIS_NEG_Y);
 
-                    tesselator_set_color(tess, (RGBA) {r * 0.6F, g * 0.6F, b * 0.6F, 0});
+                    tesselator_set_color(tess, (TrueColor) {r * 0.6F, g * 0.6F, b * 0.6F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Y_N, voxel->x, voxel->z, voxel->y, max_x, 1, max_z);
                 }
 
@@ -373,7 +373,7 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
                     size_t max_x, max_y;
                     greedy_mesh(kv6, voxel, marked, &max_x, &max_y, KV6_VIS_NEG_Z);
 
-                    tesselator_set_color(tess, (RGBA) {r * 0.95F, g * 0.95F, b * 0.95F, 0});
+                    tesselator_set_color(tess, (TrueColor) {r * 0.95F, g * 0.95F, b * 0.95F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Z_N, voxel->x, voxel->z - (max_y - 1), voxel->y,
                                                   max_x, max_y, 1);
                 }
@@ -382,7 +382,7 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
                     size_t max_x, max_y;
                     greedy_mesh(kv6, voxel, marked, &max_x, &max_y, KV6_VIS_POS_Z);
 
-                    tesselator_set_color(tess, (RGBA) {r * 0.9F, g * 0.9F, b * 0.9F, 0});
+                    tesselator_set_color(tess, (TrueColor) {r * 0.9F, g * 0.9F, b * 0.9F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Z_P, voxel->x, voxel->z - (max_y - 1), voxel->y,
                                                   max_x, max_y, 1);
                 }
@@ -391,7 +391,7 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
                     size_t max_y, max_z;
                     greedy_mesh(kv6, voxel, marked, &max_y, &max_z, KV6_VIS_NEG_X);
 
-                    tesselator_set_color(tess, (RGBA) {r * 0.85F, g * 0.85F, b * 0.85F, 0});
+                    tesselator_set_color(tess, (TrueColor) {r * 0.85F, g * 0.85F, b * 0.85F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_X_N, voxel->x, voxel->z - (max_y - 1), voxel->y, 1,
                                                   max_y, max_z);
                 }
@@ -400,7 +400,7 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
                     size_t max_y, max_z;
                     greedy_mesh(kv6, voxel, marked, &max_y, &max_z, KV6_VIS_POS_X);
 
-                    tesselator_set_color(tess, (RGBA) {r * 0.8F, g * 0.8F, b * 0.8F, 0});
+                    tesselator_set_color(tess, (TrueColor) {r * 0.8F, g * 0.8F, b * 0.8F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_X_P, voxel->x, voxel->z - (max_y - 1), voxel->y, 1,
                                                   max_y, max_z);
                 }
