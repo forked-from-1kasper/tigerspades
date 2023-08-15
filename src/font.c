@@ -78,12 +78,12 @@ static struct font_backed_data* font_find(float h) {
         .size = h,
     };
 
-    struct font_backed_data* f_cached = ht_lookup(&fonts_backed, &id);
+    struct font_backed_data * f_cached = ht_lookup(&fonts_backed, &id);
 
     if (f_cached)
         return f_cached;
 
-    void* file;
+    void * file;
     switch (font_current_type) {
         case FONT_FIXEDSYS: file = font_data_fixedsys; break;
         case FONT_SMALLFNT: file = font_data_smallfnt; break;
@@ -96,7 +96,7 @@ static struct font_backed_data* font_find(float h) {
     f.cdata = malloc((0xFF - FONT_BAKE_START) * sizeof(stbtt_bakedchar));
     CHECK_ALLOCATION_ERROR(f.cdata)
 
-    void* temp_bitmap = NULL;
+    void * temp_bitmap = NULL;
 
     int max_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
@@ -165,11 +165,10 @@ void font_reset() {
     ht_iterate_remove(&fonts_backed, NULL, font_remove_callback);
 }
 
-void font_render(float x, float y, float h, char* text) {
-    struct font_backed_data* font = font_find(h);
+void font_render(float x, float y, float h, char * text) {
+    struct font_backed_data * font = font_find(h);
 
-    if (!font)
-        return;
+    if (!font) return;
 
     size_t k = 0;
     float x2 = x;

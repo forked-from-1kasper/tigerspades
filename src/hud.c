@@ -181,7 +181,7 @@ static void hud_ingame_render3D() {
             }
 
             if (local_player_ammo + local_player_ammo_reserved > 0) {
-                struct kv6_t* gun;
+                struct kv6_t * gun;
                 switch (players[local_player_id].weapon) {
                     default:
                     case WEAPON_RIFLE: gun = &model_semi; break;
@@ -282,7 +282,7 @@ static void hud_ingame_render3D() {
             kv6_render(&model_shotgun, team);
         }
 
-        struct kv6_t* rotating_model = NULL;
+        struct kv6_t * rotating_model = NULL;
         int rotating_model_team = TEAM_SPECTATOR;
         if (gamestate.gamemode_type == GAMEMODE_CTF) {
             switch (players[local_player_id].team) {
@@ -450,7 +450,7 @@ static int hud_ingame_onscreencontrol(int index, char* str, int activate) {
     return 0;
 }
 
-static void hud_ingame_render(mu_Context* ctx, float scalex, float scalef) {
+static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
     // window_mousemode(camera_mode==CAMERAMODE_SELECTION?WINDOW_CURSOR_ENABLED:WINDOW_CURSOR_DISABLED);
     hud_active->render_localplayer = players[local_player_id].team != TEAM_SPECTATOR
         && (screen_current == SCREEN_NONE || camera_mode != CAMERAMODE_FPS);
@@ -1613,6 +1613,8 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                                         y = 0;
                                     break;
                             }
+
+                            color = texture_block_color(x, y);
                             players[local_player_id].block.red   = color.r;
                             players[local_player_id].block.green = color.g;
                             players[local_player_id].block.blue  = color.b;

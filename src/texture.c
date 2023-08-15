@@ -69,7 +69,7 @@ struct texture texture_ui_alert;
 struct texture texture_ui_joystick;
 struct texture texture_ui_knob;
 
-static char* texture_flags[251]
+static char * texture_flags[251]
     = {"AD",  "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA",
        "BB",  "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BR", "BS", "BT", "BV", "BW", "BY",
        "BZ",  "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CS", "CU", "CV", "CX",
@@ -95,7 +95,7 @@ int texture_flag_index(const char* country) {
     return res ? (res - texture_flags) : -1;
 }
 
-void texture_flag_offset(int index, float* u, float* v) {
+void texture_flag_offset(int index, float * u, float * v) {
     if (index >= 0) {
         *u = (index % 14) * (18.0F / 256.0F);
         *v = (index / 14) * (12.0F / 256.0F);
@@ -105,7 +105,7 @@ void texture_flag_offset(int index, float* u, float* v) {
     }
 }
 
-void texture_filter(struct texture* t, int filter) {
+void texture_filter(struct texture * t, int filter) {
     glBindTexture(GL_TEXTURE_2D, t->texture_id);
     switch (filter) {
         case TEXTURE_FILTER_NEAREST:
@@ -120,9 +120,9 @@ void texture_filter(struct texture* t, int filter) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int texture_create(struct texture* t, char* filename) {
+int texture_create(struct texture * t, char * filename) {
     int sz = file_size(filename);
-    void* data = file_load(filename);
+    void * data = file_load(filename);
     int error = lodepng_decode32(&t->pixels, &t->width, &t->height, data, sz);
     free(data);
 
@@ -143,7 +143,7 @@ int texture_create(struct texture* t, char* filename) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int texture_create_buffer(struct texture* t, int width, int height, unsigned char* buff, int new) {
+int texture_create_buffer(struct texture * t, int width, int height, unsigned char * buff, int new) {
     if (new)
         glGenTextures(1, &t->texture_id);
     t->width = width;
@@ -160,13 +160,13 @@ int texture_create_buffer(struct texture* t, int width, int height, unsigned cha
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void texture_delete(struct texture* t) {
+void texture_delete(struct texture * t) {
     if (t->pixels)
         free(t->pixels);
     glDeleteTextures(1, &t->texture_id);
 }
 
-void texture_draw_sector(struct texture* t, float x, float y, float w, float h, float u, float v, float us, float vs) {
+void texture_draw_sector(struct texture * t, float x, float y, float w, float h, float u, float v, float us, float vs) {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -187,7 +187,7 @@ void texture_draw_sector(struct texture* t, float x, float y, float w, float h, 
     glDisable(GL_TEXTURE_2D);
 }
 
-void texture_draw(struct texture* t, float x, float y, float w, float h) {
+void texture_draw(struct texture * t, float x, float y, float w, float h) {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -198,7 +198,7 @@ void texture_draw(struct texture* t, float x, float y, float w, float h) {
     glDisable(GL_TEXTURE_2D);
 }
 
-void texture_draw_rotated(struct texture* t, float x, float y, float w, float h, float angle) {
+void texture_draw_rotated(struct texture * t, float x, float y, float w, float h, float angle) {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -238,9 +238,9 @@ void texture_draw_empty_rotated(float x, float y, float w, float h, float angle)
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void texture_resize_pow2(struct texture* t, int min_size) {
-    if (!t->pixels)
-        return;
+void texture_resize_pow2(struct texture * t, int min_size) {
+    if (!t->pixels) return;
+
     int max_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
     max_size = max(max_size, min_size);
@@ -269,7 +269,7 @@ void texture_resize_pow2(struct texture* t, int min_size) {
     if (!t->pixels)
         return;
 
-    unsigned int* pixels_new = malloc(w * h * sizeof(unsigned int));
+    unsigned int * pixels_new = malloc(w * h * sizeof(unsigned int));
     CHECK_ALLOCATION_ERROR(pixels_new)
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
