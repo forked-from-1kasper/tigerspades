@@ -303,12 +303,12 @@ void player_render_all() {
     player_intersection_dist = FLT_MAX;
 
     Ray ray;
-    ray.origin.x = camera_x;
-    ray.origin.y = camera_y;
-    ray.origin.z = camera_z;
-    ray.direction.x = sin(camera_rot_x) * sin(camera_rot_y);
-    ray.direction.y = cos(camera_rot_y);
-    ray.direction.z = cos(camera_rot_x) * sin(camera_rot_y);
+    ray.origin[X] = camera_x;
+    ray.origin[Y] = camera_y;
+    ray.origin[Z] = camera_z;
+    ray.direction[X] = sin(camera_rot_x) * sin(camera_rot_y);
+    ray.direction[Y] = cos(camera_rot_y);
+    ray.direction[Z] = cos(camera_rot_x) * sin(camera_rot_y);
 
     for (int k = 0; k < PLAYERS_MAX; k++) {
         if (!players[k].connected || players[k].team == TEAM_SPECTATOR)
@@ -508,13 +508,13 @@ static const struct hitbox box_legc = (struct hitbox) {
     .scale = 0.1F,
 };
 
-static bool hitbox_intersection(mat4 model, const struct hitbox* box, Ray* r, float* distance) {
+static bool hitbox_intersection(mat4 model, const struct hitbox * box, Ray * r, float * distance) {
     mat4 inv_model;
     glmc_mat4_inv(model, inv_model);
 
     vec3 origin, dir;
-    glmc_mat4_mulv3(inv_model, r->origin.coords, 1.0F, origin);
-    glmc_mat4_mulv3(inv_model, r->direction.coords, 0.0F, dir);
+    glmc_mat4_mulv3(inv_model, r->origin, 1.0F, origin);
+    glmc_mat4_mulv3(inv_model, r->direction, 0.0F, dir);
 
     return aabb_intersection_ray(
         &(AABB) {
@@ -523,13 +523,13 @@ static bool hitbox_intersection(mat4 model, const struct hitbox* box, Ray* r, fl
                     (box->size[1] - box->pivot[1]) * box->scale},
         },
         &(Ray) {
-            .origin.coords = {origin[0], origin[1], origin[2]},
-            .direction.coords = {dir[0], dir[1], dir[2]},
+            .origin = {origin[0], origin[1], origin[2]},
+            .direction = {dir[0], dir[1], dir[2]},
         },
         distance);
 }
 
-void player_collision(const struct Player* p, Ray* ray, struct player_intersection* intersects) {
+void player_collision(const struct Player * p, Ray * ray, struct player_intersection * intersects) {
     if (!p->alive || p->team == TEAM_SPECTATOR)
         return;
 

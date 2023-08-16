@@ -105,16 +105,16 @@ void camera_hit_fromplayer(struct Camera_HitType* hit, int player_id, float rang
     }
 }
 
-void camera_hit(struct Camera_HitType* hit, int exclude_player, float x, float y, float z, float ray_x, float ray_y,
+void camera_hit(struct Camera_HitType * hit, int exclude_player, float x, float y, float z, float ray_x, float ray_y,
                 float ray_z, float range) {
     camera_hit_mask(hit, exclude_player, x, y, z, ray_x, ray_y, ray_z, range);
 }
 
-void camera_hit_mask(struct Camera_HitType* hit, int exclude_player, float x, float y, float z, float ray_x,
+void camera_hit_mask(struct Camera_HitType * hit, int exclude_player, float x, float y, float z, float ray_x,
                      float ray_y, float ray_z, float range) {
     Ray dir = (Ray) {
-        .origin.coords = {x, y, z},
-        .direction.coords = {ray_x, ray_y, ray_z},
+        .origin = {x, y, z},
+        .direction = {ray_x, ray_y, ray_z},
     };
 
     hit->type = CAMERA_HITTYPE_NONE;

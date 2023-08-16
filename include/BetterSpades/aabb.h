@@ -22,41 +22,20 @@
 
 #include <stdbool.h>
 
-typedef struct {
-    union {
-        struct {
-            float min_x, min_y, min_z;
-        };
-        float min[3];
-    };
-    union {
-        struct {
-            float max_x, max_y, max_z;
-        };
-        float max[3];
-    };
-} AABB;
+#include <cglm/vec3.h>
 
-typedef struct {
-    union {
-        struct {
-            float x, y, z;
-        };
-        float coords[3];
-    } origin;
-    union {
-        struct {
-            float x, y, z;
-        };
-        float coords[3];
-    } direction;
-} Ray;
+#define X 0
+#define Y 1
+#define Z 2
 
-bool aabb_intersection(AABB* a, AABB* b);
-bool aabb_intersection_ray(AABB* a, Ray* r, float* distance);
-bool aabb_intersection_terrain(AABB* a, int miny);
-void aabb_set_size(AABB* a, float x, float y, float z);
-void aabb_set_center(AABB* a, float x, float y, float z);
-void aabb_render(AABB* a);
+typedef struct { vec3 min, max; } AABB;
+typedef struct { vec3 origin, direction; } Ray;
+
+bool aabb_intersection(AABB * a, AABB * b);
+bool aabb_intersection_ray(AABB * a, Ray * r, float * distance);
+bool aabb_intersection_terrain(AABB * a, int miny);
+void aabb_set_size(AABB * a, float x, float y, float z);
+void aabb_set_center(AABB * a, float x, float y, float z);
+void aabb_render(AABB * a);
 
 #endif

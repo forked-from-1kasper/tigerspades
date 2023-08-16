@@ -34,10 +34,10 @@
 
 struct entity_system tracers;
 
-void tracer_pvelocity(float* o, struct Player* p) {
-    o[0] = o[0] * 256.0F / 32.0F + p->physics.velocity.x;
-    o[1] = o[1] * 256.0F / 32.0F + p->physics.velocity.y;
-    o[2] = o[2] * 256.0F / 32.0F + p->physics.velocity.z;
+void tracer_pvelocity(float * o, struct Player * p) {
+    o[X] = o[X] * 256.0F / 32.0F + p->physics.velocity.x;
+    o[Y] = o[Y] * 256.0F / 32.0F + p->physics.velocity.y;
+    o[Z] = o[Z] * 256.0F / 32.0F + p->physics.velocity.z;
 }
 
 struct tracer_minimap_info {
@@ -47,19 +47,19 @@ struct tracer_minimap_info {
     float minimap_y;
 };
 
-static bool tracer_minimap_single(void* obj, void* user) {
-    struct Tracer* t = (struct Tracer*)obj;
-    struct tracer_minimap_info* info = (struct tracer_minimap_info*)user;
+static bool tracer_minimap_single(void * obj, void * user) {
+    struct Tracer* t = (struct Tracer*) obj;
+    struct tracer_minimap_info* info = (struct tracer_minimap_info*) user;
 
     if (info->large) {
-        float ang = -atan2(t->r.direction.z, t->r.direction.x) - HALFPI;
-        texture_draw_rotated(&texture_tracer, info->minimap_x + t->r.origin.x * info->scalef,
-                             info->minimap_y - t->r.origin.z * info->scalef, 15 * info->scalef, 15 * info->scalef, ang);
+        float ang = -atan2(t->r.direction[Z], t->r.direction[X]) - HALFPI;
+        texture_draw_rotated(&texture_tracer, info->minimap_x + t->r.origin[X] * info->scalef,
+                             info->minimap_y - t->r.origin[Z] * info->scalef, 15 * info->scalef, 15 * info->scalef, ang);
     } else {
-        float tracer_x = t->r.origin.x - info->minimap_x;
-        float tracer_y = t->r.origin.z - info->minimap_y;
+        float tracer_x = t->r.origin[X] - info->minimap_x;
+        float tracer_y = t->r.origin[Z] - info->minimap_y;
         if (tracer_x > 0.0F && tracer_x < 128.0F && tracer_y > 0.0F && tracer_y < 128.0F) {
-            float ang = -atan2(t->r.direction.z, t->r.direction.x) - HALFPI;
+            float ang = -atan2(t->r.direction[Z], t->r.direction[X]) - HALFPI;
             texture_draw_rotated(&texture_tracer, settings.window_width - 143 * info->scalef + tracer_x * info->scalef,
                                  (585 - tracer_y) * info->scalef, 15 * info->scalef, 15 * info->scalef, ang);
         }
@@ -82,12 +82,12 @@ void tracer_minimap(int large, float scalef, float minimap_x, float minimap_y) {
 void tracer_add(int type, float x, float y, float z, float dx, float dy, float dz) {
     struct Tracer t = (struct Tracer) {
         .type = type,
-        .x = t.r.origin.x = x + dx / 4.0F,
-        .y = t.r.origin.y = y + dy / 4.0F,
-        .z = t.r.origin.z = z + dz / 4.0F,
-        .r.direction.x = dx,
-        .r.direction.y = dy,
-        .r.direction.z = dz,
+        .x = t.r.origin[X] = x + dx / 4.0F,
+        .y = t.r.origin[Y] = y + dy / 4.0F,
+        .z = t.r.origin[Z] = z + dz / 4.0F,
+        .r.direction[X] = dx,
+        .r.direction[Y] = dy,
+        .r.direction[Z] = dz,
         .created = window_time(),
     };
 
@@ -97,12 +97,12 @@ void tracer_add(int type, float x, float y, float z, float dx, float dy, float d
     entitysys_add(&tracers, &t);
 }
 
-static bool tracer_render_single(void* obj, void* user) {
-    struct Tracer* t = (struct Tracer*)obj;
+static bool tracer_render_single(void * obj, void * user) {
+    struct Tracer * t = (struct Tracer*) obj;
 
     matrix_push(matrix_model);
-    matrix_translate(matrix_model, t->r.origin.x, t->r.origin.y, t->r.origin.z);
-    matrix_pointAt(matrix_model, t->r.direction.x, t->r.direction.y, t->r.direction.z);
+    matrix_translate(matrix_model, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
+    matrix_pointAt(matrix_model, t->r.direction[X], t->r.direction[Y], t->r.direction[Z]);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
     matrix_upload();
     kv6_render(
@@ -121,22 +121,22 @@ void tracer_render() {
     entitysys_iterate(&tracers, NULL, tracer_render_single);
 }
 
-static bool tracer_update_single(void* obj, void* user) {
-    struct Tracer* t = (struct Tracer*)obj;
-    float dt = *(float*)user;
+static bool tracer_update_single(void * obj, void * user) {
+    struct Tracer * t = (struct Tracer*) obj;
+    float dt = *(float*) user;
 
-    float len = distance3D(t->x, t->y, t->z, t->r.origin.x, t->r.origin.y, t->r.origin.z);
+    float len = distance3D(t->x, t->y, t->z, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
 
     // 128.0[m] / 256.0[m/s] = 0.5[s]
     if ((t->hit.type != CAMERA_HITTYPE_NONE && len > pow(t->hit.distance, 2)) || window_time() - t->created > 0.5F) {
         if (t->hit.type != CAMERA_HITTYPE_NONE)
-            sound_create(SOUND_WORLD, &sound_impact, t->r.origin.x, t->r.origin.y, t->r.origin.z);
+            sound_create(SOUND_WORLD, &sound_impact, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
 
         return true;
     } else {
-        t->r.origin.x += t->r.direction.x * 32.0F * dt;
-        t->r.origin.y += t->r.direction.y * 32.0F * dt;
-        t->r.origin.z += t->r.direction.z * 32.0F * dt;
+        t->r.origin[X] += t->r.direction[X] * 32.0F * dt;
+        t->r.origin[Y] += t->r.direction[Y] * 32.0F * dt;
+        t->r.origin[Z] += t->r.direction[Z] * 32.0F * dt;
     }
 
     return false;
