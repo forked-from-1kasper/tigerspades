@@ -24,7 +24,7 @@
 #include <stddef.h>
 
 struct window_instance {
-    void* impl;
+    void * impl;
 };
 
 enum {
@@ -119,11 +119,11 @@ extern int window_pressed_keys[64];
 
 void window_textinput(int allow);
 float window_time(void);
-void window_keyname(int keycode, char* output, size_t length);
-const char* window_clipboard(void);
+void window_keyname(int keycode, char * output, size_t length);
+const char * window_clipboard(void);
 int window_key_down(int key);
 void window_mousemode(int mode);
-void window_mouseloc(double* x, double* y);
+void window_mouseloc(double * x, double * y);
 void window_setmouseloc(double x, double y);
 void window_swapping(int value);
 void window_init(void);
@@ -132,6 +132,10 @@ void window_deinit(void);
 void window_update(void);
 int window_closed(void);
 int window_cpucores();
-void window_title(char* suffix);
+void window_title(char * suffix);
+
+#ifdef USE_SDL
+    extern int quit;
+#endif
 
 #endif
