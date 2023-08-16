@@ -60,6 +60,171 @@ void window_keyname(int keycode, char* output, size_t length) {
     #endif
 }
 
+void window_deinit() {
+    #ifdef USE_GLFW
+        glfwTerminate();
+    #endif
+
+    #ifdef USE_SDL
+        SDL_DestroyWindow(hud_window->impl);
+        SDL_Quit();
+    #endif
+}
+
+float window_time() {
+    #ifdef USE_GLFW
+        return glfwGetTime();
+    #endif
+
+    #ifdef USE_SDL
+        return ((double) SDL_GetTicks()) / 1000.0F;
+    #endif
+}
+
+#ifdef USE_SDL
+    static int quit = 0;
+#endif
+
+int window_closed() {
+    #ifdef USE_GLFW
+        return glfwWindowShouldClose(hud_window->impl);
+    #endif
+
+    #ifdef USE_SDL
+        return quit;
+    #endif
+}
+
+void window_title(char * suffix) {
+    char title[128];
+
+    if (suffix)
+        snprintf(title, sizeof(title) - 1, "BetterSpades %s — %s", BETTERSPADES_VERSION, suffix);
+    else
+        sprintf(title, "BetterSpades " BETTERSPADES_VERSION);
+
+    #ifdef USE_GLFW
+        glfwSetWindowTitle(hud_window->impl, title);
+    #endif
+
+    #ifdef USE_SDL
+        SDL_SetWindowTitle(hud_window->impl, title);
+    #endif
+}
+
+static double mx = -1, my = -1;
+
+void window_setmouseloc(double x, double y) {
+    #ifdef USE_SDL
+        mx = x;
+        my = y;
+    #endif
+}
+
+void window_mouseloc(double * x, double * y) {
+    #ifdef USE_GLFW
+        glfwGetCursorPos(hud_window->impl, x, y);
+    #endif
+
+    #ifdef USE_SDL
+        if (mx < 0 && my < 0) {
+            int xi, yi;
+            SDL_GetMouseState(&xi, &yi);
+            *x = xi;
+            *y = yi;
+        } else {
+            *x = mx;
+            *y = my;
+        }
+    #endif
+}
+
+void window_textinput(int allow) {
+    #ifdef USE_SDL
+        if (allow && !SDL_IsTextInputActive())
+            SDL_StartTextInput();
+        if (!allow && SDL_IsTextInputActive())
+            SDL_StopTextInput();
+    #endif
+}
+
+const char * window_clipboard() {
+    #ifdef USE_GLFW
+        return glfwGetClipboardString(hud_window->impl);
+    #endif
+
+    #ifdef USE_SDL
+        return SDL_HasClipboardText() ? SDL_GetClipboardText() : NULL;
+    #endif
+}
+
+void window_swapping(int value) {
+    #ifdef USE_GLFW
+        glfwSwapInterval(value);
+    #endif
+
+    #ifdef USE_SDL
+        SDL_GL_SetSwapInterval(value);
+    #endif
+}
+
+void window_mousemode(int mode) {
+    #ifdef USE_GLFW
+        int s = glfwGetInputMode(hud_window->impl, GLFW_CURSOR);
+        if ((s == GLFW_CURSOR_DISABLED && mode == WINDOW_CURSOR_ENABLED)
+         || (s == GLFW_CURSOR_NORMAL && mode == WINDOW_CURSOR_DISABLED))
+            glfwSetInputMode(hud_window->impl, GLFW_CURSOR,
+                             mode == WINDOW_CURSOR_ENABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+    #endif
+
+    #ifdef USE_SDL
+        int s = SDL_GetRelativeMouseMode();
+        if ((s && mode == WINDOW_CURSOR_ENABLED) || (!s && mode == WINDOW_CURSOR_DISABLED))
+            SDL_SetRelativeMouseMode(mode == WINDOW_CURSOR_ENABLED ? 0 : 1);
+    #endif
+}
+
+void window_fromsettings() {
+    #ifdef USE_GLFW
+        glfwWindowHint(GLFW_SAMPLES, settings.multisamples);
+        glfwSetWindowSize(hud_window->impl, settings.window_width, settings.window_height);
+
+        if (settings.vsync < 2)
+            window_swapping(settings.vsync);
+        if (settings.vsync > 1)
+            window_swapping(0);
+
+        const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        if (settings.fullscreen)
+            glfwSetWindowMonitor(hud_window->impl, glfwGetPrimaryMonitor(), 0, 0, settings.window_width,
+                                 settings.window_height, mode->refreshRate);
+        else
+            glfwSetWindowMonitor(hud_window->impl, NULL, (mode->width - settings.window_width) / 2,
+                                 (mode->height - settings.window_height) / 2, settings.window_width, settings.window_height,
+                                 0);
+    #endif
+
+    #ifdef USE_SDL
+        SDL_SetWindowSize(hud_window->impl, settings.window_width, settings.window_height);
+
+        if (settings.vsync < 2)
+            window_swapping(settings.vsync);
+        if (settings.vsync > 1)
+            window_swapping(0);
+
+        if (settings.fullscreen)
+            SDL_SetWindowFullscreen(hud_window->impl, SDL_WINDOW_FULLSCREEN);
+        else
+            SDL_SetWindowFullscreen(hud_window->impl, 0);
+    #endif
+}
+
+int window_pressed_keys[64] = {0};
+
+int window_key_down(int key) {
+    return window_pressed_keys[key];
+}
+
 #ifdef USE_GLFW
 
 static bool joystick_available = false;
@@ -77,10 +242,6 @@ static void window_impl_joystick(int jid, int event) {
         log_info("Joystick removed: %s", glfwGetJoystickName(joystick_id));
     }
 }
-
-void window_textinput(int allow) { }
-
-void window_setmouseloc(double x, double y) { }
 
 static void window_impl_mouseclick(GLFWwindow* window, int button, int action, int mods) {
     int b = 0;
@@ -141,46 +302,6 @@ static void window_impl_keys(GLFWwindow* window, int key, int scancode, int acti
     }
 }
 
-float window_time() {
-    return glfwGetTime();
-}
-
-int window_pressed_keys[64] = {0};
-
-const char* window_clipboard() {
-    return glfwGetClipboardString(hud_window->impl);
-}
-
-int window_key_down(int key) {
-    return window_pressed_keys[key];
-}
-
-void window_mousemode(int mode) {
-    int s = glfwGetInputMode(hud_window->impl, GLFW_CURSOR);
-    if ((s == GLFW_CURSOR_DISABLED && mode == WINDOW_CURSOR_ENABLED)
-       || (s == GLFW_CURSOR_NORMAL && mode == WINDOW_CURSOR_DISABLED))
-        glfwSetInputMode(hud_window->impl, GLFW_CURSOR,
-                         mode == WINDOW_CURSOR_ENABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-}
-
-void window_mouseloc(double* x, double* y) {
-    glfwGetCursorPos(hud_window->impl, x, y);
-}
-
-void window_swapping(int value) {
-    glfwSwapInterval(value);
-}
-
-void window_title(char* suffix) {
-    if (suffix) {
-        char title[128];
-        snprintf(title, sizeof(title) - 1, "BetterSpades %s - %s", BETTERSPADES_VERSION, suffix);
-        glfwSetWindowTitle(hud_window->impl, title);
-    } else {
-        glfwSetWindowTitle(hud_window->impl, "BetterSpades " BETTERSPADES_VERSION);
-    }
-}
-
 void window_init() {
     static struct window_instance i;
     hud_window = &i;
@@ -222,7 +343,7 @@ void window_init() {
         exit(1);
     }
 
-    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     glfwSetWindowPos(hud_window->impl, (mode->width - settings.window_width) / 2.0F,
                      (mode->height - settings.window_height) / 2.0F);
     glfwShowWindow(hud_window->impl);
@@ -238,29 +359,6 @@ void window_init() {
 
     if (glfwRawMouseMotionSupported())
         glfwSetInputMode(hud_window->impl, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-}
-
-void window_fromsettings() {
-    glfwWindowHint(GLFW_SAMPLES, settings.multisamples);
-    glfwSetWindowSize(hud_window->impl, settings.window_width, settings.window_height);
-
-    if (settings.vsync < 2)
-        window_swapping(settings.vsync);
-    if (settings.vsync > 1)
-        window_swapping(0);
-
-    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    if (settings.fullscreen)
-        glfwSetWindowMonitor(hud_window->impl, glfwGetPrimaryMonitor(), 0, 0, settings.window_width,
-                             settings.window_height, mode->refreshRate);
-    else
-        glfwSetWindowMonitor(hud_window->impl, NULL, (mode->width - settings.window_width) / 2,
-                             (mode->height - settings.window_height) / 2, settings.window_width, settings.window_height,
-                             0);
-}
-
-void window_deinit() {
-    glfwTerminate();
 }
 
 static void gamepad_translate_key(GLFWgamepadstate* state, GLFWgamepadstate* old, int gamepad, enum window_keys key) {
@@ -322,77 +420,9 @@ void window_update() {
     }
 }
 
-int window_closed() {
-    return glfwWindowShouldClose(hud_window->impl);
-}
-
 #endif
 
 #ifdef USE_SDL
-
-void window_textinput(int allow) {
-    if (allow && !SDL_IsTextInputActive())
-        SDL_StartTextInput();
-    if (!allow && SDL_IsTextInputActive())
-        SDL_StopTextInput();
-}
-
-void window_fromsettings() {
-    SDL_SetWindowSize(hud_window->impl, settings.window_width, settings.window_height);
-
-    if (settings.vsync < 2)
-        window_swapping(settings.vsync);
-    if (settings.vsync > 1)
-        window_swapping(0);
-
-    if (settings.fullscreen)
-        SDL_SetWindowFullscreen(hud_window->impl, SDL_WINDOW_FULLSCREEN);
-    else
-        SDL_SetWindowFullscreen(hud_window->impl, 0);
-}
-
-float window_time() {
-    return ((double)SDL_GetTicks()) / 1000.0F;
-}
-
-int window_pressed_keys[64] = {0};
-
-const char* window_clipboard() {
-    return SDL_HasClipboardText() ? SDL_GetClipboardText() : NULL;
-}
-
-int window_key_down(int key) {
-    return window_pressed_keys[key];
-}
-
-void window_mousemode(int mode) {
-    int s = SDL_GetRelativeMouseMode();
-    if ((s && mode == WINDOW_CURSOR_ENABLED) || (!s && mode == WINDOW_CURSOR_DISABLED))
-        SDL_SetRelativeMouseMode(mode == WINDOW_CURSOR_ENABLED ? 0 : 1);
-}
-
-static double mx = -1, my = -1;
-
-void window_setmouseloc(double x, double y) {
-    mx = x;
-    my = y;
-}
-
-void window_mouseloc(double* x, double* y) {
-    if (mx < 0 && my < 0) {
-        int xi, yi;
-        SDL_GetMouseState(&xi, &yi);
-        *x = xi;
-        *y = yi;
-    } else {
-        *x = mx;
-        *y = my;
-    }
-}
-
-void window_swapping(int value) {
-    SDL_GL_SetSwapInterval(value);
-}
 
 static struct window_finger fingers[8];
 
@@ -420,17 +450,11 @@ void window_init() {
 #ifdef OPENGL_ES
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #endif
-    SDL_GLContext* ctx = SDL_GL_CreateContext(hud_window->impl);
+    SDL_GL_CreateContext(hud_window->impl);
 
     memset(fingers, 0, sizeof(fingers));
 }
 
-void window_deinit() {
-    SDL_DestroyWindow(hud_window->impl);
-    SDL_Quit();
-}
-
-static int quit = 0;
 void window_update() {
     SDL_GL_SwapWindow(hud_window->impl);
     SDL_Event event;
@@ -572,20 +596,6 @@ void window_update() {
                 }
                 break;
         }
-    }
-}
-
-int window_closed() {
-    return quit;
-}
-
-void window_title(char* suffix) {
-    if (suffix) {
-        char title[128];
-        snprintf(title, sizeof(title) - 1, "BetterSpades %s - %s", BETTERSPADES_VERSION, suffix);
-        SDL_SetWindowTitle(hud_window->impl, title);
-    } else {
-        SDL_SetWindowTitle(hud_window->impl, "BetterSpades " BETTERSPADES_VERSION);
     }
 }
 

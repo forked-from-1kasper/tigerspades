@@ -22,6 +22,7 @@
 
 #include <stddef.h>
 
+#include <BetterSpades/common.h>
 #include <BetterSpades/list.h>
 
 struct config_file_entry {
@@ -96,5 +97,95 @@ struct config_key_pair* config_key(int key);
 void config_key_reset_togglestates();
 void config_reload(void);
 void config_save(void);
+
+#ifdef USE_GLFW
+    #define TOOLKIT_KEY_W       GLFW_KEY_W
+    #define TOOLKIT_KEY_S       GLFW_KEY_S
+    #define TOOLKIT_KEY_A       GLFW_KEY_A
+    #define TOOLKIT_KEY_D       GLFW_KEY_D
+    #define TOOLKIT_KEY_SPACE   GLFW_KEY_SPACE
+    #define TOOLKIT_KEY_LSHIFT  GLFW_KEY_LEFT_SHIFT
+    #define TOOLKIT_KEY_UP      GLFW_KEY_UP
+    #define TOOLKIT_KEY_DOWN    GLFW_KEY_DOWN
+    #define TOOLKIT_KEY_LEFT    GLFW_KEY_LEFT
+    #define TOOLKIT_KEY_RIGHT   GLFW_KEY_RIGHT
+    #define TOOLKIT_KEY_BACK    GLFW_KEY_BACKSPACE
+    #define TOOLKIT_KEY_1       GLFW_KEY_1
+    #define TOOLKIT_KEY_2       GLFW_KEY_2
+    #define TOOLKIT_KEY_3       GLFW_KEY_3
+    #define TOOLKIT_KEY_4       GLFW_KEY_4
+    #define TOOLKIT_KEY_TAB     GLFW_KEY_TAB
+    #define TOOLKIT_KEY_ESC     GLFW_KEY_ESCAPE
+    #define TOOLKIT_KEY_M       GLFW_KEY_M
+    #define TOOLKIT_KEY_LCTRL   GLFW_KEY_LEFT_CONTROL
+    #define TOOLKIT_KEY_V       GLFW_KEY_V
+    #define TOOLKIT_KEY_RETURN  GLFW_KEY_ENTER
+    #define TOOLKIT_KEY_F1      GLFW_KEY_F1
+    #define TOOLKIT_KEY_F2      GLFW_KEY_F2
+    #define TOOLKIT_KEY_F3      GLFW_KEY_F3
+    #define TOOLKIT_KEY_F4      GLFW_KEY_F4
+    #define TOOLKIT_KEY_Y       GLFW_KEY_Y
+    #define TOOLKIT_KEY_Z       GLFW_KEY_Z
+    #define TOOLKIT_KEY_N       GLFW_KEY_N
+    #define TOOLKIT_KEY_PLUS    GLFW_KEY_KP_ADD
+    #define TOOLKIT_KEY_MINUS   GLFW_KEY_KP_SUBTRACT
+    #define TOOLKIT_KEY_R       GLFW_KEY_R
+    #define TOOLKIT_KEY_T       GLFW_KEY_T
+    #define TOOLKIT_KEY_F11     GLFW_KEY_F11
+    #define TOOLKIT_KEY_F5      GLFW_KEY_F5
+    #define TOOLKIT_KEY_COMMA   GLFW_KEY_COMMA
+    #define TOOLKIT_KEY_PERIOD  GLFW_KEY_PERIOD
+    #define TOOLKIT_KEY_E       GLFW_KEY_E
+    #define TOOLKIT_KEY_SLASH   GLFW_KEY_SLASH
+    #define TOOLKIT_KEY_F6      GLFW_KEY_F6
+    #define TOOLKIT_KEY_Q       GLFW_KEY_Q
+    #define TOOLKIT_KEY_F12     GLFW_KEY_F12
+    #define TOOLKIT_KEY_F9      GLFW_KEY_F9
+#endif
+
+#ifdef USE_SDL
+    #define TOOLKIT_KEY_W       SDLK_w
+    #define TOOLKIT_KEY_S       SDLK_s
+    #define TOOLKIT_KEY_A       SDLK_a
+    #define TOOLKIT_KEY_D       SDLK_d
+    #define TOOLKIT_KEY_SPACE   SDLK_SPACE
+    #define TOOLKIT_KEY_LSHIFT  SDLK_LSHIFT
+    #define TOOLKIT_KEY_UP      SDLK_UP
+    #define TOOLKIT_KEY_DOWN    SDLK_DOWN
+    #define TOOLKIT_KEY_LEFT    SDLK_LEFT
+    #define TOOLKIT_KEY_RIGHT   SDLK_RIGHT
+    #define TOOLKIT_KEY_BACK    SDLK_BACKSPACE
+    #define TOOLKIT_KEY_1       SDLK_1
+    #define TOOLKIT_KEY_2       SDLK_2
+    #define TOOLKIT_KEY_3       SDLK_3
+    #define TOOLKIT_KEY_4       SDLK_4
+    #define TOOLKIT_KEY_TAB     SDLK_TAB
+    #define TOOLKIT_KEY_ESC     SDLK_ESCAPE
+    #define TOOLKIT_KEY_M       SDLK_m
+    #define TOOLKIT_KEY_LCTRL   SDLK_LCTRL
+    #define TOOLKIT_KEY_V       SDLK_v
+    #define TOOLKIT_KEY_RETURN  SDLK_RETURN
+    #define TOOLKIT_KEY_F1      SDLK_F1
+    #define TOOLKIT_KEY_F2      SDLK_F2
+    #define TOOLKIT_KEY_F3      SDLK_F3
+    #define TOOLKIT_KEY_F4      SDLK_F4
+    #define TOOLKIT_KEY_Y       SDLK_y
+    #define TOOLKIT_KEY_Z       SDLK_z
+    #define TOOLKIT_KEY_N       SDLK_n
+    #define TOOLKIT_KEY_PLUS    SDLK_KP_PLUS
+    #define TOOLKIT_KEY_MINUS   SDLK_KP_MINUS
+    #define TOOLKIT_KEY_R       SDLK_r
+    #define TOOLKIT_KEY_T       SDLK_t
+    #define TOOLKIT_KEY_F11     SDLK_F11
+    #define TOOLKIT_KEY_F5      SDLK_F5
+    #define TOOLKIT_KEY_COMMA   SDLK_COMMA
+    #define TOOLKIT_KEY_PERIOD  SDLK_PERIOD
+    #define TOOLKIT_KEY_E       SDLK_e
+    #define TOOLKIT_KEY_SLASH   SDLK_SLASH
+    #define TOOLKIT_KEY_F6      SDLK_F6
+    #define TOOLKIT_KEY_Q       SDLK_q
+    #define TOOLKIT_KEY_F12     SDLK_F12
+    #define TOOLKIT_KEY_F9      SDLK_F9
+#endif
 
 #endif

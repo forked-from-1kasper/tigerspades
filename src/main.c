@@ -581,7 +581,7 @@ void keys(struct window_instance* window, int key, int scancode, int action, int
 
 #ifdef USE_GLFW
     if (key == WINDOW_KEY_FULLSCREEN && action == WINDOW_PRESS) { // switch between fullscreen
-        const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         if (!settings.fullscreen) {
             glfwSetWindowMonitor(window->impl, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height,
                                  mode->refreshRate);
