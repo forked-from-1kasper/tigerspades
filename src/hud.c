@@ -173,10 +173,11 @@ static void hud_ingame_render3D() {
                 if (players[local_player_id].held_item == TOOL_BLOCK) {
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
                 }
-                model_block.red = players[local_player_id].block.red / 255.0F;
-                model_block.green = players[local_player_id].block.green / 255.0F;
-                model_block.blue = players[local_player_id].block.blue / 255.0F;
+                model_block.red   = players[local_player_id].block.r / 255.0F;
+                model_block.green = players[local_player_id].block.g / 255.0F;
+                model_block.blue  = players[local_player_id].block.b / 255.0F;
                 matrix_upload();
+
                 kv6_render(&model_block, players[local_player_id].team);
             }
 
@@ -789,9 +790,9 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                     for (int x = 0; x < 8; x++) {
                         TrueColor color = texture_block_color(x, y);
 
-                        if (color.r == players[local_id].block.red   &&
-                            color.g == players[local_id].block.green &&
-                            color.b == players[local_id].block.blue) {
+                        if (color.r == players[local_id].block.r &&
+                            color.g == players[local_id].block.g &&
+                            color.b == players[local_id].block.b) {
                             unsigned char g = (((int)(window_time() * 4)) & 1) * 0xFF;
                             glColor3ub(g, g, g);
                             texture_draw_empty(settings.window_width + (x * 8 - 65) * scalef, (65 - y * 8) * scalef,
@@ -1588,9 +1589,9 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                     for (int x = 0; x < 8; x++) {
                         TrueColor color = texture_block_color(x, y);
 
-                        if (color.r == players[local_player_id].block.red   &&
-                            color.g == players[local_player_id].block.green &&
-                            color.b == players[local_player_id].block.blue) {
+                        if (color.r == players[local_player_id].block.r &&
+                            color.g == players[local_player_id].block.g &&
+                            color.b == players[local_player_id].block.b) {
                             switch (key) {
                                 case WINDOW_KEY_CURSOR_LEFT:
                                     x--;
@@ -1614,10 +1615,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                                     break;
                             }
 
-                            color = texture_block_color(x, y);
-                            players[local_player_id].block.red   = color.r;
-                            players[local_player_id].block.green = color.g;
-                            players[local_player_id].block.blue  = color.b;
+                            players[local_player_id].block = texture_block_color(x, y);
                             network_updateColor();
                             y = 10;
                             break;
@@ -1625,10 +1623,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                     }
                 }
                 if (y < 10) {
-                    TrueColor color = texture_block_color(3, 0);
-                    players[local_player_id].block.red   = color.r;
-                    players[local_player_id].block.green = color.g;
-                    players[local_player_id].block.blue  = color.b;
+                    players[local_player_id].block = texture_block_color(3, 0);
                     network_updateColor();
                 }
             }
@@ -1716,9 +1711,9 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                             login.weapon = WEAPON_RIFLE;
                             login.held_item = TOOL_GUN;
                             login.kills = 0;
-                            login.blue = players[local_player_id].block.blue;
-                            login.green = players[local_player_id].block.green;
-                            login.red = players[local_player_id].block.red;
+                            login.blue = players[local_player_id].block.b;
+                            login.green = players[local_player_id].block.g;
+                            login.red = players[local_player_id].block.r;
                             strcpy(login.name, settings.name);
                             network_send(PACKET_EXISTINGPLAYER_ID, &login,
                                          sizeof(login) - sizeof(login.name) + strlen(settings.name) + 1);
@@ -1755,9 +1750,9 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                         login.weapon = new_gun;
                         login.held_item = TOOL_GUN;
                         login.kills = 0;
-                        login.blue = players[local_player_id].block.blue;
-                        login.green = players[local_player_id].block.green;
-                        login.red = players[local_player_id].block.red;
+                        login.blue = players[local_player_id].block.b;
+                        login.green = players[local_player_id].block.g;
+                        login.red = players[local_player_id].block.r;
                         strcpy(login.name, settings.name);
                         network_send(PACKET_EXISTINGPLAYER_ID, &login,
                                      sizeof(login) - sizeof(login.name) + strlen(settings.name) + 1);
@@ -1790,19 +1785,19 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                     case CAMERA_HITTYPE_BLOCK: {
                         float dmg = (100.0F - map_damage_get(hit.x, hit.y, hit.z)) / 100.0F * 0.75F + 0.25F;
                         TrueColor color = map_get(hit.x, hit.y, hit.z);
-                        players[local_player_id].block.red   = color.r * dmg;
-                        players[local_player_id].block.green = color.g * dmg;
-                        players[local_player_id].block.blue  = color.b * dmg;
+                        players[local_player_id].block.r = color.r * dmg;
+                        players[local_player_id].block.g = color.g * dmg;
+                        players[local_player_id].block.b = color.b * dmg;
                         break;
                     }
                     case CAMERA_HITTYPE_PLAYER:
-                        players[local_player_id].block.packed = players[hit.player_id].block.packed;
+                        players[local_player_id].block = players[hit.player_id].block;
                         break;
                     case CAMERA_HITTYPE_NONE:
                     default:
-                        players[local_player_id].block.red   = fog_color[0] * 255;
-                        players[local_player_id].block.green = fog_color[1] * 255;
-                        players[local_player_id].block.blue  = fog_color[2] * 255;
+                        players[local_player_id].block.r = fog_color[0] * 255;
+                        players[local_player_id].block.g = fog_color[1] * 255;
+                        players[local_player_id].block.b = fog_color[2] * 255;
                         break;
                 }
                 network_updateColor();

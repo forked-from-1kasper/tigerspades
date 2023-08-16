@@ -80,13 +80,13 @@ void player_init() {
     }
 }
 
-void player_reset(struct Player* p) {
+void player_reset(struct Player * p) {
     p->connected = 0;
     p->alive = 0;
     p->held_item = TOOL_GUN;
-    p->block.red = 111;
-    p->block.green = 111;
-    p->block.blue = 111;
+    p->block.r = 111;
+    p->block.g = 111;
+    p->block.b = 111;
     p->physics.velocity.x = 0.0F;
     p->physics.velocity.y = 0.0F;
     p->physics.velocity.z = 0.0F;
@@ -823,9 +823,9 @@ void player_render(struct Player* p, int id) {
     switch (p->held_item) {
         case TOOL_SPADE: kv6_render(&model_spade, p->team); break;
         case TOOL_BLOCK:
-            model_block.red = p->block.red / 255.0F;
-            model_block.green = p->block.green / 255.0F;
-            model_block.blue = p->block.blue / 255.0F;
+            model_block.red   = p->block.r / 255.0F;
+            model_block.green = p->block.g / 255.0F;
+            model_block.blue  = p->block.b / 255.0F;
             kv6_render(&model_block, p->team);
             break;
         case TOOL_GUN:

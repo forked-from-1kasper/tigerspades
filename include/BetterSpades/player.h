@@ -116,12 +116,7 @@ extern struct Player {
     unsigned char alive, connected;
     float item_showup, item_disabled, items_show_start;
     unsigned char items_show;
-    union {
-        unsigned int packed;
-        struct {
-            unsigned char red, green, blue;
-        };
-    } block;
+    TrueColor block;
     struct {
         union {
             unsigned char packed; // useful to load PacketInput quickly

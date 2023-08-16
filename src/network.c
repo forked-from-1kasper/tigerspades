@@ -214,9 +214,9 @@ void read_PacketBlockAction(void * data, int len) {
                 bool play_sound = map_isair(x, 63 - z, y);
 
                 TrueColor color = {
-                    players[p->player_id].block.red,
-                    players[p->player_id].block.green,
-                    players[p->player_id].block.blue,
+                    players[p->player_id].block.r,
+                    players[p->player_id].block.g,
+                    players[p->player_id].block.b,
                     255
                 };
 
@@ -237,9 +237,9 @@ void read_PacketBlockLine(void * data, int len) {
     int ex = letohs32(p->ex), ey = letohs32(p->ey), ez = letohs32(p->ez);
 
     TrueColor color = {
-        players[p->player_id].block.red,
-        players[p->player_id].block.green,
-        players[p->player_id].block.blue,
+        players[p->player_id].block.r,
+        players[p->player_id].block.g,
+        players[p->player_id].block.b,
         255
     };
 
@@ -296,9 +296,9 @@ void read_PacketStateData(void * data, int len) {
     local_player_grenades = 3;
     weapon_set(false);
 
-    players[local_player_id].block.red   = 111;
-    players[local_player_id].block.green = 111;
-    players[local_player_id].block.blue  = 111;
+    players[local_player_id].block.r = 111;
+    players[local_player_id].block.g = 111;
+    players[local_player_id].block.b = 111;
 
     camera_mode = CAMERAMODE_SELECTION;
     screen_current = SCREEN_TEAM_SELECT;
@@ -362,9 +362,9 @@ void read_PacketExistingPlayer(void * data, int len) {
         players[p->player_id].weapon = p->weapon;
         players[p->player_id].held_item = p->held_item;
         players[p->player_id].score = letohs32(p->kills);
-        players[p->player_id].block.red = p->red;
-        players[p->player_id].block.green = p->green;
-        players[p->player_id].block.blue = p->blue;
+        players[p->player_id].block.r = p->red;
+        players[p->player_id].block.g = p->green;
+        players[p->player_id].block.b = p->blue;
         players[p->player_id].ammo = weapon_ammo(p->weapon);
         players[p->player_id].ammo_reserved = weapon_ammo_reserved(p->weapon);
 
@@ -396,9 +396,9 @@ void read_PacketCreatePlayer(void * data, int len) {
         players[p->player_id].orientation.y = players[p->player_id].orientation_smooth.y = 0.0F;
         players[p->player_id].orientation.z = players[p->player_id].orientation_smooth.z = 0.0F;
 
-        players[p->player_id].block.red = 111;
-        players[p->player_id].block.green = 111;
-        players[p->player_id].block.blue = 111;
+        players[p->player_id].block.r = 111;
+        players[p->player_id].block.g = 111;
+        players[p->player_id].block.b = 111;
         players[p->player_id].ammo = weapon_ammo(p->weapon);
         players[p->player_id].ammo_reserved = weapon_ammo_reserved(p->weapon);
         if (p->player_id == local_player_id) {
@@ -535,9 +535,9 @@ void read_PacketOrientationData(void * data, int len) {
 void read_PacketSetColor(void * data, int len) {
     struct PacketSetColor * p = (struct PacketSetColor*) data;
     if (p->player_id < PLAYERS_MAX) {
-        players[p->player_id].block.red   = p->red;
-        players[p->player_id].block.green = p->green;
-        players[p->player_id].block.blue  = p->blue;
+        players[p->player_id].block.r = p->red;
+        players[p->player_id].block.g = p->green;
+        players[p->player_id].block.b = p->blue;
     }
 }
 
@@ -938,9 +938,9 @@ void read_PacketPlayerProperties(void * data, int len) {
 void network_updateColor() {
     struct PacketSetColor c;
     c.player_id = local_player_id;
-    c.red       = players[local_player_id].block.red;
-    c.green     = players[local_player_id].block.green;
-    c.blue      = players[local_player_id].block.blue;
+    c.red       = players[local_player_id].block.r;
+    c.green     = players[local_player_id].block.g;
+    c.blue      = players[local_player_id].block.b;
     network_send(PACKET_SETCOLOR_ID, &c, sizeof(c));
 }
 
