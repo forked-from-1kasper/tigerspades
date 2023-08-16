@@ -189,7 +189,7 @@ void cameracontroller_fps_render() {
 }
 
 void cameracontroller_spectator(float dt) {
-    AABB camera = {0};
+    AABB camera = {.min = {0, 0, 0}, .max = {0, 0, 0}};
     aabb_set_size(&camera, camera_size, camera_height, camera_size);
     aabb_set_center(&camera, camera_x, camera_y - camera_eye_height, camera_z);
 
@@ -317,7 +317,7 @@ void cameracontroller_bodyview(float dt) {
         cameracontroller_bodyview_player = (cameracontroller_bodyview_player + 1) % PLAYERS_MAX;
     }
 
-    AABB camera = {0};
+    AABB camera = {.min = {0, 0, 0}, .max = {0, 0, 0}};
     aabb_set_size(&camera, 0.4F, 0.4F, 0.4F);
 
     float k;

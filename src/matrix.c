@@ -34,31 +34,31 @@ mat4 matrix_stack[MATRIX_STACK_DEPTH];
 int matrix_stack_index = 0;
 
 void matrix_multiply(mat4 m, mat4 n) {
-    glmc_mat4_mul(n, m, m);
+    glm_mat4_mul(n, m, m);
 }
 
 void matrix_load(mat4 m, mat4 n) {
-    glmc_mat4_copy(n, m);
+    glm_mat4_copy(n, m);
 }
 
 void matrix_rotate(mat4 m, float angle, float x, float y, float z) {
-    glmc_rotate(m, angle / 180.0F * GLM_PI, (vec3) {x, y, z});
+    glm_rotate(m, angle / 180.0F * GLM_PI, (vec3) {x, y, z});
 }
 
 void matrix_translate(mat4 m, float x, float y, float z) {
-    glmc_translate(m, (vec3) {x, y, z});
+    glm_translate(m, (vec3) {x, y, z});
 }
 
 void matrix_scale3(mat4 m, float s) {
-    glmc_scale_uni(m, s);
+    glm_scale_uni(m, s);
 }
 
 void matrix_scale(mat4 m, float sx, float sy, float sz) {
-    glmc_scale(m, (vec3) {sx, sy, sz});
+    glm_scale(m, (vec3) {sx, sy, sz});
 }
 
 void matrix_identity(mat4 m) {
-    glmc_mat4_identity(m);
+    glm_mat4_identity(m);
 }
 
 void matrix_push(mat4 m) {
@@ -67,7 +67,7 @@ void matrix_push(mat4 m) {
         return;
     }
 
-    glmc_mat4_copy(m, matrix_stack[matrix_stack_index++]);
+    glm_mat4_copy(m, matrix_stack[matrix_stack_index++]);
 }
 
 void matrix_pop(mat4 m) {
@@ -76,11 +76,11 @@ void matrix_pop(mat4 m) {
         return;
     }
 
-    glmc_mat4_copy(matrix_stack[--matrix_stack_index], m);
+    glm_mat4_copy(matrix_stack[--matrix_stack_index], m);
 }
 
 void matrix_vector(mat4 m, vec4 v) {
-    glmc_mat4_mulv(m, v, v);
+    glm_mat4_mulv(m, v, v);
 
     v[0] /= v[3];
     v[1] /= v[3];
@@ -103,16 +103,16 @@ void matrix_pointAt(mat4 m, float dx, float dy, float dz) {
 }
 
 void matrix_ortho(mat4 m, float left, float right, float bottom, float top, float nearv, float farv) {
-    glmc_ortho(left, right, bottom, top, nearv, farv, m);
+    glm_ortho(left, right, bottom, top, nearv, farv, m);
 }
 
 void matrix_perspective(mat4 m, float fovy, float aspect, float zNear, float zFar) {
-    glmc_perspective(fovy / 180.0F * GLM_PI, aspect, zNear, zFar, m);
+    glm_perspective(fovy / 180.0F * GLM_PI, aspect, zNear, zFar, m);
 }
 
 void matrix_lookAt(mat4 m, double eyex, double eyey, double eyez, double centerx, double centery, double centerz,
                    double upx, double upy, double upz) {
-    glmc_lookat((vec3) {eyex, eyey, eyez}, (vec3) {centerx, centery, centerz}, (vec3) {upx, upy, upz}, m);
+    glm_lookat((vec3) {eyex, eyey, eyez}, (vec3) {centerx, centery, centerz}, (vec3) {upx, upy, upz}, m);
     // matrix_translate(-eyex, -eyey, -eyez);
 }
 

@@ -387,7 +387,7 @@ void config_reload() {
 
     list_sort(&config_keys, config_key_cmp);
 
-    char* s = file_load("config.ini");
+    char * s = file_load("config.ini");
     if (s) {
         ini_parse_string(s, config_read_key, NULL);
         free(s);
@@ -438,13 +438,7 @@ void config_reload() {
                  .min = 0,
                  .max = INT_MAX,
                  .name = "Game width",
-                 .defaults = 640,
-                 800,
-                 854,
-                 1024,
-                 1280,
-                 1920,
-                 3840,
+                 .defaults = {640, 800, 854, 1024, 1280, 1920, 3840},
                  .defaults_length = 7,
                  .help = "Default: 800",
                  .label_callback = config_label_pixels,
@@ -456,13 +450,7 @@ void config_reload() {
                  .min = 0,
                  .max = INT_MAX,
                  .name = "Game height",
-                 .defaults = 480,
-                 600,
-                 720,
-                 768,
-                 1024,
-                 1080,
-                 2160,
+                 .defaults = {480, 600, 720, 768, 1024, 1080, 2160},
                  .defaults_length = 7,
                  .help = "Default: 600",
                  .label_callback = config_label_pixels,
@@ -475,12 +463,7 @@ void config_reload() {
                  .max = INT_MAX,
                  .name = "V-Sync",
                  .help = "Limits your game's fps",
-                 .defaults = 0,
-                 1,
-                 60,
-                 120,
-                 144,
-                 240,
+                 .defaults = {0, 1, 60, 120, 144, 240},
                  .defaults_length = 6,
                  .label_callback = config_label_vsync,
              });
@@ -500,11 +483,7 @@ void config_reload() {
                  .max = 16,
                  .name = "Multisamples",
                  .help = "Smooth out block edges",
-                 .defaults = 0,
-                 2,
-                 4,
-                 8,
-                 16,
+                 .defaults = {0, 2, 4, 8, 16},
                  .defaults_length = 5,
                  .label_callback = config_label_msaa,
              });

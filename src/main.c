@@ -58,7 +58,8 @@ int ms_rand() {
 
 int chat_input_mode = CHAT_NO_INPUT;
 
-char chat[2][10][256] = {0}; // chat[0] is current input
+char chat[2][10][256] = {{{0}}}; // chat[0] is current input
+
 unsigned int chat_color[2][10];
 float chat_timer[2][10];
 void chat_add(int channel, unsigned int color, const char* msg) {

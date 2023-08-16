@@ -454,7 +454,7 @@ void player_render_all() {
     }
 }
 
-static float foot_function(const struct Player* p) {
+static float foot_function(const struct Player * p) {
     float f = (window_time() - p->sound.feet_started_cycle) / (p->input.keys.sprint ? (0.5F / 1.3F) : 0.5F);
     f = f * 2.0F - 1.0F;
     return p->sound.feet_cylce ? f : -f;
@@ -466,43 +466,43 @@ struct hitbox {
     float scale;
 };
 
-static const struct hitbox box_head = (struct hitbox) {
+static const struct hitbox box_head = {
     .pivot = {2.5F, 2.5F, 0.5F},
     .size = {6, 6, 6},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_torso = (struct hitbox) {
+static const struct hitbox box_torso = {
     .pivot = {3.5F, 1.5F, 9.5F},
     .size = {8, 4, 9},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_torsoc = (struct hitbox) {
+static const struct hitbox box_torsoc = {
     .pivot = {3.5F, 6.5F, 6.5F},
     .size = {8, 8, 7},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_arm_left = (struct hitbox) {
+static const struct hitbox box_arm_left = {
     .pivot = {5.5F, -0.5F, 5.5F},
     .size = {2, 9, 6},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_arm_right = (struct hitbox) {
+static const struct hitbox box_arm_right = {
     .pivot = {-3.5F, 4.25F, 1.5F},
     .size = {3, 14, 2},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_leg = (struct hitbox) {
+static const struct hitbox box_leg = {
     .pivot = {1.0F, 1.5F, 12.0F},
     .size = {3, 5, 12},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_legc = (struct hitbox) {
+static const struct hitbox box_legc = {
     .pivot = {1.0F, 1.5F, 7.0F},
     .size = {3, 7, 8},
     .scale = 0.1F,
@@ -510,11 +510,11 @@ static const struct hitbox box_legc = (struct hitbox) {
 
 static bool hitbox_intersection(mat4 model, const struct hitbox * box, Ray * r, float * distance) {
     mat4 inv_model;
-    glmc_mat4_inv(model, inv_model);
+    glm_mat4_inv(model, inv_model);
 
     vec3 origin, dir;
-    glmc_mat4_mulv3(inv_model, r->origin, 1.0F, origin);
-    glmc_mat4_mulv3(inv_model, r->direction, 0.0F, dir);
+    glm_mat4_mulv3(inv_model, r->origin, 1.0F, origin);
+    glm_mat4_mulv3(inv_model, r->direction, 0.0F, dir);
 
     return aabb_intersection_ray(
         &(AABB) {
@@ -1019,10 +1019,10 @@ void player_boxclipmove(struct Player* p, float fsynctics) {
     player_reposition(p);
 }
 
-int player_move(struct Player* p, float fsynctics, int id) {
+int player_move(struct Player * p, float fsynctics, int id) {
     if (!p->alive) {
         p->physics.velocity.y -= fsynctics;
-        AABB dead_bb = {0};
+        AABB dead_bb = {.min = {0, 0, 0}, .max = {0, 0, 0}};
         aabb_set_size(&dead_bb, 0.7F, 0.15F, 0.7F);
         aabb_set_center(&dead_bb, p->pos.x + p->physics.velocity.x * fsynctics * 32.0F,
                         p->pos.y + p->physics.velocity.y * fsynctics * 32.0F,

@@ -1447,24 +1447,25 @@ static int autocomplete_type_cmp(const void* a, const void* b) {
 static const char* hud_ingame_completeword(const char* s) {
     // find most likely player name or command
 
-    struct autocomplete_type candidates[PLAYERS_MAX * 2 + 64] = {0};
+    struct autocomplete_type candidates[PLAYERS_MAX * 2 + 64] = {{0}};
     int candidates_cnt = 0;
 
     for (int k = 0; k < PLAYERS_MAX; k++) {
         if (players[k].connected)
             candidates[candidates_cnt++] = (struct autocomplete_type) {
-                players[k].name,
-                0,
+                .str = players[k].name,
+                .acceptance = 0,
             };
     }
 
     candidates[candidates_cnt++] = (struct autocomplete_type) {
-        gamestate.team_1.name,
-        0,
+        .str = gamestate.team_1.name,
+        .acceptance = 0,
     };
+
     candidates[candidates_cnt++] = (struct autocomplete_type) {
-        gamestate.team_2.name,
-        0,
+        .str = gamestate.team_2.name,
+        .acceptance = 0,
     };
     candidates[candidates_cnt++] = (struct autocomplete_type) {"/help", 0};
     candidates[candidates_cnt++] = (struct autocomplete_type) {"/medkit", 0};
