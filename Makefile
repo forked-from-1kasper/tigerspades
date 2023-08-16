@@ -31,7 +31,7 @@ all: $(BUILDDIR) $(GAMEDIR) $(RESPACK)
 binary: $(BUILDDIR) $(BINARY)
 
 $(BINARY): $(OFILES) $(ODEPS)
-	$(CC) -o $(BINARY) $(OFILES) $(ODEPS) /usr/local/Cellar/sdl2/2.0.3/lib/libSDL2.a libenet.a libGLEW.a libcglm.a libdeflate.a -liconv -framework Carbon -framework OpenAL -framework CoreAudio -framework AudioUnit -framework IOKit -framework Cocoa -framework OpenGL
+	$(CC) -o $(BINARY) $(OFILES) $(ODEPS) /usr/local/Cellar/sdl2/2.0.3/lib/libSDL2.a -liconv -framework Carbon -framework OpenAL -framework CoreAudio -framework AudioUnit -framework IOKit -framework Cocoa -framework OpenGL
 
 $(OFILES): $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	mkdir -p `dirname $@`
