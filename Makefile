@@ -59,7 +59,6 @@ ifeq ($(UNAME),Darwin)
 endif
 
 all: $(BUILDDIR) $(BINARY)
-game: $(BUILDDIR) $(GAMEDIR)
 
 $(BINARY): $(OFILES) $(ODEPS)
 	$(CC) -o $(BINARY) $(OFILES) $(ODEPS) $(LDFLAGS)
@@ -76,7 +75,7 @@ $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
 .PHONY : game
-game: $(RESPACK) $(BINARY)
+game: $(BINARY) $(RESPACK)
 	mkdir -p $(GAMEDIR)
 	cp $(BINARY) $(GAMEDIR)
 	cp -r $(RESDIR)/* $(GAMEDIR)
