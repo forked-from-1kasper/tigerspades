@@ -29,16 +29,16 @@
 struct hud {
     void (*init)();
     void (*render_3D)();
-    void (*render_2D)(mu_Context* ctx, float scalex, float scaley);
+    void (*render_2D)(mu_Context * ctx, float scalex, float scaley);
     void (*input_keyboard)(int key, int action, int mods, int internal);
     void (*input_mouselocation)(double x, double y);
     void (*input_mouseclick)(double x, double y, int button, int action, int mods);
     void (*input_mousescroll)(double yoffset);
-    void (*input_touch)(void* finger, int action, float x, float y, float dx, float dy);
-    struct texture* (*ui_images)(int icon_id, bool* resize);
+    void (*input_touch)(void * finger, int action, float x, float y, float dx, float dy);
+    struct texture * (*ui_images)(int icon_id, bool * resize);
     char render_world;
     char render_localplayer;
-    mu_Context* ctx;
+    mu_Context * ctx;
 };
 
 struct serverlist_entry {
@@ -59,12 +59,12 @@ extern struct hud hud_serverlist;
 extern struct hud hud_settings;
 extern struct hud hud_controls;
 
-extern struct hud* hud_active;
-extern struct window_instance* hud_window;
+extern struct hud * hud_active;
+extern struct window_instance * hud_window;
 
 #define HUD_FLAG_INDEX_START 64
 
-void hud_change(struct hud* new);
+void hud_change(struct hud *);
 void hud_init();
 void hud_mousemode(int mode);
 

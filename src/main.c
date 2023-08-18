@@ -530,8 +530,8 @@ static int mu_button_translate(int button) {
 static int mu_key_translate(int key) {
     switch (key) {
         case WINDOW_KEY_BACKSPACE: return MU_KEY_BACKSPACE;
-        case WINDOW_KEY_ENTER: return MU_KEY_RETURN;
-        case WINDOW_KEY_SHIFT: return MU_KEY_SHIFT;
+        case WINDOW_KEY_ENTER:     return MU_KEY_RETURN;
+        case WINDOW_KEY_SHIFT:     return MU_KEY_SHIFT;
         default: return 0;
     }
 }
@@ -550,7 +550,7 @@ void text_input(struct window_instance* window, unsigned int codepoint) {
     }
 }
 
-void keys(struct window_instance* window, int key, int scancode, int action, int mods) {
+void keys(struct window_instance * window, int key, int scancode, int action, int mods) {
     if (hud_active->ctx) {
         if (mu_key_translate(key)) {
             switch (action) {
@@ -561,7 +561,7 @@ void keys(struct window_instance* window, int key, int scancode, int action, int
         }
 
         if (action == WINDOW_PRESS && key == WINDOW_KEY_V && mods) {
-            const char* clipboard = window_clipboard();
+            const char * clipboard = window_clipboard();
             if (clipboard)
                 mu_input_text(hud_active->ctx, clipboard);
         }
@@ -631,7 +631,7 @@ void keys(struct window_instance* window, int key, int scancode, int action, int
     }
 }
 
-void mouse_click(struct window_instance* window, int button, int action, int mods) {
+void mouse_click(struct window_instance * window, int button, int action, int mods) {
     if (hud_active->input_mouseclick) {
         double x, y;
         window_mouseloc(&x, &y);
@@ -648,14 +648,14 @@ void mouse_click(struct window_instance* window, int button, int action, int mod
     }
 }
 
-void mouse(struct window_instance* window, double x, double y) {
+void mouse(struct window_instance * window, double x, double y) {
     if (hud_active->input_mouselocation)
         hud_active->input_mouselocation(x, y);
     if (hud_active->ctx)
         mu_input_mousemove(hud_active->ctx, x, y);
 }
 
-void mouse_scroll(struct window_instance* window, double xoffset, double yoffset) {
+void mouse_scroll(struct window_instance * window, double xoffset, double yoffset) {
     if (hud_active->input_mousescroll)
         hud_active->input_mousescroll(yoffset);
     if (hud_active->ctx)

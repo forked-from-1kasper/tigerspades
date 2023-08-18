@@ -51,8 +51,8 @@
 #include <parson.h>
 #include <http.h>
 
-struct hud* hud_active;
-struct window_instance* hud_window;
+struct hud * hud_active;
+struct window_instance * hud_window;
 
 static int is_inside_centered(double mx, double my, int x, int y, int w, int h) {
     return mx >= x - w / 2 && mx < x + w / 2 && my >= y - h / 2 && my < y + h / 2;
@@ -64,8 +64,8 @@ static int is_inside(double mx, double my, int x, int y, int w, int h) {
 
 void hud_init() {
     hud_serverlist.ctx = malloc(sizeof(mu_Context));
-    hud_settings.ctx = malloc(sizeof(mu_Context));
-    hud_controls.ctx = malloc(sizeof(mu_Context));
+    hud_settings.ctx   = malloc(sizeof(mu_Context));
+    hud_controls.ctx   = malloc(sizeof(mu_Context));
 
     hud_change(&hud_serverlist);
 }
@@ -93,7 +93,7 @@ static void mu_text_color_default(mu_Context* ctx) {
     ctx->style->colors[MU_COLOR_TEXT] = mu_color(230, 230, 230, 255);
 }
 
-void hud_change(struct hud* new) {
+void hud_change(struct hud * new) {
     config_key_reset_togglestates();
     hud_active = new;
 
@@ -102,7 +102,7 @@ void hud_change(struct hud* new) {
         hud_active->ctx->text_width = mu_text_width;
         hud_active->ctx->text_height = mu_text_height;
         hud_active->ctx->style->colors[MU_COLOR_BUTTONHOVER] = mu_color(95, 95, 70, 255);
-        hud_active->ctx->style->colors[MU_COLOR_PANELBG] = mu_color(10, 10, 10, 192);
+        hud_active->ctx->style->colors[MU_COLOR_PANELBG]     = mu_color(10, 10, 10, 192);
         hud_active->ctx->style->colors[MU_COLOR_SCROLLTHUMB] = mu_color(128, 128, 128, 255);
     }
 
@@ -1444,7 +1444,7 @@ static int autocomplete_type_cmp(const void* a, const void* b) {
     return bb->acceptance - aa->acceptance;
 }
 
-static const char* hud_ingame_completeword(const char* s) {
+static const char * hud_ingame_completeword(const char * s) {
     // find most likely player name or command
 
     struct autocomplete_type candidates[PLAYERS_MAX * 2 + 64] = {{0}};
@@ -2003,7 +2003,7 @@ static void hud_serverlist_init() {
     window_textinput(1);
 }
 
-static int hud_serverlist_sort(const void* a, const void* b) {
+static int hud_serverlist_sort(const void * a, const void * b) {
     struct serverlist_entry* aa = (struct serverlist_entry*)a;
     struct serverlist_entry* bb = (struct serverlist_entry*)b;
 
@@ -2475,7 +2475,7 @@ static void hud_settings_init() {
     memcpy(&settings_tmp, &settings, sizeof(struct RENDER_OPTIONS));
 }
 
-static int int_slider_defaults(mu_Context* ctx, struct config_setting* setting) {
+static int int_slider_defaults(mu_Context* ctx, struct config_setting * setting) {
     int k = setting->defaults_length - 1;
     while (k > 0 && setting->defaults[k] > *(int*)setting->value)
         k--;
@@ -2656,7 +2656,7 @@ struct hud hud_settings = {
 
 /*         HUD_CONTROLS START        */
 
-static struct config_key_pair* hud_controls_edit;
+static struct config_key_pair * hud_controls_edit;
 
 static void hud_controls_init() {
     hud_controls_edit = NULL;
@@ -2671,17 +2671,20 @@ static void hud_controls_render(mu_Context* ctx, float scalex, float scaley) {
     mu_Rect frame = mu_rect(settings.window_width * 0.125F, 0, settings.window_width * 0.75F, settings.window_height);
 
     if (mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE)) {
-        mu_Container* cnt = mu_get_current_container(ctx);
+        mu_Container * cnt = mu_get_current_container(ctx);
         cnt->rect = frame;
 
         int A = ctx->text_width(ctx->style->font, "Servers", 0) * 1.5F;
         int B = ctx->text_width(ctx->style->font, "Settings", 0) * 1.5F;
         int C = ctx->text_width(ctx->style->font, "Controls", 0) * 1.5F;
         mu_layout_row(ctx, 4, (int[]) {A, B, C, -1}, 0);
+
         if (mu_button(ctx, "Servers"))
             hud_change(&hud_serverlist);
+
         if (mu_button(ctx, "Settings"))
             hud_change(&hud_settings);
+
         mu_text_color(ctx, 255, 255, 0);
         mu_button_ex(ctx, "Controls", 0, MU_OPT_NOINTERACT | MU_OPT_ALIGNCENTER);
         mu_text_color_default(ctx);
@@ -2691,10 +2694,10 @@ static void hud_controls_render(mu_Context* ctx, float scalex, float scaley) {
 
         mu_begin_panel(ctx, "Content");
 
-        char* category = NULL;
+        char * category = NULL;
         int open = 0;
         for (int k = 0; k < list_size(&config_keys); k++) {
-            struct config_key_pair* a = list_get(&config_keys, k);
+            struct config_key_pair * a = list_get(&config_keys, k);
 
             if (*a->display) {
                 if (!category || strcmp(category, a->category)) {
@@ -2727,8 +2730,10 @@ static void hud_controls_render(mu_Context* ctx, float scalex, float scaley) {
 
                     if (hud_controls_edit == a)
                         mu_text_color(ctx, 255, 0, 0);
+
                     if (mu_button(ctx, name))
                         hud_controls_edit = (hud_controls_edit == a) ? NULL : a;
+
                     mu_text_color_default(ctx);
                     mu_pop_id(ctx);
 
@@ -2741,6 +2746,7 @@ static void hud_controls_render(mu_Context* ctx, float scalex, float scaley) {
 
                     if (mu_button(ctx, "?"))
                         mu_open_popup(ctx, "Help");
+
                     mu_pop_id(ctx);
                 }
             }

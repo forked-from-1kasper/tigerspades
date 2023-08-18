@@ -39,7 +39,82 @@
 #include <kernel/OS.h>
 #endif
 
-void window_keyname(int keycode, char* output, size_t length) {
+const char * get_function_key_name(int keycode) {
+    switch (keycode) {
+        case TOOLKIT_KEY_ESC:           return "Escape";
+        case TOOLKIT_KEY_F1:            return "F1";
+        case TOOLKIT_KEY_F2:            return "F2";
+        case TOOLKIT_KEY_F3:            return "F3";
+        case TOOLKIT_KEY_F4:            return "F4";
+        case TOOLKIT_KEY_F5:            return "F5";
+        case TOOLKIT_KEY_F6:            return "F6";
+        case TOOLKIT_KEY_F7:            return "F7";
+        case TOOLKIT_KEY_F8:            return "F8";
+        case TOOLKIT_KEY_F9:            return "F9";
+        case TOOLKIT_KEY_F10:           return "F10";
+        case TOOLKIT_KEY_F11:           return "F11";
+        case TOOLKIT_KEY_F12:           return "F12";
+        case TOOLKIT_KEY_F13:           return "F13";
+        case TOOLKIT_KEY_F14:           return "F14";
+        case TOOLKIT_KEY_F15:           return "F15";
+        case TOOLKIT_KEY_F16:           return "F16";
+        case TOOLKIT_KEY_F17:           return "F17";
+        case TOOLKIT_KEY_F18:           return "F18";
+        case TOOLKIT_KEY_F19:           return "F19";
+        case TOOLKIT_KEY_F20:           return "F20";
+        case TOOLKIT_KEY_F21:           return "F21";
+        case TOOLKIT_KEY_F22:           return "F22";
+        case TOOLKIT_KEY_F23:           return "F23";
+        case TOOLKIT_KEY_F24:           return "F24";
+        case TOOLKIT_KEY_SPACE:         return "Space";
+        case TOOLKIT_KEY_UP:            return "Up";
+        case TOOLKIT_KEY_DOWN:          return "Down";
+        case TOOLKIT_KEY_LEFT:          return "Left";
+        case TOOLKIT_KEY_RIGHT:         return "Right";
+        case TOOLKIT_KEY_LSHIFT:        return "Left Shift";
+        case TOOLKIT_KEY_RSHIFT:        return "Right Shift";
+        case TOOLKIT_KEY_LCTRL:         return "Left Control";
+        case TOOLKIT_KEY_RCTRL:         return "Right Control";
+        case TOOLKIT_KEY_LALT:          return "Left Alt";
+        case TOOLKIT_KEY_RALT:          return "Right Alt";
+        case TOOLKIT_KEY_TAB:           return "Tab";
+        case TOOLKIT_KEY_RETURN:        return "Enter";
+        case TOOLKIT_KEY_BACK:          return "Backspace";
+        case TOOLKIT_KEY_INSERT:        return "Insert";
+        case TOOLKIT_KEY_DELETE:        return "Delete";
+        case TOOLKIT_KEY_PAGEUP:        return "Page Up";
+        case TOOLKIT_KEY_PAGEDOWN:      return "Page Down";
+        case TOOLKIT_KEY_HOME:          return "Home";
+        case TOOLKIT_KEY_END:           return "End";
+        case TOOLKIT_KEY_KP_0:          return "Keypad 0";
+        case TOOLKIT_KEY_KP_1:          return "Keypad 1";
+        case TOOLKIT_KEY_KP_2:          return "Keypad 2";
+        case TOOLKIT_KEY_KP_3:          return "Keypad 3";
+        case TOOLKIT_KEY_KP_4:          return "Keypad 4";
+        case TOOLKIT_KEY_KP_5:          return "Keypad 5";
+        case TOOLKIT_KEY_KP_6:          return "Keypad 6";
+        case TOOLKIT_KEY_KP_7:          return "Keypad 7";
+        case TOOLKIT_KEY_KP_8:          return "Keypad 8";
+        case TOOLKIT_KEY_KP_9:          return "Keypad 9";
+        case TOOLKIT_KEY_KP_ADD:        return "Keypad +";
+        case TOOLKIT_KEY_KP_SUBTRACT:   return "Keypad -";
+        case TOOLKIT_KEY_KP_MULTIPLY:   return "Keypad *";
+        case TOOLKIT_KEY_KP_DIVIDE:     return "Keypad /";
+        case TOOLKIT_KEY_KP_EQUAL:      return "Keypad =";
+        case TOOLKIT_KEY_KP_ENTER:      return "Keypad Enter";
+        case TOOLKIT_KEY_PRTSC:         return "Print Screen";
+        case TOOLKIT_KEY_NUM_LOCK:      return "Num Lock";
+        case TOOLKIT_KEY_CAPS_LOCK:     return "Caps Lock";
+        case TOOLKIT_KEY_SCROLL_LOCK:   return "Scroll Lock";
+        case TOOLKIT_KEY_PAUSE:         return "Pause";
+        case TOOLKIT_KEY_LSUPER:        return "Left Super";
+        case TOOLKIT_KEY_RSUPER:        return "Right Super";
+        case TOOLKIT_KEY_MENU:          return "Menu";
+        default:                        return NULL;
+    }
+}
+
+void window_keyname(int keycode, char * output, size_t length) {
     #if defined(OS_WINDOWS) && defined(USE_GLFW)
         GetKeyNameTextA(glfwGetKeyScancode(keycode) << 16, output, length);
     #else
@@ -51,11 +126,13 @@ void window_keyname(int keycode, char* output, size_t length) {
             const char * keyname = SDL_GetKeyName(keycode);
         #endif
 
+        if (keyname == NULL) keyname = get_function_key_name(keycode);
+
         if (keyname != NULL && *keyname != 0) {
             strncpy(output, keyname, length);
             output[length - 1] = 0;
         } else {
-            snprintf(output, length, "<%d>", keycode);
+            snprintf(output, length, "#%x", keycode);
         }
     #endif
 }

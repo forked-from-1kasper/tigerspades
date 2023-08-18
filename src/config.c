@@ -39,9 +39,9 @@ struct list config_settings;
 
 struct list config_file;
 
-static void config_sets(const char* section, const char* name, const char* value) {
+static void config_sets(const char * section, const char * name, const char * value) {
     for (int k = 0; k < list_size(&config_file); k++) {
-        struct config_file_entry* e = list_get(&config_file, k);
+        struct config_file_entry * e = list_get(&config_file, k);
         if (strcmp(e->name, name) == 0) {
             strncpy(e->value, value, sizeof(e->value) - 1);
             return;
@@ -54,13 +54,13 @@ static void config_sets(const char* section, const char* name, const char* value
     list_add(&config_file, &e);
 }
 
-static void config_seti(const char* section, const char* name, int value) {
+static void config_seti(const char * section, const char * name, int value) {
     char tmp[32];
     sprintf(tmp, "%i", value);
     config_sets(section, name, tmp);
 }
 
-static void config_setf(const char* section, const char* name, float value) {
+static void config_setf(const char * section, const char * name, float value) {
     char tmp[32];
     sprintf(tmp, "%0.6f", value);
     config_sets(section, name, tmp);
@@ -96,7 +96,7 @@ void config_save() {
             config_seti("controls", e->name, e->def);
     }
 
-    void* f = file_open("config.ini", "w");
+    void * f = file_open("config.ini", "w");
     if (f) {
         char last_section[32] = {0};
         for (int k = 0; k < list_size(&config_file); k++) {
@@ -114,7 +114,7 @@ void config_save() {
     }
 }
 
-static int config_read_key(void* user, const char* section, const char* name, const char* value) {
+static int config_read_key(void * user, const char * section, const char * name, const char * value) {
     struct config_file_entry e;
     strncpy(e.section, section, sizeof(e.section) - 1);
     strncpy(e.name, name, sizeof(e.name) - 1);
@@ -202,7 +202,7 @@ void config_register_key(int internal, int def, const char * name, int toggle, c
     list_add(&config_keys, &key);
 }
 
-int config_key_translate(int key, int dir, int* results) {
+int config_key_translate(int key, int dir, int * results) {
     int count = 0;
 
     for (int k = 0; k < list_size(&config_keys); k++) {
@@ -222,9 +222,9 @@ int config_key_translate(int key, int dir, int* results) {
     return count;
 }
 
-struct config_key_pair* config_key(int key) {
+struct config_key_pair * config_key(int key) {
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair* a = list_get(&config_keys, k);
+        struct config_key_pair * a = list_get(&config_keys, k);
         if (a->internal == key)
             return a;
     }
@@ -233,21 +233,21 @@ struct config_key_pair* config_key(int key) {
 
 void config_key_reset_togglestates() {
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair* a = list_get(&config_keys, k);
+        struct config_key_pair * a = list_get(&config_keys, k);
         if (a->toggle)
             window_pressed_keys[a->internal] = 0;
     }
 }
 
-static int config_key_cmp(const void* a, const void* b) {
-    const struct config_key_pair* A = (const struct config_key_pair*)a;
-    const struct config_key_pair* B = (const struct config_key_pair*)b;
+static int config_key_cmp(const void * a, const void * b) {
+    const struct config_key_pair * A = (const struct config_key_pair*) a;
+    const struct config_key_pair * B = (const struct config_key_pair*) b;
 
     int cmp = strcmp(A->category, B->category);
     return cmp ? cmp : strcmp(A->display, B->display);
 }
 
-static void config_label_pixels(char* buffer, size_t length, int value, size_t index) {
+static void config_label_pixels(char * buffer, size_t length, int value, size_t index) {
     if (value == 800 || value == 600) {
         snprintf(buffer, length, "default: %ipx", value);
     } else {
@@ -255,7 +255,7 @@ static void config_label_pixels(char* buffer, size_t length, int value, size_t i
     }
 }
 
-static void config_label_vsync(char* buffer, size_t length, int value, size_t index) {
+static void config_label_vsync(char * buffer, size_t length, int value, size_t index) {
     if (value == 0) {
         snprintf(buffer, length, "disabled");
     } else if (value == 1) {
@@ -265,7 +265,7 @@ static void config_label_vsync(char* buffer, size_t length, int value, size_t in
     }
 }
 
-static void config_label_msaa(char* buffer, size_t length, int value, size_t index) {
+static void config_label_msaa(char * buffer, size_t length, int value, size_t index) {
     if (index == 0) {
         snprintf(buffer, length, "No MSAA");
     } else {
@@ -313,8 +313,8 @@ void config_reload() {
     config_register_key(WINDOW_KEY_YES, TOOLKIT_KEY_Y, NULL, 0, NULL, NULL);
     config_register_key(WINDOW_KEY_YES, TOOLKIT_KEY_Z, NULL, 0, NULL, NULL);
     config_register_key(WINDOW_KEY_NO, TOOLKIT_KEY_N, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_VOLUME_UP, TOOLKIT_KEY_PLUS, "volume_up", 0, "Volume up", "Game");
-    config_register_key(WINDOW_KEY_VOLUME_DOWN, TOOLKIT_KEY_MINUS, "volume_down", 0, "Volume down", "Game");
+    config_register_key(WINDOW_KEY_VOLUME_UP, TOOLKIT_KEY_KP_ADD, "volume_up", 0, "Volume up", "Game");
+    config_register_key(WINDOW_KEY_VOLUME_DOWN, TOOLKIT_KEY_KP_SUBTRACT, "volume_down", 0, "Volume down", "Game");
     config_register_key(WINDOW_KEY_V, TOOLKIT_KEY_V, NULL, 0, NULL, NULL);
     config_register_key(WINDOW_KEY_RELOAD, TOOLKIT_KEY_R, "reload", 0, "Reload", "Tools & Weapons");
     config_register_key(WINDOW_KEY_CHAT, TOOLKIT_KEY_T, "chat_global", 0, "Chat", "Game");
