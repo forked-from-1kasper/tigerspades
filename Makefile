@@ -6,6 +6,7 @@ DEPSDIR    = deps
 RESDIR     = resources
 GAMEDIR    = dist
 BINARY     = $(BUILDDIR)/betterspades
+TOOLKIT   ?= SDL
 
 MAJOR   = 0
 MINOR   = 1
@@ -20,18 +21,48 @@ ODEPS   := $(CDEPS:$(DEPSDIR)/%.c=$(BUILDDIR)/%.o)
 CFILES  := $(shell find $(SRCDIR) -type f -name '*.c')
 OFILES  := $(CFILES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 
-CFLAGS  = -DBETTERSPADES_MAJOR=$(MAJOR)
+CFLAGS  = -std=gnu99
+CFLAGS += -DBETTERSPADES_MAJOR=$(MAJOR)
 CFLAGS += -DBETTERSPADES_MINOR=$(MINOR)
 CFLAGS += -DBETTERSPADES_PATCH=$(PATCH)
 CFLAGS += -DBETTERSPADES_VERSION=\"v$(MAJOR).$(MINOR).$(PATCH)$(POSTFIX)\"
 CFLAGS += -DGIT_COMMIT_HASH=\"$(shell git rev-parse HEAD)\"
-CFLAGS += -DUSE_SDL -DUSE_SOUND -std=gnu99
+CFLAGS += -DUSE_SOUND
 
-all: $(BUILDDIR) $(GAMEDIR) $(RESPACK)
-binary: $(BUILDDIR) $(BINARY)
+UNAME := $(shell uname -s)
+
+LDFLAGS =
+
+ifeq ($(TOOLKIT),SDL)
+	CFLAGS += -DUSE_SDL
+
+	ifeq ($(UNAME),Linux)
+		LDFLAGS += -lSDL2
+	endif
+
+	ifeq ($(UNAME),Darwin)
+		LDFLAGS += /usr/local/Cellar/sdl2/2.0.3/lib/libSDL2.a
+	endif
+endif
+
+ifeq ($(TOOLKIT),GLFW)
+	CFLAGS += -DUSE_GLFW
+	LDFLAGS += -lglfw
+endif
+
+ifeq ($(UNAME),Linux)
+	LDFLAGS += -lm -lopenal -lGL -lGLU -pthread
+endif
+
+ifeq ($(UNAME),Darwin)
+	LDFLAGS += -liconv -framework Carbon -framework OpenAL -framework CoreAudio -framework AudioUnit -framework IOKit -framework Cocoa -framework OpenGL
+endif
+
+all: $(BUILDDIR) $(BINARY)
+game: $(BUILDDIR) $(GAMEDIR)
 
 $(BINARY): $(OFILES) $(ODEPS)
-	$(CC) -o $(BINARY) $(OFILES) $(ODEPS) /usr/local/Cellar/sdl2/2.0.3/lib/libSDL2.a -liconv -framework Carbon -framework OpenAL -framework CoreAudio -framework AudioUnit -framework IOKit -framework Cocoa -framework OpenGL
+	$(CC) -o $(BINARY) $(OFILES) $(ODEPS) $(LDFLAGS)
 
 $(OFILES): $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	mkdir -p `dirname $@`
@@ -44,7 +75,8 @@ $(ODEPS): $(BUILDDIR)/%.o: $(DEPSDIR)/%.c
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
-$(GAMEDIR): $(BINARY)
+.PHONY : game
+game: $(RESPACK) $(BINARY)
 	mkdir -p $(GAMEDIR)
 	cp $(BINARY) $(GAMEDIR)
 	cp -r $(RESDIR)/* $(GAMEDIR)

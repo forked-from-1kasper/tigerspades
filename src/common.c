@@ -1,19 +1,21 @@
 #include <BetterSpades/common.h>
 
-#define BSWAP32(T, ident)                                   \
-    T ident(T in) {                                         \
-        T out;                                              \
-        char * inptr = (char*) &in, *outptr = (char*) &out; \
-        outptr[0] = inptr[3];                               \
-        outptr[1] = inptr[2];                               \
-        outptr[2] = inptr[1];                               \
-        outptr[3] = inptr[0];                               \
-        return out;                                         \
+#define BSWAP32(T, ident)                                         \
+    T ident (T inval) {                                           \
+        T outval;                                                 \
+        char * inptr = (char*) &inval, *outptr = (char*) &outval; \
+        outptr[0] = inptr[3];                                     \
+        outptr[1] = inptr[2];                                     \
+        outptr[2] = inptr[1];                                     \
+        outptr[3] = inptr[0];                                     \
+        return outval;                                            \
     }
 
-BSWAP32(uint32_t, letohu32)
-BSWAP32(int,      letohs32)
-BSWAP32(float,    letohf)
+#ifdef __BIG_ENDIAN__
+    BSWAP32(uint32_t, letohu32)
+    BSWAP32(int,      letohs32)
+    BSWAP32(float,    letohf)
+#endif
 
 void writeRGBA(uint32_t * dest, TrueColor color) {
     *((uint8_t*) dest + 0) = color.r;

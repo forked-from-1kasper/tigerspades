@@ -44,7 +44,7 @@ void window_keyname(int keycode, char* output, size_t length) {
         GetKeyNameTextA(glfwGetKeyScancode(keycode) << 16, output, length);
     #else
         #ifdef USE_GLFW
-            const char * keyname = glfwGeyKeyName(keycode, 0);
+            const char * keyname = glfwGetKeyName(keycode, 0);
         #endif
 
         #ifdef USE_SDL
