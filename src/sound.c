@@ -106,7 +106,7 @@ void sound_volume(float vol) {
 #endif
 }
 
-static void sound_createEx(enum sound_space option, struct Sound_wav* w, float x, float y, float z, float vx, float vy,
+static void sound_createEx(enum sound_space option, struct Sound_wav * w, float x, float y, float z, float vx, float vy,
                            float vz, int player) {
 #ifdef USE_SOUND
     if (!sound_enabled)
@@ -144,15 +144,15 @@ static void sound_createEx(enum sound_space option, struct Sound_wav* w, float x
 #endif
 }
 
-void sound_create_sticky(struct Sound_wav* w, struct Player* player, int player_id) {
+void sound_create_sticky(struct Sound_wav * w, struct Player * player, int player_id) {
     sound_createEx(SOUND_WORLD, w, player->pos.x, player->pos.y, player->pos.z, 0.0F, 0.0F, 0.0F, player_id);
 }
 
-void sound_create(enum sound_space option, struct Sound_wav* w, float x, float y, float z) {
+void sound_create(enum sound_space option, struct Sound_wav * w, float x, float y, float z) {
     sound_createEx(option, w, x, y, z, 0.0F, 0.0F, 0.0F, -1);
 }
 
-void sound_velocity(struct Sound_source* s, float vx, float vy, float vz) {
+void sound_velocity(struct Sound_source * s, float vx, float vy, float vz) {
 #ifdef USE_SOUND
     if (!sound_enabled || s->local)
         return;
@@ -160,7 +160,7 @@ void sound_velocity(struct Sound_source* s, float vx, float vy, float vz) {
 #endif
 }
 
-void sound_position(struct Sound_source* s, float x, float y, float z) {
+void sound_position(struct Sound_source * s, float x, float y, float z) {
 #ifdef USE_SOUND
     if (!sound_enabled || s->local)
         return;
@@ -170,8 +170,8 @@ void sound_position(struct Sound_source* s, float x, float y, float z) {
 }
 
 #ifdef USE_SOUND
-static bool sound_update_single(void* obj, void* user) {
-    struct Sound_source* s = (struct Sound_source*)obj;
+static bool sound_update_single(void * obj, void * user) {
+    struct Sound_source* s = (struct Sound_source*) obj;
 
     int source_state;
     alGetSourcei(s->openal_handle, AL_SOURCE_STATE, &source_state);
@@ -215,7 +215,7 @@ void sound_update() {
 #endif
 }
 
-void sound_load(struct Sound_wav* wav, char* name, float min, float max) {
+void sound_load(struct Sound_wav * wav, char * name, float min, float max) {
 #ifdef USE_SOUND
     if (!sound_enabled)
         return;

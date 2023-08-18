@@ -21,13 +21,13 @@
 #define SOUND_H
 
 #ifdef USE_SOUND
-#if __APPLE__
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#endif
+    #if __APPLE__
+        #include <OpenAL/al.h>
+        #include <OpenAL/alc.h>
+    #else
+        #include <AL/al.h>
+        #include <AL/alc.h>
+    #endif
 #endif
 
 #include <BetterSpades/player.h>
