@@ -40,7 +40,7 @@
 #endif
 
 struct Sound_source {
-    int openal_handle;
+    ALuint openal_handle;
     char local;
     int stick_to_player;
 };
@@ -220,14 +220,14 @@ void sound_load(struct Sound_wav* wav, char* name, float min, float max) {
     if (!sound_enabled)
         return;
     unsigned int channels, samplerate;
-    uint64_t samplecount;
-    short* samples = drwav_open_file_and_read_pcm_frames_s16(name, &channels, &samplerate, &samplecount, NULL);
+    drwav_uint64 samplecount;
+    short * samples = drwav_open_file_and_read_pcm_frames_s16(name, &channels, &samplerate, &samplecount, NULL);
     if (samples == NULL) {
         log_fatal("Could not load sound %s", name);
         exit(1);
     }
 
-    short* audio;
+    short * audio;
     if (channels > 1) { // convert stereo to mono
         audio = malloc(samplecount * sizeof(short) / 2);
         CHECK_ALLOCATION_ERROR(audio)
@@ -249,7 +249,7 @@ void sound_init() {
 #ifdef USE_SOUND
     entitysys_create(&sound_sources, sizeof(struct Sound_source), 256);
 
-    ALCdevice* device = alcOpenDevice(NULL);
+    ALCdevice * device = alcOpenDevice(NULL);
 
     if (!device) {
         sound_enabled = 0;

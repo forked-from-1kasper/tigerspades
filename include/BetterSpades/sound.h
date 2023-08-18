@@ -42,7 +42,7 @@ enum sound_space {
 extern int sound_enabled;
 
 struct Sound_wav {
-    int openal_buffer;
+    ALuint openal_buffer;
     float min, max;
 };
 
@@ -99,10 +99,10 @@ extern struct Sound_wav sound_bounce;
 extern struct Sound_wav sound_impact;
 
 void sound_volume(float vol);
-void sound_create_sticky(struct Sound_wav* w, struct Player* player, int player_id);
-void sound_create(enum sound_space option, struct Sound_wav* w, float x, float y, float z);
+void sound_create_sticky(struct Sound_wav * w, struct Player * player, int player_id);
+void sound_create(enum sound_space option, struct Sound_wav * w, float x, float y, float z);
 void sound_update(void);
-void sound_load(struct Sound_wav* wav, char* name, float min, float max);
+void sound_load(struct Sound_wav * wav, char* name, float min, float max);
 void sound_init(void);
 
 #endif

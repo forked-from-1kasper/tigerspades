@@ -189,7 +189,9 @@ void window_title(char * suffix) {
     #endif
 }
 
-static double mx = -1, my = -1;
+#ifdef USE_SDL
+    static double mx = -1, my = -1;
+#endif
 
 void window_setmouseloc(double x, double y) {
     #ifdef USE_SDL
