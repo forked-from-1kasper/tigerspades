@@ -2077,7 +2077,7 @@ static void hud_serverlist_pingupdate(void* e, float time_delta, char* aos) {
 
 static void server_c(char* address, char* name) {
     if (file_exists(address)) {
-        void* data = file_load(address);
+        void * data = file_load(address);
         map_vxl_load(data, file_size(address));
         free(data);
         chunk_rebuild_all();

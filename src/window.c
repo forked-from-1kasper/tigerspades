@@ -172,13 +172,21 @@ int window_closed() {
     #endif
 }
 
+#ifdef USE_GLFW
+    #define TOOLKIT "GLFW"
+#endif
+
+#ifdef USE_SDL
+    #define TOOLKIT "SDL"
+#endif
+
 void window_title(char * suffix) {
     char title[128];
 
     if (suffix)
-        snprintf(title, sizeof(title) - 1, "BetterSpades %s — %s", BETTERSPADES_VERSION, suffix);
+        snprintf(title, sizeof(title) - 1, "BetterSpades %s — %s (%s)", BETTERSPADES_VERSION, suffix, TOOLKIT);
     else
-        sprintf(title, "BetterSpades " BETTERSPADES_VERSION);
+        sprintf(title, "BetterSpades %s (%s)", BETTERSPADES_VERSION, TOOLKIT);
 
     #ifdef USE_GLFW
         glfwSetWindowTitle(hud_window->impl, title);
