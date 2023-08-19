@@ -97,4 +97,7 @@ $(RESPACK):
 	curl -o $(RESPACK) $(PACKURL)
 
 clean:
+	rm -rf $(OFILES) $(BINARY)
+
+nuke:
 	rm -rf $(OFILES) $(ODEPS) $(BINARY)
