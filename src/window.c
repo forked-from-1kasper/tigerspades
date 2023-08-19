@@ -43,6 +43,7 @@
     const char * glfw_get_fnkey_name(int keycode) {
         switch (keycode) {
             case GLFW_KEY_ESCAPE:        return "Escape";
+            case GLFW_KEY_SPACE:         return "Space";
             case GLFW_KEY_F1:            return "F1";
             case GLFW_KEY_F2:            return "F2";
             case GLFW_KEY_F3:            return "F3";
