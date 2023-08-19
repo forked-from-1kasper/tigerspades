@@ -256,7 +256,7 @@ void weapon_shoot() {
         struct PacketOrientationData orient;
         orient.x = htolef(players[local_player_id].orientation.x);
         orient.y = htolef(players[local_player_id].orientation.z);
-                orient.z = htolef(-players[local_player_id].orientation.y);
+        orient.z = htolef(-players[local_player_id].orientation.y);
         network_send(PACKET_ORIENTATIONDATA_ID, &orient, sizeof(orient));
 
         if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)

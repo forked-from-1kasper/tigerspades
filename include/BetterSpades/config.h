@@ -26,15 +26,15 @@
 #include <BetterSpades/list.h>
 
 #ifdef USE_GLFW
-    #include <Keyboard/glfw.h>
+    #include <BetterSpades/GUI/glfw.h>
 #endif
 
 #ifdef USE_SDL
-    #include <Keyboard/sdl.h>
+    #include <BetterSpades/GUI/sdl.h>
 #endif
 
 #ifdef USE_GLUT
-    #include <Keyboard/glut.h>
+    #include <BetterSpades/GUI/glut.h>
 #endif
 
 struct config_file_entry {

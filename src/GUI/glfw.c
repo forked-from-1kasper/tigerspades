@@ -9,16 +9,16 @@
 #include <BetterSpades/hud.h>
 
 #ifdef OS_WINDOWS
-#include <sysinfoapi.h>
-#include <windows.h>
+    #include <sysinfoapi.h>
+    #include <windows.h>
 #endif
 
 #ifdef OS_LINUX
-#include <unistd.h>
+    #include <unistd.h>
 #endif
 
 #ifdef OS_HAIKU
-#include <kernel/OS.h>
+    #include <kernel/OS.h>
 #endif
 
 #ifdef USE_GLFW

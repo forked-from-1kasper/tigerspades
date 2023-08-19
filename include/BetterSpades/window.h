@@ -23,6 +23,23 @@
 #include <BetterSpades/common.h>
 #include <stddef.h>
 
+#ifdef USE_GLFW
+    #include <GLFW/glfw3.h>
+#endif
+
+#ifdef USE_SDL
+    #define SDL_MAIN_HANDLED
+    #include <SDL2/SDL.h>
+#endif
+
+#ifdef USE_GLUT
+    #ifdef __APPLE__
+        #include <GLUT/glut.h>
+    #else
+        #include <GL/glut.h>
+    #endif
+#endif
+
 struct window_instance {
     void * impl;
 };
