@@ -39,80 +39,132 @@
 #include <kernel/OS.h>
 #endif
 
-const char * get_function_key_name(int keycode) {
-    switch (keycode) {
-        case TOOLKIT_KEY_ESC:           return "Escape";
-        case TOOLKIT_KEY_F1:            return "F1";
-        case TOOLKIT_KEY_F2:            return "F2";
-        case TOOLKIT_KEY_F3:            return "F3";
-        case TOOLKIT_KEY_F4:            return "F4";
-        case TOOLKIT_KEY_F5:            return "F5";
-        case TOOLKIT_KEY_F6:            return "F6";
-        case TOOLKIT_KEY_F7:            return "F7";
-        case TOOLKIT_KEY_F8:            return "F8";
-        case TOOLKIT_KEY_F9:            return "F9";
-        case TOOLKIT_KEY_F10:           return "F10";
-        case TOOLKIT_KEY_F11:           return "F11";
-        case TOOLKIT_KEY_F12:           return "F12";
-        case TOOLKIT_KEY_F13:           return "F13";
-        case TOOLKIT_KEY_F14:           return "F14";
-        case TOOLKIT_KEY_F15:           return "F15";
-        case TOOLKIT_KEY_F16:           return "F16";
-        case TOOLKIT_KEY_F17:           return "F17";
-        case TOOLKIT_KEY_F18:           return "F18";
-        case TOOLKIT_KEY_F19:           return "F19";
-        case TOOLKIT_KEY_F20:           return "F20";
-        case TOOLKIT_KEY_F21:           return "F21";
-        case TOOLKIT_KEY_F22:           return "F22";
-        case TOOLKIT_KEY_F23:           return "F23";
-        case TOOLKIT_KEY_F24:           return "F24";
-        case TOOLKIT_KEY_SPACE:         return "Space";
-        case TOOLKIT_KEY_UP:            return "Up";
-        case TOOLKIT_KEY_DOWN:          return "Down";
-        case TOOLKIT_KEY_LEFT:          return "Left";
-        case TOOLKIT_KEY_RIGHT:         return "Right";
-        case TOOLKIT_KEY_LSHIFT:        return "Left Shift";
-        case TOOLKIT_KEY_RSHIFT:        return "Right Shift";
-        case TOOLKIT_KEY_LCTRL:         return "Left Control";
-        case TOOLKIT_KEY_RCTRL:         return "Right Control";
-        case TOOLKIT_KEY_LALT:          return "Left Alt";
-        case TOOLKIT_KEY_RALT:          return "Right Alt";
-        case TOOLKIT_KEY_TAB:           return "Tab";
-        case TOOLKIT_KEY_RETURN:        return "Enter";
-        case TOOLKIT_KEY_BACK:          return "Backspace";
-        case TOOLKIT_KEY_INSERT:        return "Insert";
-        case TOOLKIT_KEY_DELETE:        return "Delete";
-        case TOOLKIT_KEY_PAGEUP:        return "Page Up";
-        case TOOLKIT_KEY_PAGEDOWN:      return "Page Down";
-        case TOOLKIT_KEY_HOME:          return "Home";
-        case TOOLKIT_KEY_END:           return "End";
-        case TOOLKIT_KEY_KP_0:          return "Keypad 0";
-        case TOOLKIT_KEY_KP_1:          return "Keypad 1";
-        case TOOLKIT_KEY_KP_2:          return "Keypad 2";
-        case TOOLKIT_KEY_KP_3:          return "Keypad 3";
-        case TOOLKIT_KEY_KP_4:          return "Keypad 4";
-        case TOOLKIT_KEY_KP_5:          return "Keypad 5";
-        case TOOLKIT_KEY_KP_6:          return "Keypad 6";
-        case TOOLKIT_KEY_KP_7:          return "Keypad 7";
-        case TOOLKIT_KEY_KP_8:          return "Keypad 8";
-        case TOOLKIT_KEY_KP_9:          return "Keypad 9";
-        case TOOLKIT_KEY_KP_ADD:        return "Keypad +";
-        case TOOLKIT_KEY_KP_SUBTRACT:   return "Keypad -";
-        case TOOLKIT_KEY_KP_MULTIPLY:   return "Keypad *";
-        case TOOLKIT_KEY_KP_DIVIDE:     return "Keypad /";
-        case TOOLKIT_KEY_KP_EQUAL:      return "Keypad =";
-        case TOOLKIT_KEY_KP_ENTER:      return "Keypad Enter";
-        case TOOLKIT_KEY_PRTSC:         return "Print Screen";
-        case TOOLKIT_KEY_NUM_LOCK:      return "Num Lock";
-        case TOOLKIT_KEY_CAPS_LOCK:     return "Caps Lock";
-        case TOOLKIT_KEY_SCROLL_LOCK:   return "Scroll Lock";
-        case TOOLKIT_KEY_PAUSE:         return "Pause";
-        case TOOLKIT_KEY_LSUPER:        return "Left Super";
-        case TOOLKIT_KEY_RSUPER:        return "Right Super";
-        case TOOLKIT_KEY_MENU:          return "Menu";
-        default:                        return NULL;
+#ifdef USE_GLFW
+    const char * glfw_get_fnkey_name(int keycode) {
+        switch (keycode) {
+            case GLFW_KEY_ESCAPE:        return "Escape";
+            case GLFW_KEY_F1:            return "F1";
+            case GLFW_KEY_F2:            return "F2";
+            case GLFW_KEY_F3:            return "F3";
+            case GLFW_KEY_F4:            return "F4";
+            case GLFW_KEY_F5:            return "F5";
+            case GLFW_KEY_F6:            return "F6";
+            case GLFW_KEY_F7:            return "F7";
+            case GLFW_KEY_F8:            return "F8";
+            case GLFW_KEY_F9:            return "F9";
+            case GLFW_KEY_F10:           return "F10";
+            case GLFW_KEY_F11:           return "F11";
+            case GLFW_KEY_F12:           return "F12";
+            case GLFW_KEY_F13:           return "F13";
+            case GLFW_KEY_F14:           return "F14";
+            case GLFW_KEY_F15:           return "F15";
+            case GLFW_KEY_F16:           return "F16";
+            case GLFW_KEY_F17:           return "F17";
+            case GLFW_KEY_F18:           return "F18";
+            case GLFW_KEY_F19:           return "F19";
+            case GLFW_KEY_F20:           return "F20";
+            case GLFW_KEY_F21:           return "F21";
+            case GLFW_KEY_F22:           return "F22";
+            case GLFW_KEY_F23:           return "F23";
+            case GLFW_KEY_F24:           return "F24";
+            case GLFW_KEY_F25:           return "F25";
+            case GLFW_KEY_UP:            return "Up";
+            case GLFW_KEY_DOWN:          return "Down";
+            case GLFW_KEY_LEFT:          return "Left";
+            case GLFW_KEY_RIGHT:         return "Right";
+            case GLFW_KEY_LEFT_SHIFT:    return "Left Shift";
+            case GLFW_KEY_RIGHT_SHIFT:   return "Right Shift";
+            case GLFW_KEY_LEFT_CONTROL:  return "Left Ctrl";
+            case GLFW_KEY_RIGHT_CONTROL: return "Right Ctrl";
+            case GLFW_KEY_LEFT_ALT:      return "Left Alt";
+            case GLFW_KEY_RIGHT_ALT:     return "Right Alt";
+            case GLFW_KEY_TAB:           return "Tab";
+            case GLFW_KEY_ENTER:         return "Enter";
+            case GLFW_KEY_BACKSPACE:     return "Backspace";
+            case GLFW_KEY_INSERT:        return "Insert";
+            case GLFW_KEY_DELETE:        return "Delete";
+            case GLFW_KEY_PAGE_UP:       return "Page Up";
+            case GLFW_KEY_PAGE_DOWN:     return "Page Down";
+            case GLFW_KEY_HOME:          return "Home";
+            case GLFW_KEY_END:           return "End";
+            case GLFW_KEY_KP_0:          return "Keypad 0";
+            case GLFW_KEY_KP_1:          return "Keypad 1";
+            case GLFW_KEY_KP_2:          return "Keypad 2";
+            case GLFW_KEY_KP_3:          return "Keypad 3";
+            case GLFW_KEY_KP_4:          return "Keypad 4";
+            case GLFW_KEY_KP_5:          return "Keypad 5";
+            case GLFW_KEY_KP_6:          return "Keypad 6";
+            case GLFW_KEY_KP_7:          return "Keypad 7";
+            case GLFW_KEY_KP_8:          return "Keypad 8";
+            case GLFW_KEY_KP_9:          return "Keypad 9";
+            case GLFW_KEY_KP_DIVIDE:     return "Keypad /";
+            case GLFW_KEY_KP_MULTIPLY:   return "Keypad *";
+            case GLFW_KEY_KP_SUBTRACT:   return "Keypad -";
+            case GLFW_KEY_KP_ADD:        return "Keypad +";
+            case GLFW_KEY_KP_DECIMAL:    return "Keypad Decimal";
+            case GLFW_KEY_KP_EQUAL:      return "Keypad =";
+            case GLFW_KEY_KP_ENTER:      return "Keypad Enter";
+            case GLFW_KEY_PRINT_SCREEN:  return "Print Screen";
+            case GLFW_KEY_NUM_LOCK:      return "Num Lock";
+            case GLFW_KEY_CAPS_LOCK:     return "Caps Lock";
+            case GLFW_KEY_SCROLL_LOCK:   return "Scroll Lock";
+            case GLFW_KEY_PAUSE:         return "Pause";
+            case GLFW_KEY_LEFT_SUPER:    return "Left Super";
+            case GLFW_KEY_RIGHT_SUPER:   return "Right Super";
+            case GLFW_KEY_MENU:          return "Menu";
+            default:                     return NULL;
+        }
     }
-}
+#endif
+
+#ifdef USE_GLUT
+    // FreeGLUT extension
+    #define GLUT_KEY_NUM_LOCK  0x006D
+    #define GLUT_KEY_BEGIN     0x006E
+    #define GLUT_KEY_DELETE    0x006F
+    #define GLUT_KEY_SHIFT_L   0x0070
+    #define GLUT_KEY_SHIFT_R   0x0071
+    #define GLUT_KEY_CTRL_L    0x0072
+    #define GLUT_KEY_CTRL_R    0x0073
+    #define GLUT_KEY_ALT_L     0x0074
+    #define GLUT_KEY_ALT_R     0x0075
+
+    char * glut_special_key_name(int keycode) {
+        switch (keycode) {
+            case GLUT_KEY_F1:        return "F1";
+            case GLUT_KEY_F2:        return "F2";
+            case GLUT_KEY_F3:        return "F3";
+            case GLUT_KEY_F4:        return "F4";
+            case GLUT_KEY_F5:        return "F5";
+            case GLUT_KEY_F6:        return "F6";
+            case GLUT_KEY_F7:        return "F7";
+            case GLUT_KEY_F8:        return "F8";
+            case GLUT_KEY_F9:        return "F9";
+            case GLUT_KEY_F10:       return "F10";
+            case GLUT_KEY_F11:       return "F11";
+            case GLUT_KEY_F12:       return "F12";
+            case GLUT_KEY_LEFT:      return "Left";
+            case GLUT_KEY_UP:        return "Up";
+            case GLUT_KEY_RIGHT:     return "Right";
+            case GLUT_KEY_DOWN:      return "Down";
+            case GLUT_KEY_PAGE_UP:   return "Page Up";
+            case GLUT_KEY_PAGE_DOWN: return "Page Down";
+            case GLUT_KEY_HOME:      return "Home";
+            case GLUT_KEY_END:       return "End";
+            case GLUT_KEY_INSERT:    return "Insert";
+            case GLUT_KEY_NUM_LOCK:  return "Num Lock";
+            case GLUT_KEY_BEGIN:     return "Home";
+            case GLUT_KEY_DELETE:    return "Delete";
+            case GLUT_KEY_SHIFT_L:   return "Left Shift";
+            case GLUT_KEY_SHIFT_R:   return "Right Shift";
+            case GLUT_KEY_CTRL_L:    return "Left Ctrl";
+            case GLUT_KEY_CTRL_R:    return "Right Ctrl";
+            case GLUT_KEY_ALT_L:     return "Left Alt";
+            case GLUT_KEY_ALT_R:     return "Right Alt";
+            default:                 return NULL;
+        }
+    }
+#endif
 
 void window_keyname(int keycode, char * output, size_t length) {
     #if defined(OS_WINDOWS) && defined(USE_GLFW)
@@ -120,13 +172,36 @@ void window_keyname(int keycode, char * output, size_t length) {
     #else
         #ifdef USE_GLFW
             const char * keyname = glfwGetKeyName(keycode, 0);
+
+            if (keyname == NULL)
+                keyname = glfw_get_fnkey_name(keycode);
         #endif
 
         #ifdef USE_SDL
             const char * keyname = SDL_GetKeyName(keycode);
         #endif
 
-        if (keyname == NULL) keyname = get_function_key_name(keycode);
+        #ifdef USE_GLUT
+            char * keyname = NULL;
+
+            if (keycode & GLUT_SPECIAL_MASK)
+                keyname = glut_special_key_name(keycode & ~GLUT_SPECIAL_MASK);
+            else switch (keycode) {
+                case 0:  keyname = "Null";      break;
+                case 7:  keyname = "Beep";      break;
+                case 8:  keyname = "Backspace"; break;
+                case 9:  keyname = "Tab";       break;
+                case 10: keyname = "Enter";     break;
+                case 13: keyname = "Enter";     break;
+                case 27: keyname = "Escape";    break;
+                case 32: keyname = "Space";     break;
+                default: {
+                    static char buf[2];
+                    buf[0] = keycode; buf[1] = 0;
+                    keyname = buf;
+                }
+            }
+        #endif
 
         if (keyname != NULL && *keyname != 0) {
             strncpy(output, keyname, length);
@@ -156,19 +231,9 @@ float window_time() {
     #ifdef USE_SDL
         return ((double) SDL_GetTicks()) / 1000.0F;
     #endif
-}
 
-#ifdef USE_SDL
-    int quit = 0;
-#endif
-
-int window_closed() {
-    #ifdef USE_GLFW
-        return glfwWindowShouldClose(hud_window->impl);
-    #endif
-
-    #ifdef USE_SDL
-        return quit;
+    #ifdef USE_GLUT
+        return ((double) glutGet(GLUT_ELAPSED_TIME)) / 1000.0F;
     #endif
 }
 
@@ -178,6 +243,10 @@ int window_closed() {
 
 #ifdef USE_SDL
     #define TOOLKIT "SDL"
+#endif
+
+#ifdef USE_GLUT
+    #define TOOLKIT "GLUT"
 #endif
 
 void window_title(char * suffix) {
@@ -195,6 +264,10 @@ void window_title(char * suffix) {
     #ifdef USE_SDL
         SDL_SetWindowTitle(hud_window->impl, title);
     #endif
+
+    #ifdef USE_GLUT
+        glutSetWindowTitle(title);
+    #endif
 }
 
 #ifdef USE_SDL
@@ -207,6 +280,10 @@ void window_setmouseloc(double x, double y) {
         my = y;
     #endif
 }
+
+#ifdef USE_GLUT
+    double mx = -1, my = -1;
+#endif
 
 void window_mouseloc(double * x, double * y) {
     #ifdef USE_GLFW
@@ -223,6 +300,11 @@ void window_mouseloc(double * x, double * y) {
             *x = mx;
             *y = my;
         }
+    #endif
+
+    #ifdef USE_GLUT
+        *x = mx;
+        *y = my;
     #endif
 }
 
@@ -243,6 +325,10 @@ const char * window_clipboard() {
     #ifdef USE_SDL
         return SDL_HasClipboardText() ? SDL_GetClipboardText() : NULL;
     #endif
+
+    #ifdef USE_GLUT
+        return NULL;
+    #endif
 }
 
 void window_swapping(int value) {
@@ -254,6 +340,10 @@ void window_swapping(int value) {
         SDL_GL_SetSwapInterval(value);
     #endif
 }
+
+#ifdef USE_GLUT
+    int captured = 0;
+#endif
 
 void window_mousemode(int mode) {
     #ifdef USE_GLFW
@@ -268,6 +358,12 @@ void window_mousemode(int mode) {
         int s = SDL_GetRelativeMouseMode();
         if ((s && mode == WINDOW_CURSOR_ENABLED) || (!s && mode == WINDOW_CURSOR_DISABLED))
             SDL_SetRelativeMouseMode(mode == WINDOW_CURSOR_ENABLED ? 0 : 1);
+    #endif
+
+    #ifdef USE_GLUT
+        if ((captured && mode == WINDOW_CURSOR_ENABLED) || (!captured && mode == WINDOW_CURSOR_DISABLED)) {
+            captured = ~captured; glutSetCursor(captured ? GLUT_CURSOR_NONE : GLUT_CURSOR_INHERIT);
+        }
     #endif
 }
 
@@ -303,6 +399,13 @@ void window_fromsettings() {
             SDL_SetWindowFullscreen(hud_window->impl, SDL_WINDOW_FULLSCREEN);
         else
             SDL_SetWindowFullscreen(hud_window->impl, 0);
+    #endif
+
+    #ifdef USE_GLUT
+        if (settings.fullscreen)
+            glutFullScreen();
+        else
+            glutReshapeWindow(settings.window_width, settings.window_height);
     #endif
 }
 

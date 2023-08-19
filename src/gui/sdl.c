@@ -22,9 +22,11 @@
 
 #ifdef USE_SDL
 
+static int quit = 0;
+
 static struct window_finger fingers[8];
 
-void window_init() {
+void window_init(int * argc, char ** argv) {
     static struct window_instance i;
     hud_window = &i;
 
@@ -106,8 +108,8 @@ void window_update() {
             case SDL_MOUSEBUTTONDOWN: {
                 int a = 0;
                 switch (event.button.button) {
-                    case SDL_BUTTON_LEFT: a = WINDOW_MOUSE_LMB; break;
-                    case SDL_BUTTON_RIGHT: a = WINDOW_MOUSE_RMB; break;
+                    case SDL_BUTTON_LEFT:   a = WINDOW_MOUSE_LMB; break;
+                    case SDL_BUTTON_RIGHT:  a = WINDOW_MOUSE_RMB; break;
                     case SDL_BUTTON_MIDDLE: a = WINDOW_MOUSE_MMB; break;
                 }
                 mouse_click(hud_window, a, WINDOW_PRESS, 0);
@@ -116,8 +118,8 @@ void window_update() {
             case SDL_MOUSEBUTTONUP: {
                 int a = 0;
                 switch (event.button.button) {
-                    case SDL_BUTTON_LEFT: a = WINDOW_MOUSE_LMB; break;
-                    case SDL_BUTTON_RIGHT: a = WINDOW_MOUSE_RMB; break;
+                    case SDL_BUTTON_LEFT:   a = WINDOW_MOUSE_LMB; break;
+                    case SDL_BUTTON_RIGHT:  a = WINDOW_MOUSE_RMB; break;
                     case SDL_BUTTON_MIDDLE: a = WINDOW_MOUSE_MMB; break;
                 }
                 mouse_click(hud_window, a, WINDOW_RELEASE, 0);
@@ -194,6 +196,29 @@ void window_update() {
                 }
                 break;
         }
+    }
+}
+
+void window_eventloop(Idle idle, Display display) {
+    double last_frame_start = 0.0F;
+
+    while (!quit) {
+        double dt = window_time() - last_frame_start;
+        last_frame_start = window_time();
+
+        idle(dt);
+        window_update();
+        display();
+
+        if (settings.vsync > 1 && (window_time() - last_frame_start) < (1.0 / settings.vsync)) {
+            double sleep_s = 1.0 / settings.vsync - (window_time() - last_frame_start);
+            struct timespec ts;
+            ts.tv_sec = (int) sleep_s;
+            ts.tv_nsec = (sleep_s - ts.tv_sec) * 1000000000.0;
+            nanosleep(&ts, NULL);
+        }
+
+        fps = 1.0F / dt;
     }
 }
 

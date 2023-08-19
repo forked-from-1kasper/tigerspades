@@ -103,7 +103,7 @@ static void window_impl_keys(GLFWwindow * window, int key, int scancode, int act
     }
 }
 
-void window_init() {
+void window_init(int * argc, char ** argv) {
     static struct window_instance i;
     hud_window = &i;
 
@@ -219,6 +219,29 @@ void window_update() {
         }
 
         joystick_state = state;
+    }
+}
+
+void window_eventloop(Idle idle, Display display) {
+    double last_frame_start = 0.0F;
+
+    while (!glfwWindowShouldClose(hud_window->impl)) {
+        double dt = window_time() - last_frame_start;
+        last_frame_start = window_time();
+
+        idle(dt);
+        window_update();
+        display();
+
+        if (settings.vsync > 1 && (window_time() - last_frame_start) < (1.0 / settings.vsync)) {
+            double sleep_s = 1.0 / settings.vsync - (window_time() - last_frame_start);
+            struct timespec ts;
+            ts.tv_sec = (int)sleep_s;
+            ts.tv_nsec = (sleep_s - ts.tv_sec) * 1000000000.0;
+            nanosleep(&ts, NULL);
+        }
+
+        fps = 1.0F / dt;
     }
 }
 

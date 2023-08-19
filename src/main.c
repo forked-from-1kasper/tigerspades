@@ -507,7 +507,7 @@ void init() {
     rpc_init();
 }
 
-void reshape(struct window_instance* window, int width, int height) {
+void reshape(struct window_instance * window, int width, int height) {
     font_reset();
     glViewport(0, 0, width, height);
     settings.window_width = width;
@@ -536,7 +536,7 @@ static int mu_key_translate(int key) {
     }
 }
 
-void text_input(struct window_instance* window, unsigned int codepoint) {
+void text_input(struct window_instance * window, unsigned int codepoint) {
     if (hud_active->ctx)
         mu_input_text(hud_active->ctx, (char[2]) {codepoint, 0});
 
@@ -658,6 +658,7 @@ void mouse(struct window_instance * window, double x, double y) {
 void mouse_scroll(struct window_instance * window, double xoffset, double yoffset) {
     if (hud_active->input_mousescroll)
         hud_active->input_mousescroll(yoffset);
+
     if (hud_active->ctx)
         mu_input_scroll(hud_active->ctx, -xoffset * 50, -yoffset * 50);
 }
@@ -670,32 +671,65 @@ void deinit() {
     window_deinit();
 }
 
-void on_error(int i, const char* s) {
+void on_error(int i, const char * s) {
     log_fatal("Major error occured: [%i] %s", i, s);
     getchar();
 }
 
-int main(int argc, char** argv) {
-    settings.opengl14 = 1;
-    settings.color_correction = 0;
-    settings.multisamples = 0;
-    settings.shadow_entities = 0;
+void idle(double dt) {
+    static double physics_time_fixed = 0.0F;
+    static double physics_time_fast  = 0.0F;
+
+    if (hud_active->render_world) {
+        physics_time_fast  += dt;
+        physics_time_fixed += dt;
+
+        // these run at exactly ~60fps
+        #define PHYSICS_STEP_TIME (1.0 / 60.0)
+        while (physics_time_fixed >= PHYSICS_STEP_TIME) {
+            physics_time_fixed -= PHYSICS_STEP_TIME;
+            player_update(PHYSICS_STEP_TIME, 1); // just physics tick
+            grenade_update(PHYSICS_STEP_TIME);
+        }
+
+        // these run at min. ~60fps but as fast as possible
+        double step = fmin(dt, PHYSICS_STEP_TIME);
+        while (step > 0 && physics_time_fast >= step) {
+            physics_time_fast -= step;
+            player_update(step, 0); // smooth orientation update
+            camera_update(step);
+            tracer_update(step);
+            particle_update(step);
+            map_collapsing_update(step);
+        }
+    }
+
+    sound_update();
+    network_update();
+    rpc_update();
+}
+
+int main(int argc, char ** argv) {
+    settings.opengl14          = 1;
+    settings.color_correction  = 0;
+    settings.multisamples      = 0;
+    settings.shadow_entities   = 0;
     settings.ambient_occlusion = 0;
-    settings.render_distance = 128.0F;
-    settings.window_width = 800;
-    settings.window_height = 600;
-    settings.player_arms = 0;
-    settings.fullscreen = 0;
-    settings.greedy_meshing = 0;
+    settings.render_distance   = 128.0F;
+    settings.window_width      = 800;
+    settings.window_height     = 600;
+    settings.player_arms       = 0;
+    settings.fullscreen        = 0;
+    settings.greedy_meshing    = 0;
     settings.mouse_sensitivity = MOUSE_SENSITIVITY;
-    settings.show_news = 1;
-    settings.show_fps = 0;
-    settings.volume = 10;
-    settings.voxlap_models = 0;
+    settings.show_news         = 1;
+    settings.show_fps          = 0;
+    settings.volume            = 10;
+    settings.voxlap_models     = 0;
     settings.force_displaylist = 0;
-    settings.invert_y = 0;
-    settings.smooth_fog = 0;
-    settings.camera_fov = CAMERA_DEFAULT_FOV;
+    settings.invert_y          = 0;
+    settings.smooth_fog        = 0;
+    settings.camera_fov        = CAMERA_DEFAULT_FOV;
     strcpy(settings.name, "DEV_CLIENT");
 
 #ifdef USE_TOUCH
@@ -724,7 +758,7 @@ int main(int argc, char** argv) {
 
     config_reload();
 
-    window_init();
+    window_init(&argc, argv);
 
 #ifndef OPENGL_ES
     if (glewInit())
@@ -740,8 +774,7 @@ int main(int argc, char** argv) {
         log_info("MSAAx%i on", settings.multisamples);
     }
 
-    while (glGetError() != GL_NO_ERROR)
-        ;
+    while (glGetError() != GL_NO_ERROR);
 
     init();
     atexit(deinit);
@@ -767,54 +800,5 @@ int main(int argc, char** argv) {
         }
     }
 
-    double last_frame_start = 0.0F;
-    double physics_time_fixed = 0.0F;
-    double physics_time_fast = 0.0F;
-
-    while (!window_closed()) {
-        double dt = window_time() - last_frame_start;
-        last_frame_start = window_time();
-
-        if (hud_active->render_world) {
-            physics_time_fast += dt;
-            physics_time_fixed += dt;
-
-// these run at exactly ~60fps
-#define PHYSICS_STEP_TIME (1.0 / 60.0)
-            while (physics_time_fixed >= PHYSICS_STEP_TIME) {
-                physics_time_fixed -= PHYSICS_STEP_TIME;
-                player_update(PHYSICS_STEP_TIME, 1); // just physics tick
-                grenade_update(PHYSICS_STEP_TIME);
-            }
-
-            // these run at min. ~60fps but as fast as possible
-            double step = fmin(dt, PHYSICS_STEP_TIME);
-            while (step > 0 && physics_time_fast >= step) {
-                physics_time_fast -= step;
-                player_update(step, 0); // smooth orientation update
-                camera_update(step);
-                tracer_update(step);
-                particle_update(step);
-                map_collapsing_update(step);
-            }
-        }
-
-        display();
-
-        sound_update();
-        network_update();
-        window_update();
-
-        rpc_update();
-
-        if (settings.vsync > 1 && (window_time() - last_frame_start) < (1.0 / settings.vsync)) {
-            double sleep_s = 1.0 / settings.vsync - (window_time() - last_frame_start);
-            struct timespec ts;
-            ts.tv_sec = (int)sleep_s;
-            ts.tv_nsec = (sleep_s - ts.tv_sec) * 1000000000.0;
-            nanosleep(&ts, NULL);
-        }
-
-        fps = 1.0F / dt;
-    }
+    window_eventloop(idle, display);
 }

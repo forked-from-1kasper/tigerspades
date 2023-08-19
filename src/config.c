@@ -69,26 +69,26 @@ static void config_setf(const char * section, const char * name, float value) {
 void config_save() {
     kv6_rebuild_complete();
 
-    config_sets("client", "name", settings.name);
-    config_seti("client", "xres", settings.window_width);
-    config_seti("client", "yres", settings.window_height);
-    config_seti("client", "windowed", !settings.fullscreen);
-    config_seti("client", "multisamples", settings.multisamples);
-    config_seti("client", "greedy_meshing", settings.greedy_meshing);
-    config_seti("client", "vsync", settings.vsync);
+    config_sets("client", "name",              settings.name);
+    config_seti("client", "xres",              settings.window_width);
+    config_seti("client", "yres",              settings.window_height);
+    config_seti("client", "windowed",          !settings.fullscreen);
+    config_seti("client", "multisamples",      settings.multisamples);
+    config_seti("client", "greedy_meshing",    settings.greedy_meshing);
+    config_seti("client", "vsync",             settings.vsync);
     config_setf("client", "mouse_sensitivity", settings.mouse_sensitivity);
-    config_seti("client", "show_news", settings.show_news);
-    config_seti("client", "vol", settings.volume);
-    config_seti("client", "show_fps", settings.show_fps);
-    config_seti("client", "voxlap_models", settings.voxlap_models);
+    config_seti("client", "show_news",         settings.show_news);
+    config_seti("client", "vol",               settings.volume);
+    config_seti("client", "show_fps",          settings.show_fps);
+    config_seti("client", "voxlap_models",     settings.voxlap_models);
     config_seti("client", "force_displaylist", settings.force_displaylist);
-    config_seti("client", "inverty", settings.invert_y);
-    config_seti("client", "smooth_fog", settings.smooth_fog);
+    config_seti("client", "inverty",           settings.invert_y);
+    config_seti("client", "smooth_fog",        settings.smooth_fog);
     config_seti("client", "ambient_occlusion", settings.ambient_occlusion);
-    config_setf("client", "camera_fov", settings.camera_fov);
-    config_seti("client", "hold_down_sights", settings.hold_down_sights);
-    config_seti("client", "chat_shadow", settings.chat_shadow);
-    config_seti("client", "show_player_arms", settings.player_arms);
+    config_setf("client", "camera_fov",        settings.camera_fov);
+    config_seti("client", "hold_down_sights",  settings.hold_down_sights);
+    config_seti("client", "chat_shadow",       settings.chat_shadow);
+    config_seti("client", "show_player_arms",  settings.player_arms);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair* e = list_get(&config_keys, k);
@@ -284,53 +284,52 @@ void config_reload() {
     else
         list_clear(&config_keys);
 
-    config_register_key(WINDOW_KEY_UP, TOOLKIT_KEY_W, "move_forward", 0, "Forward", "Movement");
-    config_register_key(WINDOW_KEY_DOWN, TOOLKIT_KEY_S, "move_backward", 0, "Backward", "Movement");
-    config_register_key(WINDOW_KEY_LEFT, TOOLKIT_KEY_A, "move_left", 0, "Left", "Movement");
-    config_register_key(WINDOW_KEY_RIGHT, TOOLKIT_KEY_D, "move_right", 0, "Right", "Movement");
-    config_register_key(WINDOW_KEY_SPACE, TOOLKIT_KEY_SPACE, "jump", 0, "Jump", "Movement");
-    config_register_key(WINDOW_KEY_SPRINT, TOOLKIT_KEY_LSHIFT, "sprint", 0, "Sprint", "Movement");
-    config_register_key(WINDOW_KEY_SHIFT, TOOLKIT_KEY_LSHIFT, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_CURSOR_UP, TOOLKIT_KEY_UP, "cube_color_up", 0, "Color up", "Block");
-    config_register_key(WINDOW_KEY_CURSOR_DOWN, TOOLKIT_KEY_DOWN, "cube_color_down", 0, "Color down", "Block");
-    config_register_key(WINDOW_KEY_CURSOR_LEFT, TOOLKIT_KEY_LEFT, "cube_color_left", 0, "Color left", "Block");
-    config_register_key(WINDOW_KEY_CURSOR_RIGHT, TOOLKIT_KEY_RIGHT, "cube_color_right", 0, "Color right", "Block");
-    config_register_key(WINDOW_KEY_BACKSPACE, TOOLKIT_KEY_BACK, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_TOOL1, TOOLKIT_KEY_1, "tool_spade", 0, "Select spade", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TOOL2, TOOLKIT_KEY_2, "tool_block", 0, "Select block", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TOOL3, TOOLKIT_KEY_3, "tool_gun", 0, "Select gun", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TOOL4, TOOLKIT_KEY_4, "tool_grenade", 0, "Select grenade", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TAB, TOOLKIT_KEY_TAB, "view_score", 0, "Score", "Information");
-    config_register_key(WINDOW_KEY_ESCAPE, TOOLKIT_KEY_ESC, "quit_game", 0, "Quit", "Game");
-    config_register_key(WINDOW_KEY_MAP, TOOLKIT_KEY_M, "view_map", 1, "Map", "Information");
-    config_register_key(WINDOW_KEY_CROUCH, TOOLKIT_KEY_LCTRL, "crouch", 0, "Crouch", "Movement");
-    config_register_key(WINDOW_KEY_SNEAK, TOOLKIT_KEY_V, "sneak", 0, "Sneak", "Movement");
-    config_register_key(WINDOW_KEY_ENTER, TOOLKIT_KEY_RETURN, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F1, TOOLKIT_KEY_F1, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F2, TOOLKIT_KEY_F2, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F3, TOOLKIT_KEY_F3, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F4, TOOLKIT_KEY_F4, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_YES, TOOLKIT_KEY_Y, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_YES, TOOLKIT_KEY_Z, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_NO, TOOLKIT_KEY_N, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_VOLUME_UP, TOOLKIT_KEY_KP_ADD, "volume_up", 0, "Volume up", "Game");
-    config_register_key(WINDOW_KEY_VOLUME_DOWN, TOOLKIT_KEY_KP_SUBTRACT, "volume_down", 0, "Volume down", "Game");
-    config_register_key(WINDOW_KEY_V, TOOLKIT_KEY_V, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_RELOAD, TOOLKIT_KEY_R, "reload", 0, "Reload", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_CHAT, TOOLKIT_KEY_T, "chat_global", 0, "Chat", "Game");
-    config_register_key(WINDOW_KEY_FULLSCREEN, TOOLKIT_KEY_F11, "fullscreen", 0, "Fullscreen", "Game");
-    config_register_key(WINDOW_KEY_SCREENSHOT, TOOLKIT_KEY_F5, "screenshot", 0, "Screenshot", "Game");
-    config_register_key(WINDOW_KEY_CHANGETEAM, TOOLKIT_KEY_COMMA, "change_team", 0, "Team select", "Game");
-    config_register_key(WINDOW_KEY_CHANGEWEAPON, TOOLKIT_KEY_PERIOD, "change_weapon", 0, "Gun select", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_PICKCOLOR, TOOLKIT_KEY_E, "cube_color_sample", 0, "Pick color", "Block");
-    config_register_key(WINDOW_KEY_COMMAND, TOOLKIT_KEY_SLASH, "chat_command", 0, "Command", "Game");
-    config_register_key(WINDOW_KEY_HIDEHUD, TOOLKIT_KEY_F6, "hide_hud", 1, "Hide HUD", "Game");
-    config_register_key(WINDOW_KEY_LASTTOOL, TOOLKIT_KEY_Q, "last_tool", 0, "Last tool", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_NETWORKSTATS, TOOLKIT_KEY_F12, "network_stats", 1, "Network stats", "Information");
-    config_register_key(WINDOW_KEY_SAVE_MAP, TOOLKIT_KEY_F9, "save_map", 0, "Save map", "Game");
-    config_register_key(WINDOW_KEY_SELECT1, TOOLKIT_KEY_1, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_SELECT2, TOOLKIT_KEY_2, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_SELECT3, TOOLKIT_KEY_3, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_UP,           TOOLKIT_KEY_UP, "move_forward", 0, "Forward", "Movement");
+    config_register_key(WINDOW_KEY_DOWN,         TOOLKIT_KEY_DOWN, "move_backward", 0, "Backward", "Movement");
+    config_register_key(WINDOW_KEY_LEFT,         TOOLKIT_KEY_LEFT, "move_left", 0, "Left", "Movement");
+    config_register_key(WINDOW_KEY_RIGHT,        TOOLKIT_KEY_RIGHT, "move_right", 0, "Right", "Movement");
+    config_register_key(WINDOW_KEY_SPACE,        TOOLKIT_KEY_JUMP, "jump", 0, "Jump", "Movement");
+    config_register_key(WINDOW_KEY_SPRINT,       TOOLKIT_KEY_SPRINT, "sprint", 0, "Sprint", "Movement");
+    config_register_key(WINDOW_KEY_SHIFT,        TOOLKIT_KEY_SPRINT, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_CURSOR_UP,    TOOLKIT_KEY_CURSOR_UP, "cube_color_up", 0, "Color up", "Block");
+    config_register_key(WINDOW_KEY_CURSOR_DOWN,  TOOLKIT_KEY_CURSOR_DOWN, "cube_color_down", 0, "Color down", "Block");
+    config_register_key(WINDOW_KEY_CURSOR_LEFT,  TOOLKIT_KEY_CURSOR_LEFT, "cube_color_left", 0, "Color left", "Block");
+    config_register_key(WINDOW_KEY_CURSOR_RIGHT, TOOLKIT_KEY_CURSOR_RIGHT, "cube_color_right", 0, "Color right", "Block");
+    config_register_key(WINDOW_KEY_BACKSPACE,    TOOLKIT_KEY_BACKSPACE, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_TOOL1,        TOOLKIT_KEY_TOOL1, "tool_spade", 0, "Select spade", "Tools & Weapons");
+    config_register_key(WINDOW_KEY_TOOL2,        TOOLKIT_KEY_TOOL2, "tool_block", 0, "Select block", "Tools & Weapons");
+    config_register_key(WINDOW_KEY_TOOL3,        TOOLKIT_KEY_TOOL3, "tool_gun", 0, "Select gun", "Tools & Weapons");
+    config_register_key(WINDOW_KEY_TOOL4,        TOOLKIT_KEY_TOOL4, "tool_grenade", 0, "Select grenade", "Tools & Weapons");
+    config_register_key(WINDOW_KEY_TAB,          TOOLKIT_KEY_TAB, "view_score", 0, "Score", "Information");
+    config_register_key(WINDOW_KEY_ESCAPE,       TOOLKIT_KEY_ESCAPE, "quit_game", 0, "Quit", "Game");
+    config_register_key(WINDOW_KEY_MAP,          TOOLKIT_KEY_MAP, "view_map", 1, "Map", "Information");
+    config_register_key(WINDOW_KEY_CROUCH,       TOOLKIT_KEY_CROUCH, "crouch", 0, "Crouch", "Movement");
+    config_register_key(WINDOW_KEY_SNEAK,        TOOLKIT_KEY_SNEAK, "sneak", 0, "Sneak", "Movement");
+    config_register_key(WINDOW_KEY_ENTER,        TOOLKIT_KEY_ENTER, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_F1,           TOOLKIT_KEY_F1, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_F2,           TOOLKIT_KEY_F2, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_F3,           TOOLKIT_KEY_F3, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_F4,           TOOLKIT_KEY_F4, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_YES,          TOOLKIT_KEY_YES, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_NO,           TOOLKIT_KEY_NO, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_VOLUME_UP,    TOOLKIT_KEY_VOLUME_UP, "volume_up", 0, "Volume up", "Game");
+    config_register_key(WINDOW_KEY_VOLUME_DOWN,  TOOLKIT_KEY_VOLUME_DOWN, "volume_down", 0, "Volume down", "Game");
+    config_register_key(WINDOW_KEY_V,            TOOLKIT_KEY_SNEAK, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_RELOAD,       TOOLKIT_KEY_RELOAD, "reload", 0, "Reload", "Tools & Weapons");
+    config_register_key(WINDOW_KEY_CHAT,         TOOLKIT_KEY_CHAT, "chat_global", 0, "Chat", "Game");
+    config_register_key(WINDOW_KEY_FULLSCREEN,   TOOLKIT_KEY_FULLSCREEN, "fullscreen", 0, "Fullscreen", "Game");
+    config_register_key(WINDOW_KEY_SCREENSHOT,   TOOLKIT_KEY_SCREENSHOT, "screenshot", 0, "Screenshot", "Game");
+    config_register_key(WINDOW_KEY_CHANGETEAM,   TOOLKIT_KEY_CHANGETEAM, "change_team", 0, "Team select", "Game");
+    config_register_key(WINDOW_KEY_CHANGEWEAPON, TOOLKIT_KEY_CHANGEWEAPON, "change_weapon", 0, "Gun select", "Tools & Weapons");
+    config_register_key(WINDOW_KEY_PICKCOLOR,    TOOLKIT_KEY_PICKCOLOR, "cube_color_sample", 0, "Pick color", "Block");
+    config_register_key(WINDOW_KEY_COMMAND,      TOOLKIT_KEY_COMMAND, "chat_command", 0, "Command", "Game");
+    config_register_key(WINDOW_KEY_HIDEHUD,      TOOLKIT_KEY_HIDEHUD, "hide_hud", 1, "Hide HUD", "Game");
+    config_register_key(WINDOW_KEY_LASTTOOL,     TOOLKIT_KEY_LASTTOOL, "last_tool", 0, "Last tool", "Tools & Weapons");
+    config_register_key(WINDOW_KEY_NETWORKSTATS, TOOLKIT_KEY_NETWORKSTATS, "network_stats", 1, "Network stats", "Information");
+    config_register_key(WINDOW_KEY_SAVE_MAP,     TOOLKIT_KEY_SAVE_MAP, "save_map", 0, "Save map", "Game");
+    config_register_key(WINDOW_KEY_SELECT1,      TOOLKIT_KEY_TOOL1, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_SELECT2,      TOOLKIT_KEY_TOOL2, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_SELECT3,      TOOLKIT_KEY_TOOL3, NULL, 0, NULL, NULL);
 
     list_sort(&config_keys, config_key_cmp);
 
@@ -410,8 +409,8 @@ void config_reload() {
                  .max = INT_MAX,
                  .name = "V-Sync",
                  .help = "Limits your game's fps",
-                 .defaults = {0, 1, 60, 120, 144, 240},
-                 .defaults_length = 6,
+                 .defaults = {0, 5, 20, 30, 60, 120, 144, 240},
+                 .defaults_length = 8,
                  .label_callback = config_label_vsync,
              });
     list_add(&config_settings,

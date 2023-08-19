@@ -21,46 +21,55 @@
 #define COMMON_H
 
 #ifndef OPENGL_ES
-#define GLEW_STATIC
-#include <GL/glew.h>
+    #define GLEW_STATIC
+    #include <GL/glew.h>
 #else
-#ifdef USE_SDL
-#include <SDL2/SDL_opengles.h>
-#endif
-#define glColor3f(r, g, b) glColor4f(r, g, b, 1.0F)
-#define glColor3ub(r, g, b) glColor4ub(r, g, b, 255)
-#define glDepthRange(a, b) glDepthRangef(a, b)
-#define glClearDepth(a) glClearDepthf(a)
+    #ifdef USE_SDL
+        #include <SDL2/SDL_opengles.h>
+    #endif
+
+    #define glColor3f(r, g, b) glColor4f(r, g, b, 1.0F)
+    #define glColor3ub(r, g, b) glColor4ub(r, g, b, 255)
+    #define glDepthRange(a, b) glDepthRangef(a, b)
+    #define glClearDepth(a) glClearDepthf(a)
 #endif
 
 #ifdef USE_GLFW
-#include <GLFW/glfw3.h>
+    #include <GLFW/glfw3.h>
 #endif
 
 #ifdef USE_SDL
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
+    #define SDL_MAIN_HANDLED
+    #include <SDL2/SDL.h>
+#endif
+
+#ifdef USE_GLUT
+    #ifdef __APPLE__
+        #include <GLUT/glut.h>
+    #else
+        #include <GL/glut.h>
+    #endif
 #endif
 
 #ifdef USE_RPC
-#include <discord_rpc.h>
+    #include <discord_rpc.h>
 #endif
 
 #ifdef _WIN32
-#define OS_WINDOWS
+    #define OS_WINDOWS
 #endif
 
 #ifdef __linux__
-#define OS_LINUX
-#include <sys/sysinfo.h>
+    #define OS_LINUX
+    #include <sys/sysinfo.h>
 #endif
 
 #ifdef __APPLE__
-#define OS_APPLE
+    #define OS_APPLE
 #endif
 
 #ifdef __HAIKU__
-#define OS_HAIKU
+    #define OS_HAIKU
 #endif
 
 #ifndef min

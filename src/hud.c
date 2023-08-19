@@ -2587,7 +2587,7 @@ static void hud_settings_render(mu_Context* ctx, float scalex, float scaley) {
                         mu_text(ctx, a->name);
                         if (a->max == INT_MAX) {
                             mu_number(ctx, a->value, 0.1F);
-                            *(float*)a->value = max(a->min, *(float*)a->value);
+                            *((float*) a->value) = max(a->min, *((float*) a->value));
                         } else {
                             mu_slider(ctx, a->value, a->min, a->max);
                         }

@@ -50,6 +50,18 @@ ifeq ($(TOOLKIT),GLFW)
 	LDFLAGS += -lglfw
 endif
 
+ifeq ($(TOOLKIT),GLUT)
+	CFLAGS += -DUSE_GLUT
+
+	ifeq ($(UNAME),Linux)
+		LDFLAGS += -lglut
+	endif
+
+	ifeq ($(UNAME),Darwin)
+		LDFLAGS += -framework GLUT
+	endif
+endif
+
 ifeq ($(UNAME),Linux)
 	LDFLAGS += -lm -lopenal -lGL -lGLU -pthread
 endif

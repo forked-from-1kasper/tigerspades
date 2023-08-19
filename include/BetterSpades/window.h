@@ -126,16 +126,20 @@ void window_mousemode(int mode);
 void window_mouseloc(double * x, double * y);
 void window_setmouseloc(double x, double y);
 void window_swapping(int value);
-void window_init(void);
 void window_fromsettings(void);
 void window_deinit(void);
-void window_update(void);
-int window_closed(void);
 int window_cpucores();
 void window_title(char * suffix);
 
-#ifdef USE_SDL
-    extern int quit;
+typedef void (*Idle)(double);
+typedef void (*Display)(void);
+
+void window_init(int *, char **);
+void window_eventloop(Idle, Display);
+
+#ifdef USE_GLUT
+    extern int captured;
+    extern double mx, my;
 #endif
 
 #endif

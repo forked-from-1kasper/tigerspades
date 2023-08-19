@@ -33,6 +33,10 @@
     #include <Keyboard/sdl.h>
 #endif
 
+#ifdef USE_GLUT
+    #include <Keyboard/glut.h>
+#endif
+
 struct config_file_entry {
     char section[32];
     char name[32];
