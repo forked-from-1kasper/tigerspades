@@ -409,7 +409,7 @@ void config_reload() {
                  .max = INT_MAX,
                  .name = "V-Sync",
                  .help = "Limits your game's fps",
-                 .defaults = {0, 5, 20, 30, 60, 120, 144, 240},
+                 .defaults = {0, 1, 20, 30, 60, 120, 144, 240},
                  .defaults_length = 8,
                  .label_callback = config_label_vsync,
              });
