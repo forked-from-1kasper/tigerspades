@@ -375,9 +375,9 @@ static int hud_ingame_onscreencontrol(int index, char* str, int activate) {
                         if (str)
                             strcpy(str, "Score");
                         if (activate == 0)
-                            keys(hud_window, WINDOW_KEY_TAB, 0, WINDOW_RELEASE, 0);
+                            keys(hud_window, WINDOW_KEY_TAB, WINDOW_RELEASE, 0);
                         if (activate == 1)
-                            keys(hud_window, WINDOW_KEY_TAB, 0, WINDOW_PRESS, 0);
+                            keys(hud_window, WINDOW_KEY_TAB, WINDOW_PRESS, 0);
                         return 1;
                     case 3:
                         if (str)
@@ -399,9 +399,9 @@ static int hud_ingame_onscreencontrol(int index, char* str, int activate) {
                         if (str)
                             strcpy(str, "Network");
                         if (activate == 0)
-                            keys(hud_window, WINDOW_KEY_NETWORKSTATS, 0, WINDOW_RELEASE, 0);
+                            keys(hud_window, WINDOW_KEY_NETWORKSTATS, WINDOW_RELEASE, 0);
                         if (activate == 1)
-                            keys(hud_window, WINDOW_KEY_NETWORKSTATS, 0, WINDOW_PRESS, 0);
+                            keys(hud_window, WINDOW_KEY_NETWORKSTATS, WINDOW_PRESS, 0);
                         return 1;
                     case 6:
                         if (str)

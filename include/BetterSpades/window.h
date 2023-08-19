@@ -147,6 +147,7 @@ void window_fromsettings(void);
 void window_deinit(void);
 int window_cpucores();
 void window_title(char * suffix);
+void window_sendkey(int action, int keycode, int mod);
 
 typedef void (*Idle)(double);
 typedef void (*Display)(void);

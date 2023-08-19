@@ -550,7 +550,7 @@ void text_input(struct window_instance * window, unsigned int codepoint) {
     }
 }
 
-void keys(struct window_instance * window, int key, int scancode, int action, int mods) {
+void keys(struct window_instance * window, int key, int action, int mods) {
     if (hud_active->ctx) {
         if (mu_key_translate(key)) {
             switch (action) {

@@ -24,43 +24,26 @@
 
 #ifdef USE_GLUT
 
-void sendkey(int action, int keycode, int mod) {
-    int count = config_key_translate(keycode, 0, NULL);
-
-    if (count > 0) {
-        int results[count];
-        config_key_translate(keycode, 0, results);
-        for (int k = 0; k < count; k++) {
-            keys(hud_window, results[k], keycode, action, mod);
-            if (hud_active->input_keyboard)
-                hud_active->input_keyboard(results[k], action, mod, keycode);
-        }
-    } else {
-        if (hud_active->input_keyboard)
-            hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, action, mod, keycode);
-    }
-}
-
 void window_keyboard(unsigned char key, int x, int y) {
     if (isprint(key)) text_input(hud_window, key);
 
     int mod = glutGetModifiers() & GLUT_ACTIVE_CTRL;
-    sendkey(WINDOW_PRESS, toupper(key), mod);
+    window_sendkey(WINDOW_PRESS, toupper(key), mod);
 }
 
 void window_special(int key, int x, int y) {
     int mod = glutGetModifiers() & GLUT_ACTIVE_CTRL;
-    sendkey(WINDOW_PRESS, key | GLUT_SPECIAL_MASK, mod);
+    window_sendkey(WINDOW_PRESS, key | GLUT_SPECIAL_MASK, mod);
 }
 
 void window_keyboard_up(unsigned char key, int x, int y) {
     int mod = glutGetModifiers() & GLUT_ACTIVE_CTRL;
-    sendkey(WINDOW_RELEASE, toupper(key), mod);
+    window_sendkey(WINDOW_RELEASE, toupper(key), mod);
 }
 
 void window_special_up(int key, int x, int y) {
     int mod = glutGetModifiers() & GLUT_ACTIVE_CTRL;
-    sendkey(WINDOW_RELEASE, key | GLUT_SPECIAL_MASK, mod);
+    window_sendkey(WINDOW_RELEASE, key | GLUT_SPECIAL_MASK, mod);
 }
 
 void window_reshape(GLint width, GLint height) {

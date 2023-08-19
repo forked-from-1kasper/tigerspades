@@ -438,3 +438,20 @@ int window_cpucores() {
 
     return 1;
 }
+
+void window_sendkey(int action, int keycode, int mod) {
+    int count = config_key_translate(keycode, 0, NULL);
+
+    if (count > 0) {
+        int results[count];
+        config_key_translate(keycode, 0, results);
+        for (int k = 0; k < count; k++) {
+            keys(hud_window, results[k], action, mod);
+            if (hud_active->input_keyboard)
+                hud_active->input_keyboard(results[k], action, mod, keycode);
+        }
+    } else {
+        if (hud_active->input_keyboard)
+            hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, action, mod, keycode);
+    }
+}

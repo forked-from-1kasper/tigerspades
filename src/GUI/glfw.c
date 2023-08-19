@@ -79,8 +79,6 @@ static void window_impl_textinput(GLFWwindow * window, unsigned int codepoint) {
 }
 
 static void window_impl_keys(GLFWwindow * window, int key, int scancode, int action, int mods) {
-    int count = config_key_translate(key, 0, NULL);
-
     int a = -1;
     switch (action) {
         case GLFW_RELEASE: a = WINDOW_RELEASE; break;
@@ -88,20 +86,7 @@ static void window_impl_keys(GLFWwindow * window, int key, int scancode, int act
         case GLFW_REPEAT:  a = WINDOW_REPEAT;  break;
     }
 
-    if (count > 0) {
-        int results[count];
-        config_key_translate(key, 0, results);
-
-        for (int k = 0; k < count; k++) {
-            keys(hud_window, results[k], scancode, a, mods & GLFW_MOD_CONTROL);
-
-            if (hud_active->input_keyboard)
-                hud_active->input_keyboard(results[k], action, mods & GLFW_MOD_CONTROL, key);
-        }
-    } else {
-        if (hud_active->input_keyboard)
-            hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, action, mods & GLFW_MOD_CONTROL, key);
-    }
+    window_sendkey(a, key, mods & GLFW_MOD_CONTROL);
 }
 
 void window_init(int * argc, char ** argv) {
@@ -166,12 +151,12 @@ void window_init(int * argc, char ** argv) {
 
 static void gamepad_translate_key(GLFWgamepadstate * state, GLFWgamepadstate * old, int gamepad, enum window_keys key) {
     if (!old->buttons[gamepad] && state->buttons[gamepad]) {
-        keys(hud_window, key, 0, WINDOW_PRESS, 0);
+        keys(hud_window, key, WINDOW_PRESS, 0);
 
         if (hud_active->input_keyboard)
             hud_active->input_keyboard(key, WINDOW_PRESS, 0, 0);
     } else if (old->buttons[gamepad] && !state->buttons[gamepad]) {
-        keys(hud_window, key, 0, WINDOW_RELEASE, 0);
+        keys(hud_window, key, WINDOW_RELEASE, 0);
 
         if (hud_active->input_keyboard)
             hud_active->input_keyboard(key, WINDOW_RELEASE, 0, 0);
@@ -206,9 +191,9 @@ void window_update() {
             gamepad_translate_key(&state, &joystick_state, GLFW_GAMEPAD_BUTTON_LEFT_BUMPER, WINDOW_KEY_SPRINT);
             gamepad_translate_key(&state, &joystick_state, GLFW_GAMEPAD_BUTTON_X, WINDOW_KEY_RELOAD);
 
-            window_pressed_keys[WINDOW_KEY_UP] = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] < -0.25F;
-            window_pressed_keys[WINDOW_KEY_DOWN] = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] > 0.25F;
-            window_pressed_keys[WINDOW_KEY_LEFT] = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X] < -0.25F;
+            window_pressed_keys[WINDOW_KEY_UP]    = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] < -0.25F;
+            window_pressed_keys[WINDOW_KEY_DOWN]  = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y] > 0.25F;
+            window_pressed_keys[WINDOW_KEY_LEFT]  = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X] < -0.25F;
             window_pressed_keys[WINDOW_KEY_RIGHT] = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X] > 0.25F;
 
             joystick_mouse[0] += state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X] * 15.0F;
@@ -231,13 +216,13 @@ void window_eventloop(Idle idle, Display display) {
         last_frame_start = window_time();
 
         idle(dt);
-        window_update();
         display();
+        window_update();
 
         if (settings.vsync > 1 && (window_time() - last_frame_start) < (1.0 / settings.vsync)) {
             double sleep_s = 1.0 / settings.vsync - (window_time() - last_frame_start);
             struct timespec ts;
-            ts.tv_sec = (int)sleep_s;
+            ts.tv_sec = (int) sleep_s;
             ts.tv_nsec = (sleep_s - ts.tv_sec) * 1000000000.0;
             nanosleep(&ts, NULL);
         }

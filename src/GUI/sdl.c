@@ -56,83 +56,37 @@ void window_init(int * argc, char ** argv) {
     memset(fingers, 0, sizeof(fingers));
 }
 
+extern inline int get_sdl_button(int button) {
+    switch (button) {
+        case SDL_BUTTON_LEFT:   return WINDOW_MOUSE_LMB;
+        case SDL_BUTTON_RIGHT:  return WINDOW_MOUSE_RMB;
+        case SDL_BUTTON_MIDDLE: return WINDOW_MOUSE_MMB;
+        default:                return -1;
+    }
+}
+
 void window_update() {
     SDL_GL_SwapWindow(hud_window->impl);
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_QUIT: quit = 1; break;
-            case SDL_KEYDOWN: {
-                int count = config_key_translate(event.key.keysym.sym, 0, NULL);
 
-                if (count > 0) {
-                    int results[count];
-                    config_key_translate(event.key.keysym.sym, 0, results);
+            case SDL_KEYDOWN: window_sendkey(WINDOW_PRESS, event.key.keysym.sym, event.key.keysym.mod & KMOD_CTRL); break;
+            case SDL_KEYUP: window_sendkey(WINDOW_RELEASE, event.key.keysym.sym, event.key.keysym.mod & KMOD_CTRL); break;
 
-                    for (int k = 0; k < count; k++) {
-                        keys(hud_window, results[k], event.key.keysym.sym, WINDOW_PRESS,
-                             event.key.keysym.mod & KMOD_CTRL);
+            case SDL_MOUSEBUTTONDOWN: mouse_click(hud_window, get_sdl_button(event.button.button), WINDOW_PRESS, 0); break;
+            case SDL_MOUSEBUTTONUP: mouse_click(hud_window, get_sdl_button(event.button.button), WINDOW_RELEASE, 0); break;
 
-                        if (hud_active->input_keyboard)
-                            hud_active->input_keyboard(results[k], WINDOW_PRESS, event.key.keysym.mod & KMOD_CTRL,
-                                                       event.key.keysym.sym);
-                    }
-                } else {
-                    if (hud_active->input_keyboard)
-                        hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, WINDOW_PRESS, event.key.keysym.mod & KMOD_CTRL,
-                                                   event.key.keysym.sym);
-                }
-                break;
-            }
-            case SDL_KEYUP: {
-                int count = config_key_translate(event.key.keysym.sym, 0, NULL);
-
-                if (count > 0) {
-                    int results[count];
-                    config_key_translate(event.key.keysym.sym, 0, results);
-
-                    for (int k = 0; k < count; k++) {
-                        keys(hud_window, results[k], event.key.keysym.sym, WINDOW_RELEASE,
-                             event.key.keysym.mod & KMOD_CTRL);
-
-                        if (hud_active->input_keyboard)
-                            hud_active->input_keyboard(results[k], WINDOW_RELEASE, event.key.keysym.mod & KMOD_CTRL,
-                                                       event.key.keysym.sym);
-                    }
-                } else {
-                    if (hud_active->input_keyboard)
-                        hud_active->input_keyboard(WINDOW_KEY_UNKNOWN, WINDOW_RELEASE, event.key.keysym.mod & KMOD_CTRL,
-                                                   event.key.keysym.sym);
-                }
-                break;
-            }
-            case SDL_MOUSEBUTTONDOWN: {
-                int a = 0;
-                switch (event.button.button) {
-                    case SDL_BUTTON_LEFT:   a = WINDOW_MOUSE_LMB; break;
-                    case SDL_BUTTON_RIGHT:  a = WINDOW_MOUSE_RMB; break;
-                    case SDL_BUTTON_MIDDLE: a = WINDOW_MOUSE_MMB; break;
-                }
-                mouse_click(hud_window, a, WINDOW_PRESS, 0);
-                break;
-            }
-            case SDL_MOUSEBUTTONUP: {
-                int a = 0;
-                switch (event.button.button) {
-                    case SDL_BUTTON_LEFT:   a = WINDOW_MOUSE_LMB; break;
-                    case SDL_BUTTON_RIGHT:  a = WINDOW_MOUSE_RMB; break;
-                    case SDL_BUTTON_MIDDLE: a = WINDOW_MOUSE_MMB; break;
-                }
-                mouse_click(hud_window, a, WINDOW_RELEASE, 0);
-                break;
-            }
             case SDL_WINDOWEVENT:
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED
                    || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                     reshape(hud_window, event.window.data1, event.window.data2);
                 }
                 break;
+
             case SDL_MOUSEWHEEL: mouse_scroll(hud_window, event.wheel.x, event.wheel.y); break;
+
             case SDL_MOUSEMOTION: {
                 if (SDL_GetRelativeMouseMode()) {
                     static int x, y;
@@ -145,6 +99,7 @@ void window_update() {
                 break;
             }
             case SDL_TEXTINPUT: text_input(hud_window, event.text.text[0]); break;
+
             case SDL_FINGERDOWN:
                 if (hud_active->input_touch) {
                     struct window_finger* f;
@@ -166,6 +121,7 @@ void window_update() {
                                             event.tfinger.dy * settings.window_height);
                 }
                 break;
+
             case SDL_FINGERUP:
                 if (hud_active->input_touch) {
                     struct window_finger* f;
@@ -181,6 +137,7 @@ void window_update() {
                         event.tfinger.dx * settings.window_width, event.tfinger.dy * settings.window_height);
                 }
                 break;
+
             case SDL_FINGERMOTION:
                 if (hud_active->input_touch) {
                     struct window_finger* f;
@@ -208,8 +165,8 @@ void window_eventloop(Idle idle, Display display) {
         last_frame_start = window_time();
 
         idle(dt);
-        window_update();
         display();
+        window_update();
 
         if (settings.vsync > 1 && (window_time() - last_frame_start) < (1.0 / settings.vsync)) {
             double sleep_s = 1.0 / settings.vsync - (window_time() - last_frame_start);
