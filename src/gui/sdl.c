@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <BetterSpades/common.h>
 #include <BetterSpades/main.h>
