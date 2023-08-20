@@ -40,3 +40,6 @@
 #define TOOLKIT_KEY_LASTTOOL     ((int) 'Q')
 #define TOOLKIT_KEY_NETWORKSTATS GLUT_SPECIAL_MASK | GLUT_KEY_F12
 #define TOOLKIT_KEY_SAVE_MAP     GLUT_SPECIAL_MASK | GLUT_KEY_F9
+#define TOOLKIT_KEY_SELECT1      ((int) '1')
+#define TOOLKIT_KEY_SELECT2      ((int) '2')
+#define TOOLKIT_KEY_SELECT3      ((int) '3')

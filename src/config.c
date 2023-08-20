@@ -327,9 +327,9 @@ void config_reload() {
     config_register_key(WINDOW_KEY_LASTTOOL,     TOOLKIT_KEY_LASTTOOL, "last_tool", 0, "Last tool", "Tools & Weapons");
     config_register_key(WINDOW_KEY_NETWORKSTATS, TOOLKIT_KEY_NETWORKSTATS, "network_stats", 1, "Network stats", "Information");
     config_register_key(WINDOW_KEY_SAVE_MAP,     TOOLKIT_KEY_SAVE_MAP, "save_map", 0, "Save map", "Game");
-    config_register_key(WINDOW_KEY_SELECT1,      TOOLKIT_KEY_TOOL1, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_SELECT2,      TOOLKIT_KEY_TOOL2, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_SELECT3,      TOOLKIT_KEY_TOOL3, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_SELECT1,      TOOLKIT_KEY_SELECT1, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_SELECT2,      TOOLKIT_KEY_SELECT2, NULL, 0, NULL, NULL);
+    config_register_key(WINDOW_KEY_SELECT3,      TOOLKIT_KEY_SELECT3, NULL, 0, NULL, NULL);
 
     list_sort(&config_keys, config_key_cmp);
 
