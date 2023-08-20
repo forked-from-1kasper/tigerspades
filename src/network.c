@@ -52,8 +52,8 @@ Orientation network_orient_last;
 
 float network_pos_update        = 0.0F;
 float network_orient_update     = 0.0F;
-Keys network_keys_last          = (Keys) {0};
-Buttons network_buttons_last    = (Buttons) {0};
+Keys network_keys_last          = {0};
+Buttons network_buttons_last    = {0};
 unsigned char network_tool_last = 255;
 
 void * compressed_chunk_data;
