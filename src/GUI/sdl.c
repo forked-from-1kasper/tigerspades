@@ -56,7 +56,7 @@ void window_init(int * argc, char ** argv) {
     memset(fingers, 0, sizeof(fingers));
 }
 
-extern inline int get_sdl_button(int button) {
+static inline __attribute((always_inline)) int get_sdl_button(int button) {
     switch (button) {
         case SDL_BUTTON_LEFT:   return WINDOW_MOUSE_LMB;
         case SDL_BUTTON_RIGHT:  return WINDOW_MOUSE_RMB;
