@@ -144,25 +144,24 @@ void camera_hit_mask(struct Camera_HitType * hit, int exclude_player, float x, f
         float l = distance2D(x, z, players[i].pos.x, players[i].pos.z);
         if (players[i].connected && players[i].alive && l < range * range
            && (exclude_player < 0 || (exclude_player >= 0 && exclude_player != i))) {
-            struct player_intersection intersects = {0};
+            Hit intersects = {0};
             player_collision(players + i, &dir, &intersects);
 
-            float d;
-            int type = player_intersection_choose(&intersects, &d);
+            float d; int type = player_intersection_choose(&intersects, &d);
             if (player_intersection_exists(&intersects) && d < hit->distance) {
-                hit->type = CAMERA_HITTYPE_PLAYER;
-                hit->distance = d;
-                hit->x = players[i].pos.x;
-                hit->y = players[i].pos.y;
-                hit->z = players[i].pos.z;
-                hit->player_id = i;
+                hit->type           = CAMERA_HITTYPE_PLAYER;
+                hit->distance       = d;
+                hit->x              = players[i].pos.x;
+                hit->y              = players[i].pos.y;
+                hit->z              = players[i].pos.z;
+                hit->player_id      = i;
                 hit->player_section = type;
             }
         }
     }
 }
 
-int* camera_terrain_pick(unsigned char mode) {
+int * camera_terrain_pick(unsigned char mode) {
     return camera_terrain_pickEx(mode, camera_x, camera_y, camera_z, sin(camera_rot_x) * sin(camera_rot_y),
                                  cos(camera_rot_y), cos(camera_rot_x) * sin(camera_rot_y));
 }
@@ -217,7 +216,7 @@ int* camera_terrain_pickEx(unsigned char mode, float gx0, float gy0, float gz0, 
     ret[0] = ret[1] = ret[2] = 0;
     ret[3] = ret[4] = ret[5] = 0;
 
-    while (1) {
+    for (;;) {
         if (gx >= map_size_x || gx < 0 || gy < 0 || gz >= map_size_z || gz < 0) {
             return NULL;
         }
@@ -276,11 +275,11 @@ void camera_ExtractFrustum() {
     matrix_load(mvp, matrix_model);
     matrix_multiply(mvp, matrix_view);
     matrix_multiply(mvp, matrix_projection);
-    memcpy(clip, (float*)mvp, 16 * sizeof(float));
+    memcpy(clip, (float*) mvp, 16 * sizeof(float));
 
     /* Extract the numbers for the RIGHT plane */
-    frustum[0][0] = clip[3] - clip[0];
-    frustum[0][1] = clip[7] - clip[4];
+    frustum[0][0] = clip[3]  - clip[0];
+    frustum[0][1] = clip[7]  - clip[4];
     frustum[0][2] = clip[11] - clip[8];
     frustum[0][3] = clip[15] - clip[12];
 
@@ -292,8 +291,8 @@ void camera_ExtractFrustum() {
     frustum[0][3] /= t;
 
     /* Extract the numbers for the LEFT plane */
-    frustum[1][0] = clip[3] + clip[0];
-    frustum[1][1] = clip[7] + clip[4];
+    frustum[1][0] = clip[3]  + clip[0];
+    frustum[1][1] = clip[7]  + clip[4];
     frustum[1][2] = clip[11] + clip[8];
     frustum[1][3] = clip[15] + clip[12];
 
@@ -305,8 +304,8 @@ void camera_ExtractFrustum() {
     frustum[1][3] /= t;
 
     /* Extract the BOTTOM plane */
-    frustum[2][0] = clip[3] + clip[1];
-    frustum[2][1] = clip[7] + clip[5];
+    frustum[2][0] = clip[3]  + clip[1];
+    frustum[2][1] = clip[7]  + clip[5];
     frustum[2][2] = clip[11] + clip[9];
     frustum[2][3] = clip[15] + clip[13];
 
@@ -318,8 +317,8 @@ void camera_ExtractFrustum() {
     frustum[2][3] /= t;
 
     /* Extract the TOP plane */
-    frustum[3][0] = clip[3] - clip[1];
-    frustum[3][1] = clip[7] - clip[5];
+    frustum[3][0] = clip[3]  - clip[1];
+    frustum[3][1] = clip[7]  - clip[5];
     frustum[3][2] = clip[11] - clip[9];
     frustum[3][3] = clip[15] - clip[13];
 
@@ -331,8 +330,8 @@ void camera_ExtractFrustum() {
     frustum[3][3] /= t;
 
     /* Extract the FAR plane */
-    frustum[4][0] = clip[3] - clip[2];
-    frustum[4][1] = clip[7] - clip[6];
+    frustum[4][0] = clip[3]  - clip[2];
+    frustum[4][1] = clip[7]  - clip[6];
     frustum[4][2] = clip[11] - clip[10];
     frustum[4][3] = clip[15] - clip[14];
 
@@ -344,8 +343,8 @@ void camera_ExtractFrustum() {
     frustum[4][3] /= t;
 
     /* Extract the NEAR plane */
-    frustum[5][0] = clip[3] + clip[2];
-    frustum[5][1] = clip[7] + clip[6];
+    frustum[5][0] = clip[3]  + clip[2];
+    frustum[5][1] = clip[7]  + clip[6];
     frustum[5][2] = clip[11] + clip[10];
     frustum[5][3] = clip[15] + clip[14];
 

@@ -154,21 +154,21 @@ void particle_render() {
     tesselator_draw(&particle_tesselator, 1);
 }
 
-void particle_create_casing(struct Player * p) {
+void particle_create_casing(Player * p) {
     entitysys_add(&particles,
                   &(struct Particle) {
-                      .size = 0.1F,
-                      .x = p->gun_pos.x,
-                      .y = p->gun_pos.y,
-                      .z = p->gun_pos.z,
-                      .ox = p->orientation.x,
-                      .oy = p->orientation.y,
-                      .oz = p->orientation.z,
-                      .vx = p->casing_dir.x * 3.5F,
-                      .vy = p->casing_dir.y * 3.5F,
-                      .vz = p->casing_dir.z * 3.5F,
-                      .fade = window_time(),
-                      .type = p->weapon,
+                      .size  = 0.1F,
+                      .x     = p->gun_pos.x,
+                      .y     = p->gun_pos.y,
+                      .z     = p->gun_pos.z,
+                      .ox    = p->orientation.x,
+                      .oy    = p->orientation.y,
+                      .oz    = p->orientation.z,
+                      .vx    = p->casing_dir.x * 3.5F,
+                      .vy    = p->casing_dir.y * 3.5F,
+                      .vz    = p->casing_dir.z * 3.5F,
+                      .fade  = window_time(),
+                      .type  = p->weapon,
                       .color = (TrueColor) {0xFF, 0xFF, 0x00, 0xFF},
                   });
 }

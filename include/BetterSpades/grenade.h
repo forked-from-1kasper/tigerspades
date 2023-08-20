@@ -20,16 +20,16 @@
 #ifndef GRENADE_H
 #define GRENADE_H
 
-struct Grenade {
+typedef struct {
     unsigned char team;
     float fuse_length;
     float created;
-    struct Position pos;
-    struct Velocity velocity;
-};
+    Position pos;
+    Velocity velocity;
+} Grenade;
 
 void grenade_init(void);
-void grenade_add(struct Grenade* g);
+void grenade_add(Grenade *);
 void grenade_update(float dt);
 void grenade_render(void);
 

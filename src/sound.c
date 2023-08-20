@@ -144,7 +144,7 @@ static void sound_createEx(enum sound_space option, struct Sound_wav * w, float 
 #endif
 }
 
-void sound_create_sticky(struct Sound_wav * w, struct Player * player, int player_id) {
+void sound_create_sticky(struct Sound_wav * w, Player * player, int player_id) {
     sound_createEx(SOUND_WORLD, w, player->pos.x, player->pos.y, player->pos.z, 0.0F, 0.0F, 0.0F, player_id);
 }
 

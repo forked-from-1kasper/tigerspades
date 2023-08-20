@@ -30,12 +30,13 @@
 #define TEAM_2 1
 #define TEAM_SPECTATOR 255
 
+typedef struct {
+    char name[11];
+    unsigned char red, green, blue;
+} Team;
+
 extern struct GameState {
-    struct Team {
-        char name[11];
-        unsigned char red, green, blue;
-    } team_1;
-    struct Team team_2;
+    Team team_1, team_2;
     unsigned char gamemode_type;
     union Gamemodes gamemode;
     struct {
@@ -74,39 +75,45 @@ extern int player_intersection_type;
 extern int player_intersection_player;
 extern float player_intersection_dist;
 
-struct player_intersection {
+typedef struct {
     bool head;
     bool torso;
     bool leg_left;
     bool leg_right;
     bool arms;
-    union {
-        struct {
-            float head;
-            float torso;
-            float leg_left;
-            float leg_right;
-            float arms;
-        };
-        float values[5];
+
+    struct {
+        float head;
+        float torso;
+        float leg_left;
+        float leg_right;
+        float arms;
     } distance;
-};
+} Hit;
 
-bool player_intersection_exists(struct player_intersection* s);
-int player_intersection_choose(struct player_intersection* s, float* distance);
+bool player_intersection_exists(Hit * s);
+int player_intersection_choose(Hit * s, float * distance);
 
-extern struct Player {
+typedef struct {
+    float x, y, z;
+} Position;
+
+typedef struct {
+    float x, y, z;
+} Orientation;
+
+typedef struct {
+    float x, y, z;
+} Velocity;
+
+typedef struct {
     char name[17];
-    struct Position {
-        float x, y, z;
-    } pos;
-    struct Orientation {
-        float x, y, z;
-    } orientation;
+    Position pos;
+    Orientation orientation;
     AABB bb_2d;
-    struct Orientation orientation_smooth;
-    struct Position gun_pos;
-    struct Position casing_dir;
+    Orientation orientation_smooth;
+    Position gun_pos;
+    Position casing_dir;
     float gun_shoot_timer;
     int ammo, ammo_reserved;
     float spade_use_timer;
@@ -118,36 +125,15 @@ extern struct Player {
     unsigned char items_show;
     TrueColor block;
     struct {
-        union {
-            unsigned char packed; // useful to load PacketInput quickly
-            struct {
-                unsigned char up : 1;
-                unsigned char down : 1;
-                unsigned char left : 1;
-                unsigned char right : 1;
-                unsigned char jump : 1;
-                unsigned char crouch : 1;
-                unsigned char sneak : 1;
-                unsigned char sprint : 1;
-            };
-        } keys;
-        union {
-            unsigned char packed;
-            struct {
-                unsigned char lmb : 1;
-                unsigned char rmb : 1;
-                float lmb_start, rmb_start;
-            };
-        } buttons;
+        Keys    keys;
+        Buttons buttons;
     } input;
 
     struct {
         unsigned char jump, airborne, wade;
         float lastclimb;
-        struct Velocity {
-            float x, y, z;
-        } velocity;
-        struct Position eye;
+        Velocity velocity;
+        Position eye;
     } physics;
 
     struct {
@@ -155,22 +141,24 @@ extern struct Player {
         char feet_cylce;
         float tool_started;
     } sound;
-} players[PLAYERS_MAX];
+} Player;
+
+extern Player players[PLAYERS_MAX];
 // pyspades/pysnip/piqueserver sometimes uses ids that are out of range
 
-void player_on_held_item_change(struct Player* p);
-int player_can_spectate(struct Player* p);
+void player_on_held_item_change(Player * p);
+int player_can_spectate(Player * p);
 float player_section_height(int section);
 void player_init(void);
-float player_height(const struct Player* p);
-float player_height2(const struct Player* p);
-void player_reposition(struct Player* p);
+float player_height(const Player * p);
+float player_height2(const Player * p);
+void player_reposition(Player * p);
 void player_update(float dt, int locked);
 void player_render_all(void);
-void player_render(struct Player* p, int id);
-void player_collision(const struct Player* p, Ray* ray, struct player_intersection* intersects);
-void player_reset(struct Player* p);
-int player_move(struct Player* p, float fsynctics, int id);
-int player_uncrouch(struct Player* p);
+void player_render(Player * p, int id);
+void player_collision(const Player * p, Ray * ray, Hit * intersects);
+void player_reset(Player * p);
+int player_move(Player * p, float fsynctics, int id);
+int player_uncrouch(Player * p);
 
 #endif

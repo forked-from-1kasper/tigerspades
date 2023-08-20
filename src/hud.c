@@ -129,9 +129,9 @@ struct player_table {
     unsigned int score;
 };
 
-static int playertable_sort(const void* a, const void* b) {
-    struct player_table* aa = (struct player_table*)a;
-    struct player_table* bb = (struct player_table*)b;
+static int playertable_sort(const void * a, const void * b) {
+    struct player_table * aa = (struct player_table*) a;
+    struct player_table * bb = (struct player_table*) b;
     return bb->score - aa->score;
 }
 
@@ -225,12 +225,12 @@ static void hud_ingame_render3D() {
             matrix_translate(matrix_model, -1.4F, -2.0F, -3.0F);
             matrix_rotate(matrix_model, -90.0F + 22.5F, 0.0F, 1.0F, 0.0F);
             matrix_upload();
-            struct Player p_hud;
-            memset(&p_hud, 0, sizeof(struct Player));
+            Player p_hud;
+            memset(&p_hud, 0, sizeof(Player));
             p_hud.spade_use_timer = FLT_MAX;
-            p_hud.input.keys.packed = 0;
+            p_hud.input.keys = (Keys) {0};
+            p_hud.input.buttons = (Buttons) {0};
             p_hud.held_item = TOOL_SPADE;
-            p_hud.input.buttons.packed = 0;
             p_hud.physics.eye.x = p_hud.pos.x = 0;
             p_hud.physics.eye.y = p_hud.pos.y = 0;
             p_hud.physics.eye.z = p_hud.pos.z = 0;
@@ -288,15 +288,15 @@ static void hud_ingame_render3D() {
         if (gamestate.gamemode_type == GAMEMODE_CTF) {
             switch (players[local_player_id].team) {
                 case TEAM_1:
-                    if (gamestate.gamemode.ctf.team_2_intel
-                       && gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player_id) {
+                    if ((gamestate.gamemode.ctf.intels & TEAM_2_INTEL)
+                     && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player_id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_2;
                     }
                     break;
                 case TEAM_2:
-                    if (gamestate.gamemode.ctf.team_1_intel
-                       && gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player_id) {
+                    if ((gamestate.gamemode.ctf.intels & TEAM_1_INTEL)
+                     && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player_id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_1;
                     }
@@ -635,11 +635,11 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                     glColor3f(1.0F, 1.0F, 1.0F);
                 char id_str[16];
                 sprintf(id_str, "#%i", pt[k].id);
-                if (gamestate.gamemode_type == GAMEMODE_CTF
-                   && ((gamestate.gamemode.ctf.team_1_intel
-                        && gamestate.gamemode.ctf.team_1_intel_location.held.player_id == pt[k].id)
-                       || (gamestate.gamemode.ctf.team_2_intel
-                           && gamestate.gamemode.ctf.team_2_intel_location.held.player_id == pt[k].id))) {
+                if (gamestate.gamemode_type == GAMEMODE_CTF &&
+                      (((gamestate.gamemode.ctf.intels & TEAM_1_INTEL) &&
+                        (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == pt[k].id)) ||
+                       ((gamestate.gamemode.ctf.intels & TEAM_2_INTEL) &&
+                        (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == pt[k].id)))) {
                     texture_draw(&texture_intel,
                                  settings.window_width / 4.0F * mul
                                      - font_length(18.0F * scalef, players[pt[k].id].name) - 27.0F * scalef,
@@ -955,7 +955,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                 tracer_minimap(1, scalef, minimap_x, minimap_y);
 
                 if (gamestate.gamemode_type == GAMEMODE_CTF) {
-                    if (!gamestate.gamemode.ctf.team_1_intel) {
+                    if (!(gamestate.gamemode.ctf.intels & TEAM_1_INTEL)) {
                         glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
                         texture_draw_rotated(
                             &texture_intel, minimap_x + gamestate.gamemode.ctf.team_1_intel_location.dropped.x * scalef,
@@ -975,7 +975,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                             minimap_y - gamestate.gamemode.ctf.team_1_base.y * scalef, 12 * scalef, 12 * scalef, 0.0F);
                     }
 
-                    if (!gamestate.gamemode.ctf.team_2_intel) {
+                    if (!(gamestate.gamemode.ctf.intels & TEAM_2_INTEL)) {
                         glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
                         texture_draw_rotated(
                             &texture_intel, minimap_x + gamestate.gamemode.ctf.team_2_intel_location.dropped.x * scalef,
@@ -1079,7 +1079,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                         texture_draw_rotated(&texture_medical, settings.window_width - 143 * scalef + tent1_x * scalef,
                                              (585 - tent1_y) * scalef, 12 * scalef, 12 * scalef, 0.0F);
                     }
-                    if (!gamestate.gamemode.ctf.team_1_intel) {
+                    if (!(gamestate.gamemode.ctf.intels & TEAM_1_INTEL)) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.x, view_x), view_x + 128.0F)
                             - view_x;
@@ -1101,7 +1101,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                         texture_draw_rotated(&texture_medical, settings.window_width - 143 * scalef + tent2_x * scalef,
                                              (585 - tent2_y) * scalef, 12 * scalef, 12 * scalef, 0.0F);
                     }
-                    if (!gamestate.gamemode.ctf.team_2_intel) {
+                    if (!(gamestate.gamemode.ctf.intels & TEAM_2_INTEL)) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.x, view_x), view_x + 128.0F)
                             - view_x;

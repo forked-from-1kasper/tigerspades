@@ -35,7 +35,7 @@ struct Particle {
 void particle_init(void);
 void particle_update(float dt);
 void particle_render(void);
-void particle_create_casing(struct Player * p);
+void particle_create_casing(Player *);
 void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size);
 

@@ -159,10 +159,10 @@ struct channel map_result_queue;
 
 struct map_collapsing {
     HashTable voxels;
-    struct Velocity v;
-    struct Position p;
-    struct Position p2;
-    struct Orientation o;
+    Velocity v;
+    Position p;
+    Position p2;
+    Orientation o;
     int voxel_count;
     int rotation, has_displaylist;
     struct glx_displaylist displaylist;
@@ -297,9 +297,9 @@ static bool map_update_physics_sub(struct map_collapsing * collapsing, int x, in
         pivot[k] = (pivot[k] / (float)closedlist.size) + 0.5F;
 
     collapsing->voxels = closedlist;
-    collapsing->v = (struct Velocity) {0, 0, 0};
-    collapsing->o = (struct Orientation) {0, 0, 0};
-    collapsing->p = (struct Position) {pivot[0], pivot[1], pivot[2]};
+    collapsing->v = (Velocity) {0, 0, 0};
+    collapsing->o = (Orientation) {0, 0, 0};
+    collapsing->p = (Position) {pivot[0], pivot[1], pivot[2]};
     collapsing->p2 = collapsing->p;
     collapsing->rotation = rand() & 3;
     collapsing->voxel_count = closedlist.size;

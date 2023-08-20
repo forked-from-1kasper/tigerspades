@@ -20,53 +20,73 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-const char* network_reason_disconnect(int code);
+typedef struct {
+    unsigned char up;
+    unsigned char down;
+    unsigned char left;
+    unsigned char right;
+    unsigned char jump;
+    unsigned char crouch;
+    unsigned char sneak;
+    unsigned char sprint;
+} Keys;
+
+typedef struct {
+    unsigned char lmb;
+    unsigned char rmb;
+    float lmb_start, rmb_start;
+} Buttons;
+
+const char * network_reason_disconnect(int code);
 
 unsigned int network_ping(void);
-void network_send(int id, void* data, int len);
+void network_send(int id, void * data, int len);
 void network_updateColor(void);
 void network_disconnect(void);
-int network_identifier_split(char* addr, char* ip_out, int* port_out);
-int network_connect(char* ip, int port);
-int network_connect_string(char* addr);
+int network_identifier_split(char * addr, char * ip_out, int * port_out);
+int network_connect(char * ip, int port);
+int network_connect_string(char * addr);
 int network_update(void);
 int network_status(void);
 void network_init(void);
 
-void read_PacketMapChunk(void* data, int len);
-void read_PacketChatMessage(void* data, int len);
-void read_PacketBlockAction(void* data, int len);
-void read_PacketBlockLine(void* data, int len);
-void read_PacketStateData(void* data, int len);
-void read_PacketFogColor(void* data, int len);
-void read_PacketExistingPlayer(void* data, int len);
-void read_PacketCreatePlayer(void* data, int len);
-void read_PacketPlayerLeft(void* data, int len);
-void read_PacketMapStart(void* data, int len);
-void read_PacketWorldUpdate(void* data, int len);
-void read_PacketPositionData(void* data, int len);
-void read_PacketOrientationData(void* data, int len);
-void read_PacketSetColor(void* data, int len);
-void read_PacketInputData(void* data, int len);
-void read_PacketWeaponInput(void* data, int len);
-void read_PacketSetTool(void* data, int len);
-void read_PacketKillAction(void* data, int len);
-void read_PacketShortPlayerData(void* data, int len);
-void read_PacketGrenade(void* data, int len);
-void read_PacketSetHP(void* data, int len);
-void read_PacketRestock(void* data, int len);
-void read_PacketChangeWeapon(void* data, int len);
-void read_PacketWeaponReload(void* data, int len);
-void read_PacketMoveObject(void* data, int len);
-void read_PacketIntelCapture(void* data, int len);
-void read_PacketIntelDrop(void* data, int len);
-void read_PacketIntelPickup(void* data, int len);
-void read_PacketTerritoryCapture(void* data, int len);
-void read_PacketProgressBar(void* data, int len);
-void read_PacketHandshakeInit(void* data, int len);
-void read_PacketVersionGet(void* data, int len);
+bool keys_ineq(Keys *, Keys *);
+bool buttons_ineq(Buttons *, Buttons *);
 
-extern void (*packets[256])(void* data, int len);
+void read_PacketMapChunk(void * data, int len);
+void read_PacketChatMessage(void * data, int len);
+void read_PacketBlockAction(void * data, int len);
+void read_PacketBlockLine(void * data, int len);
+void read_PacketStateData(void * data, int len);
+void read_PacketFogColor(void * data, int len);
+void read_PacketExistingPlayer(void * data, int len);
+void read_PacketCreatePlayer(void * data, int len);
+void read_PacketPlayerLeft(void * data, int len);
+void read_PacketMapStart(void * data, int len);
+void read_PacketWorldUpdate(void * data, int len);
+void read_PacketPositionData(void * data, int len);
+void read_PacketOrientationData(void * data, int len);
+void read_PacketSetColor(void * data, int len);
+void read_PacketInputData(void * data, int len);
+void read_PacketWeaponInput(void * data, int len);
+void read_PacketSetTool(void * data, int len);
+void read_PacketKillAction(void * data, int len);
+void read_PacketShortPlayerData(void * data, int len);
+void read_PacketGrenade(void * data, int len);
+void read_PacketSetHP(void * data, int len);
+void read_PacketRestock(void * data, int len);
+void read_PacketChangeWeapon(void * data, int len);
+void read_PacketWeaponReload(void * data, int len);
+void read_PacketMoveObject(void * data, int len);
+void read_PacketIntelCapture(void * data, int len);
+void read_PacketIntelDrop(void * data, int len);
+void read_PacketIntelPickup(void * data, int len);
+void read_PacketTerritoryCapture(void * data, int len);
+void read_PacketProgressBar(void * data, int len);
+void read_PacketHandshakeInit(void * data, int len);
+void read_PacketVersionGet(void * data, int len);
+
+extern void (*packets[256])(void * data, int len);
 extern int network_connected;
 extern int network_logged_in;
 extern int network_map_transfer;
@@ -74,14 +94,14 @@ extern int network_received_packets;
 
 extern float network_pos_update;
 extern float network_orient_update;
-extern unsigned char network_keys_last;
-extern unsigned char network_buttons_last;
+extern Keys network_keys_last;
+extern Buttons network_buttons_last;
 extern unsigned char network_tool_last;
 
 #define VERSION_075 3
 #define VERSION_076 4
 
-extern void* compressed_chunk_data;
+extern void * compressed_chunk_data;
 extern int compressed_chunk_data_size;
 extern int compressed_chunk_data_offset;
 extern int compressed_chunk_data_estimate;
@@ -145,12 +165,33 @@ struct PacketInputData {
     unsigned char keys;
 };
 
+#define INPUT_UP           0
+#define INPUT_DOWN         1
+#define INPUT_LEFT         2
+#define INPUT_RIGHT        3
+#define INPUT_JUMP         4
+#define INPUT_CROUCH       5
+#define INPUT_SNEAK        6
+#define INPUT_SPRINT       7
+#define MASK_INPUT_UP     (1 << INPUT_UP)
+#define MASK_INPUT_DOWN   (1 << INPUT_DOWN)
+#define MASK_INPUT_LEFT   (1 << INPUT_LEFT)
+#define MASK_INPUT_RIGHT  (1 << INPUT_RIGHT)
+#define MASK_INPUT_JUMP   (1 << INPUT_JUMP)
+#define MASK_INPUT_CROUCH (1 << INPUT_CROUCH)
+#define MASK_INPUT_SNEAK  (1 << INPUT_SNEAK)
+#define MASK_INPUT_SPRINT (1 << INPUT_SPRINT)
+
 #define PACKET_WEAPONINPUT_ID 4
 struct PacketWeaponInput {
     unsigned char player_id;
-    unsigned char primary : 1;
-    unsigned char secondary : 1;
+    unsigned char input;
 };
+
+#define BUTTON_PRIMARY         0
+#define BUTTON_SECONDARY       1
+#define MASK_BUTTON_PRIMARY   (1 << BUTTON_PRIMARY)
+#define MASK_BUTTON_SECONDARY (1 << BUTTON_SECONDARY)
 
 #define PACKET_MOVEOBJECT_ID 11
 struct PacketMoveObject {
@@ -365,8 +406,8 @@ struct PacketStateData {
             unsigned char team_1_score;
             unsigned char team_2_score;
             unsigned char capture_limit;
-            unsigned char team_1_intel : 1;
-            unsigned char team_2_intel : 1;
+            unsigned char intels;
+
             union intel_location {
                 struct {
                     unsigned char player_id;
@@ -394,6 +435,9 @@ struct PacketStateData {
         } tc;
     } gamemode_data;
 };
+
+#define TEAM_1_INTEL (1 << 0)
+#define TEAM_2_INTEL (1 << 1)
 
 #define PACKET_TERRITORYCAPTURE_ID 21
 struct PacketTerritoryCapture {

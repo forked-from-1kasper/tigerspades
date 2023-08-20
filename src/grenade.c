@@ -31,10 +31,10 @@
 struct entity_system grenades;
 
 void grenade_init() {
-    entitysys_create(&grenades, sizeof(struct Grenade), 32);
+    entitysys_create(&grenades, sizeof(Grenade), 32);
 }
 
-void grenade_add(struct Grenade* g) {
+void grenade_add(Grenade * g) {
     g->created = window_time();
 
     entitysys_add(&grenades, g);
@@ -61,10 +61,10 @@ static int grenade_clipworld(int x, int y, int z) {
         return 1;
     else if (sz < 0)
         return 0;
-    return !map_isair((int)x, (map_size_y - 1) - sz, (int)y);
+    return !map_isair((int) x, (map_size_y - 1) - sz, (int) y);
 }
 
-static int grenade_move(struct Grenade* g, float dt) {
+static int grenade_move(Grenade * g, float dt) {
     float tmp;
     tmp = g->pos.z;
     g->pos.z = 63.0F - g->pos.y;
@@ -73,7 +73,7 @@ static int grenade_move(struct Grenade* g, float dt) {
     g->velocity.z = -g->velocity.y;
     g->velocity.y = tmp;
 
-    struct Position fpos = g->pos; // old position
+    Position fpos = g->pos; // old position
 
     // do velocity & gravity (friction is negligible)
     float f = dt * 32.0F;
@@ -125,12 +125,12 @@ static int grenade_move(struct Grenade* g, float dt) {
     return ret;
 }
 
-static int grenade_inwater(struct Grenade* g) {
+static int grenade_inwater(Grenade * g) {
     return g->pos.y < 1.0F;
 }
 
-bool grenade_render_single(void* obj, void* user) {
-    struct Grenade* g = (struct Grenade*) obj;
+bool grenade_render_single(void * obj, void * user) {
+    Grenade * g = (Grenade*) obj;
 
     // TODO: position grenade on ground properly
     matrix_push(matrix_model);
@@ -154,8 +154,8 @@ void grenade_render() {
 TrueColor gray = {0x50, 0x50, 0x50, 0xFF};
 
 bool grenade_update_single(void * obj, void * user) {
-    struct Grenade * g = (struct Grenade*) obj;
-    float dt = *(float*) user;
+    Grenade * g = (Grenade*) obj;
+    float dt = *((float*) user);
 
     if (window_time() - g->created > g->fuse_length) {
         sound_create(SOUND_WORLD, grenade_inwater(g) ? &sound_explode_water : &sound_explode, g->pos.x, g->pos.y,

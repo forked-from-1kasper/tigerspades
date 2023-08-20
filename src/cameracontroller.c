@@ -158,8 +158,8 @@ void cameracontroller_fps(float dt) {
     }
 
     if (chat_input_mode != CHAT_NO_INPUT) {
-        players[local_player_id].input.keys.packed = 0;
-        players[local_player_id].input.buttons.packed = 0;
+        players[local_player_id].input.keys = (Keys) {0};
+        players[local_player_id].input.buttons = (Buttons) {0};
     }
 
     float lx = players[local_player_id].orientation_smooth.x * pow(0.7F, dt * 60.0F)
@@ -274,7 +274,7 @@ void cameracontroller_spectator(float dt) {
     }
 
     if (cameracontroller_bodyview_mode && players[cameracontroller_bodyview_player].alive) {
-        struct Player* p = &players[cameracontroller_bodyview_player];
+        Player * p = &players[cameracontroller_bodyview_player];
         camera_x = p->physics.eye.x;
         camera_y = p->physics.eye.y + player_height(p);
         camera_z = p->physics.eye.z;
@@ -294,7 +294,7 @@ void cameracontroller_spectator(float dt) {
 
 void cameracontroller_spectator_render() {
     if (cameracontroller_bodyview_mode && players[cameracontroller_bodyview_player].alive) {
-        struct Player* p = &players[cameracontroller_bodyview_player];
+        Player * p = &players[cameracontroller_bodyview_player];
         float l = len3D(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z);
         float ox = p->orientation_smooth.x / l;
         float oy = p->orientation_smooth.y / l;
@@ -362,7 +362,7 @@ void cameracontroller_bodyview(float dt) {
     camera_vz = players[cameracontroller_bodyview_player].physics.velocity.z;
 
     if (cameracontroller_bodyview_mode && players[cameracontroller_bodyview_player].alive) {
-        struct Player* p = &players[cameracontroller_bodyview_player];
+        Player * p = &players[cameracontroller_bodyview_player];
         camera_x = p->physics.eye.x;
         camera_y = p->physics.eye.y + player_height(p);
         camera_z = p->physics.eye.z;
@@ -375,7 +375,7 @@ void cameracontroller_bodyview(float dt) {
 
 void cameracontroller_bodyview_render() {
     if (cameracontroller_bodyview_mode && players[cameracontroller_bodyview_player].alive) {
-        struct Player* p = &players[cameracontroller_bodyview_player];
+        Player * p = &players[cameracontroller_bodyview_player];
         float l = sqrt(distance3D(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z, 0, 0, 0));
         float ox = p->orientation_smooth.x / l;
         float oy = p->orientation_smooth.y / l;

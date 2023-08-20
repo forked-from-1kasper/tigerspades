@@ -124,11 +124,11 @@ struct Sound_wav* weapon_sound_reload(int gun) {
     }
 }
 
-void weapon_spread(struct Player* p, float* d) {
+void weapon_spread(Player * p, float* d) {
     float spread = 0.0F;
     switch (p->weapon) {
-        case WEAPON_RIFLE: spread = 0.006F; break;
-        case WEAPON_SMG: spread = 0.012F; break;
+        case WEAPON_RIFLE:   spread = 0.006F; break;
+        case WEAPON_SMG:     spread = 0.012F; break;
         case WEAPON_SHOTGUN: spread = 0.024F; break;
     }
     d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * (p->input.buttons.rmb ? 0.5F : 1.0F)
@@ -243,14 +243,14 @@ void weapon_shoot() {
                    players[local_player_id].physics.eye.y + player_height(&players[local_player_id]),
                    players[local_player_id].physics.eye.z, o[0], o[1], o[2], 128.0F);
 
-        if (players[local_player_id].input.buttons.packed != network_buttons_last) {
+        if (buttons_ineq(&players[local_player_id].input.buttons, &network_buttons_last)) {
             struct PacketWeaponInput in;
             in.player_id = local_player_id;
-            in.primary = players[local_player_id].input.buttons.lmb;
-            in.secondary = players[local_player_id].input.buttons.rmb;
+            in.input = (players[local_player_id].input.buttons.lmb << BUTTON_PRIMARY)
+                     | (players[local_player_id].input.buttons.rmb << BUTTON_SECONDARY);
             network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
 
-            network_buttons_last = players[local_player_id].input.buttons.packed;
+            network_buttons_last = players[local_player_id].input.buttons;
         }
 
         struct PacketOrientationData orient;

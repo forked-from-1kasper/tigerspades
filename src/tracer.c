@@ -34,7 +34,7 @@
 
 struct entity_system tracers;
 
-void tracer_pvelocity(float * o, struct Player * p) {
+void tracer_pvelocity(float * o, Player * p) {
     o[X] = o[X] * 256.0F / 32.0F + p->physics.velocity.x;
     o[Y] = o[Y] * 256.0F / 32.0F + p->physics.velocity.y;
     o[Z] = o[Z] * 256.0F / 32.0F + p->physics.velocity.z;

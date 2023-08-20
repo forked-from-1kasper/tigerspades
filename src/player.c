@@ -65,7 +65,7 @@ int player_intersection_type = -1;
 int player_intersection_player = 0;
 float player_intersection_dist = 1024.0F;
 
-struct Player players[PLAYERS_MAX];
+Player players[PLAYERS_MAX];
 
 #define FALL_DAMAGE_VELOCITY 0.58F
 #define FALL_SLOW_DOWN 0.24F
@@ -80,26 +80,27 @@ void player_init() {
     }
 }
 
-void player_reset(struct Player * p) {
-    p->connected = 0;
-    p->alive = 0;
-    p->held_item = TOOL_GUN;
-    p->block.r = 111;
-    p->block.g = 111;
-    p->block.b = 111;
+void player_reset(Player * p) {
+    p->connected          = 0;
+    p->alive              = 0;
+    p->held_item          = TOOL_GUN;
+    p->block.r            = 111;
+    p->block.g            = 111;
+    p->block.b            = 111;
     p->physics.velocity.x = 0.0F;
     p->physics.velocity.y = 0.0F;
     p->physics.velocity.z = 0.0F;
-    p->physics.jump = 0;
-    p->physics.airborne = 0;
-    p->physics.wade = 0;
-    p->input.keys.packed = 0;
-    p->input.buttons.packed = 0;
+    p->physics.jump       = 0;
+    p->physics.airborne   = 0;
+    p->physics.wade       = 0;
+    p->input.keys         = (Keys) {0};
+    p->input.buttons      = (Buttons) {0};
 }
 
-void player_on_held_item_change(struct Player* p) {
+void player_on_held_item_change(Player * p) {
     if (p->input.buttons.lmb)
         p->input.buttons.lmb_start = window_time() + 0.8F;
+
     if (p->input.buttons.rmb)
         p->input.buttons.rmb_start = window_time() + 0.8F;
 
@@ -109,7 +110,7 @@ void player_on_held_item_change(struct Player* p) {
     p->items_show = 1;
 }
 
-int player_can_spectate(struct Player* p) {
+int player_can_spectate(Player * p) {
     return p->connected
         && ((players[local_player_id].team != TEAM_SPECTATOR && p->team == players[local_player_id].team)
             || (players[local_player_id].team == TEAM_SPECTATOR && p->team != TEAM_SPECTATOR));
@@ -124,7 +125,7 @@ float player_spade_func(float x) {
     return 1.0F - (x * 5 - (int)(x * 5));
 }
 
-float* player_tool_func(const struct Player* p) {
+float * player_tool_func(const Player * p) {
     static float ret[3];
     ret[0] = ret[1] = ret[2] = 0.0F;
     switch (p->held_item) {
@@ -180,7 +181,7 @@ float* player_tool_func(const struct Player* p) {
     return ret;
 }
 
-float* player_tool_translate_func(struct Player* p) {
+float * player_tool_translate_func(Player * p) {
     static float ret[3];
     ret[0] = ret[1] = ret[2] = 0.0F;
     if (p == &players[local_player_id] && camera_mode == CAMERAMODE_FPS) {
@@ -224,11 +225,11 @@ float* player_tool_translate_func(struct Player* p) {
     return ret;
 }
 
-float player_height(const struct Player* p) {
+float player_height(const Player* p) {
     return p->input.keys.crouch ? 1.05F : 1.1F;
 }
 
-float player_height2(const struct Player* p) {
+float player_height2(const Player* p) {
     return p->alive ? 0.0F : 1.0F;
 }
 
@@ -242,11 +243,11 @@ float player_section_height(int section) {
     }
 }
 
-bool player_intersection_exists(struct player_intersection* s) {
+bool player_intersection_exists(Hit * s) {
     return s->head || s->torso || s->arms || s->leg_left || s->leg_right;
 }
 
-int player_intersection_choose(struct player_intersection* s, float* dist) {
+int player_intersection_choose(Hit * s, float * dist) {
     int type;
     *dist = FLT_MAX;
 
@@ -399,7 +400,7 @@ void player_render_all() {
             if (camera_CubeInFrustum(players[k].pos.x, players[k].pos.y, players[k].pos.z, 1.0F, 2.0F)
                && distance2D(players[k].pos.x, players[k].pos.z, camera_x, camera_z)
                    <= pow(settings.render_distance + 2.0F, 2.0F)) {
-                struct player_intersection intersects = {0};
+                Hit intersects = {0};
                 player_render(players + k, k);
                 player_collision(players + k, &ray, &intersects);
                 if (player_intersection_exists(&intersects)) {
@@ -454,7 +455,7 @@ void player_render_all() {
     }
 }
 
-static float foot_function(const struct Player * p) {
+static float foot_function(const Player * p) {
     float f = (window_time() - p->sound.feet_started_cycle) / (p->input.keys.sprint ? (0.5F / 1.3F) : 0.5F);
     f = f * 2.0F - 1.0F;
     return p->sound.feet_cylce ? f : -f;
@@ -529,7 +530,7 @@ static bool hitbox_intersection(mat4 model, const struct hitbox * box, Ray * r, 
         distance);
 }
 
-void player_collision(const struct Player * p, Ray * ray, struct player_intersection * intersects) {
+void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     if (!p->alive || p->team == TEAM_SPECTATOR)
         return;
 
@@ -631,7 +632,7 @@ void player_collision(const struct Player * p, Ray * ray, struct player_intersec
     matrix_pop(matrix_model);
 }
 
-void player_render(struct Player* p, int id) {
+void player_render(Player * p, int id) {
     kv6_calclight(p->pos.x, p->pos.y, p->pos.z);
 
     if (camera_mode == CAMERAMODE_SPECTATOR && p->team != TEAM_SPECTATOR && !cameracontroller_bodyview_mode) {
@@ -725,11 +726,11 @@ void player_render(struct Player* p, int id) {
         kv6_render(torso, p->team);
         matrix_pop(matrix_model);
 
-        if (gamestate.gamemode_type == GAMEMODE_CTF
-           && ((gamestate.gamemode.ctf.team_1_intel
-                && gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id)
-               || (gamestate.gamemode.ctf.team_2_intel
-                   && gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id))) {
+        if (gamestate.gamemode_type == GAMEMODE_CTF &&
+            (((gamestate.gamemode.ctf.intels & TEAM_1_INTEL) &&
+              (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id)) ||
+             ((gamestate.gamemode.ctf.intels & TEAM_2_INTEL) &&
+              (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id)))) {
             matrix_push(matrix_model);
             matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
             matrix_pointAt(matrix_model, -oz, 0.0F, ox);
@@ -739,15 +740,20 @@ void player_render(struct Player* p, int id) {
                     * torso->scale,
                 (torso->ypiv + model_intel.ypiv) * torso->scale);
             matrix_scale3(matrix_model, torso->scale / model_intel.scale);
-            if (p->input.keys.crouch) {
+            if (p->input.keys.crouch)
                 matrix_rotate(matrix_model, -45.0F, 1.0F, 0.0F, 0.0F);
-            }
             matrix_upload();
+
             int t = TEAM_SPECTATOR;
-            if (gamestate.gamemode.ctf.team_1_intel && gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id)
+
+            if ((gamestate.gamemode.ctf.intels & TEAM_1_INTEL)
+             && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id))
                 t = TEAM_1;
-            if (gamestate.gamemode.ctf.team_2_intel && gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id)
+
+            if ((gamestate.gamemode.ctf.intels & TEAM_2_INTEL)
+             && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id))
                 t = TEAM_2;
+
             kv6_render(&model_intel, t);
             matrix_pop(matrix_model);
         }
@@ -790,7 +796,7 @@ void player_render(struct Player* p, int id) {
 
     if (render_fpv && p->alive) {
         float speed = sqrt(pow(p->physics.velocity.x, 2) + pow(p->physics.velocity.z, 2)) / 0.25F;
-        float* f = player_tool_translate_func(p);
+        float * f = player_tool_translate_func(p);
         matrix_translate(matrix_model, f[0], f[1], 0.1F * player_swing_func(time / 1000.0F) * speed + f[2]);
     }
 
@@ -801,7 +807,7 @@ void player_render(struct Player* p, int id) {
         matrix_rotate(matrix_model, 45.0F - (window_time() - p->item_showup) * 90.0F, 1.0F, 0.0F, 0.0F);
 
     if (!(p->held_item == TOOL_SPADE && render_fpv && camera_mode == CAMERAMODE_FPS)) {
-        float* angles = player_tool_func(p);
+        float * angles = player_tool_func(p);
         matrix_rotate(matrix_model, angles[0], 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, angles[1], 0.0F, 1.0F, 0.0F);
     }
@@ -812,7 +818,7 @@ void player_render(struct Player* p, int id) {
 
     matrix_translate(matrix_model, -3.5F * 0.1F + 0.01F, 0.0F, 10 * 0.1F);
     if (p->held_item == TOOL_SPADE && render_fpv && window_time() - p->item_showup >= 0.5F) {
-        float* angles = player_tool_func(p);
+        float * angles = player_tool_func(p);
         matrix_translate(matrix_model, 0.0F, (model_spade.zpiv - model_spade.zsiz) * 0.05F, 0.0F);
         matrix_rotate(matrix_model, angles[0], 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, angles[1], 0.0F, 1.0F, 0.0F);
@@ -873,7 +879,7 @@ int player_clipbox(float x, float y, float z) {
     return !map_isair((int)x, 63 - sz, (int)y);
 }
 
-void player_reposition(struct Player* p) {
+void player_reposition(Player * p) {
     p->physics.eye.x = p->pos.x;
     p->physics.eye.y = p->pos.y;
     p->physics.eye.z = p->pos.z;
@@ -886,7 +892,7 @@ void player_reposition(struct Player* p) {
     }
 }
 
-void player_coordsystem_adjust1(struct Player* p) {
+void player_coordsystem_adjust1(Player * p) {
     float tmp;
 
     tmp = p->pos.z;
@@ -906,7 +912,7 @@ void player_coordsystem_adjust1(struct Player* p) {
     p->orientation.y = tmp;
 }
 
-void player_coordsystem_adjust2(struct Player* p) {
+void player_coordsystem_adjust2(Player * p) {
     float tmp;
 
     tmp = p->pos.y;
@@ -926,7 +932,7 @@ void player_coordsystem_adjust2(struct Player* p) {
     p->orientation.z = tmp;
 }
 
-void player_boxclipmove(struct Player* p, float fsynctics) {
+void player_boxclipmove(Player * p, float fsynctics) {
     float offset, m, f, nx, ny, nz, z;
     long climb = 0;
 
@@ -1005,9 +1011,9 @@ void player_boxclipmove(struct Player* p, float fsynctics) {
     p->physics.airborne = 1;
 
     if (player_clipbox(p->pos.x - 0.45f, p->pos.y - 0.45f, nz + m)
-       || player_clipbox(p->pos.x - 0.45f, p->pos.y + 0.45f, nz + m)
-       || player_clipbox(p->pos.x + 0.45f, p->pos.y - 0.45f, nz + m)
-       || player_clipbox(p->pos.x + 0.45f, p->pos.y + 0.45f, nz + m)) {
+     || player_clipbox(p->pos.x - 0.45f, p->pos.y + 0.45f, nz + m)
+     || player_clipbox(p->pos.x + 0.45f, p->pos.y - 0.45f, nz + m)
+     || player_clipbox(p->pos.x + 0.45f, p->pos.y + 0.45f, nz + m)) {
         if (p->physics.velocity.z >= 0) {
             p->physics.wade = p->pos.z > 61;
             p->physics.airborne = 0;
@@ -1019,7 +1025,7 @@ void player_boxclipmove(struct Player* p, float fsynctics) {
     player_reposition(p);
 }
 
-int player_move(struct Player * p, float fsynctics, int id) {
+int player_move(Player * p, float fsynctics, int id) {
     if (!p->alive) {
         p->physics.velocity.y -= fsynctics;
         AABB dead_bb = {.min = {0, 0, 0}, .max = {0, 0, 0}};
@@ -1144,7 +1150,7 @@ int player_move(struct Player * p, float fsynctics, int id) {
     return ret;
 }
 
-int player_uncrouch(struct Player* p) {
+int player_uncrouch(Player * p) {
     player_coordsystem_adjust1(p);
     float x1 = p->pos.x + 0.45F;
     float x2 = p->pos.x - 0.45F;
