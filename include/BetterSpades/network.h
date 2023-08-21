@@ -375,6 +375,11 @@ struct PacketChangeWeapon {
 };
 
 #define PACKET_STATEDATA_ID 15
+typedef struct {
+    float x, y, z;
+    unsigned char team;
+} Territory;
+
 struct PacketStateData {
     unsigned char player_id;
     unsigned char fog_blue, fog_green, fog_red;
@@ -411,10 +416,7 @@ struct PacketStateData {
 
         struct GM_TC {
             unsigned char territory_count;
-            struct {
-                float x, y, z;
-                unsigned char team;
-            } territory[16];
+            Territory territory[16];
         } tc;
     } gamemode_data;
 };

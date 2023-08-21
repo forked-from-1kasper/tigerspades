@@ -279,11 +279,48 @@ void read_PacketStateData(void * data, int len) {
 
     gamestate.gamemode_type = p->gamemode;
 
-    switch (p->gamemode) {
-        case GAMEMODE_CTF: memcpy(&gamestate.gamemode, &p->gamemode_data, sizeof(struct GM_CTF)); break;
-        case GAMEMODE_TC: memcpy(&gamestate.gamemode, &p->gamemode_data, sizeof(struct GM_TC)); break;
-        default: log_error("Unknown gamemode!");
+    if (p->gamemode == GAMEMODE_CTF) {
+        gamestate.gamemode.ctf.team_1_score  = p->gamemode_data.ctf.team_1_score;
+        gamestate.gamemode.ctf.team_2_score  = p->gamemode_data.ctf.team_2_score;
+        gamestate.gamemode.ctf.capture_limit = p->gamemode_data.ctf.capture_limit;
+        gamestate.gamemode.ctf.intels        = p->gamemode_data.ctf.intels;
+
+        if (p->gamemode_data.ctf.intels & MASK(TEAM_1_INTEL))
+            gamestate.gamemode.ctf.team_1_intel_location.held.player_id = p->gamemode_data.ctf.team_1_intel_location.held.player_id;
+        else {
+            gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->gamemode_data.ctf.team_1_intel_location.dropped.x);
+            gamestate.gamemode.ctf.team_1_intel_location.dropped.y = letohf(p->gamemode_data.ctf.team_1_intel_location.dropped.y);
+            gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->gamemode_data.ctf.team_1_intel_location.dropped.z);
+        }
+
+        if (p->gamemode_data.ctf.intels & MASK(TEAM_2_INTEL))
+            gamestate.gamemode.ctf.team_2_intel_location.held.player_id = p->gamemode_data.ctf.team_2_intel_location.held.player_id;
+        else {
+            gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->gamemode_data.ctf.team_2_intel_location.dropped.x);
+            gamestate.gamemode.ctf.team_2_intel_location.dropped.y = letohf(p->gamemode_data.ctf.team_2_intel_location.dropped.y);
+            gamestate.gamemode.ctf.team_2_intel_location.dropped.z = letohf(p->gamemode_data.ctf.team_2_intel_location.dropped.z);
+        }
+
+        gamestate.gamemode.ctf.team_1_base.x = letohf(p->gamemode_data.ctf.team_1_base.x);
+        gamestate.gamemode.ctf.team_1_base.y = letohf(p->gamemode_data.ctf.team_1_base.y);
+        gamestate.gamemode.ctf.team_1_base.z = letohf(p->gamemode_data.ctf.team_1_base.z);
+
+        gamestate.gamemode.ctf.team_2_base.x = letohf(p->gamemode_data.ctf.team_2_base.x);
+        gamestate.gamemode.ctf.team_2_base.y = letohf(p->gamemode_data.ctf.team_2_base.y);
+        gamestate.gamemode.ctf.team_2_base.z = letohf(p->gamemode_data.ctf.team_2_base.z);
     }
+
+    else if (p->gamemode == GAMEMODE_TC) {
+        gamestate.gamemode.tc.territory_count = p->gamemode_data.tc.territory_count;
+
+        for (size_t i = 0; i < sizeof(gamestate.gamemode.tc.territory) / sizeof(Territory); i++) {
+            gamestate.gamemode.tc.territory[i].x    = letohf(p->gamemode_data.tc.territory[i].x);
+            gamestate.gamemode.tc.territory[i].y    = letohf(p->gamemode_data.tc.territory[i].y);
+            gamestate.gamemode.tc.territory[i].z    = letohf(p->gamemode_data.tc.territory[i].z);
+            gamestate.gamemode.tc.territory[i].team = p->gamemode_data.tc.territory[i].team;
+        }
+    }
+    else log_error("Unknown gamemode!");
 
     sound_create(SOUND_LOCAL, &sound_intro, 0.0F, 0.0F, 0.0F);
 
