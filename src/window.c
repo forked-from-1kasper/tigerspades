@@ -413,7 +413,7 @@ void window_fromsettings() {
 int window_pressed_keys[64] = {0};
 
 int window_key_down(int key) {
-    return window_pressed_keys[key];
+    return window_pressed_keys[key] > 0;
 }
 
 int window_cpucores() {

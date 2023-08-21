@@ -109,32 +109,33 @@ void cameracontroller_fps(float dt) {
     last_cy = players[local_player_id].physics.eye.y - players[local_player_id].physics.velocity.y * 0.4F;
 
     if (chat_input_mode == CHAT_NO_INPUT) {
-        players[local_player_id].input.keys.up = window_key_down(WINDOW_KEY_UP);
-        players[local_player_id].input.keys.down = window_key_down(WINDOW_KEY_DOWN);
-        players[local_player_id].input.keys.left = window_key_down(WINDOW_KEY_LEFT);
-        players[local_player_id].input.keys.right = window_key_down(WINDOW_KEY_RIGHT);
-        if (players[local_player_id].input.keys.crouch && !window_key_down(WINDOW_KEY_CROUCH)
-           && player_uncrouch(&players[local_player_id])) {
-            players[local_player_id].input.keys.crouch = 0;
-        }
+        SETBIT(players[local_player_id].input.keys, INPUT_UP,    window_key_down(WINDOW_KEY_UP));
+        SETBIT(players[local_player_id].input.keys, INPUT_DOWN,  window_key_down(WINDOW_KEY_DOWN));
+        SETBIT(players[local_player_id].input.keys, INPUT_LEFT,  window_key_down(WINDOW_KEY_LEFT));
+        SETBIT(players[local_player_id].input.keys, INPUT_RIGHT, window_key_down(WINDOW_KEY_RIGHT));
+
+        if ((players[local_player_id].input.keys & MASK(INPUT_CROUCH)) &&
+            !window_key_down(WINDOW_KEY_CROUCH) &&
+            player_uncrouch(&players[local_player_id]))
+            players[local_player_id].input.keys &= UNMASK(INPUT_CROUCH);
 
         if (window_key_down(WINDOW_KEY_CROUCH)) {
             // following if-statement disables smooth crouching on local player
-            if (!players[local_player_id].input.keys.crouch && !players[local_player_id].physics.airborne) {
+            if (!(players[local_player_id].input.keys & MASK(INPUT_CROUCH)) && !players[local_player_id].physics.airborne) {
                 players[local_player_id].pos.y -= 0.9F;
                 players[local_player_id].physics.eye.y -= 0.9F;
                 last_cy -= 0.9F;
             }
-            players[local_player_id].input.keys.crouch = 1;
+
+            players[local_player_id].input.keys |= MASK(INPUT_CROUCH);
         }
 
-        players[local_player_id].input.keys.sprint = window_key_down(WINDOW_KEY_SPRINT);
-        players[local_player_id].input.keys.jump = window_key_down(WINDOW_KEY_SPACE);
-        players[local_player_id].input.keys.sneak = window_key_down(WINDOW_KEY_SNEAK);
+        SETBIT(players[local_player_id].input.keys, INPUT_SPRINT, window_key_down(WINDOW_KEY_SPRINT));
+        SETBIT(players[local_player_id].input.keys, INPUT_JUMP,   window_key_down(WINDOW_KEY_SPACE));
+        SETBIT(players[local_player_id].input.keys, INPUT_SNEAK,  window_key_down(WINDOW_KEY_SNEAK));
 
-        if (window_key_down(WINDOW_KEY_SPACE) && !players[local_player_id].physics.airborne) {
+        if (window_key_down(WINDOW_KEY_SPACE) && !players[local_player_id].physics.airborne)
             players[local_player_id].physics.jump = 1;
-        }
     }
 
     camera_x = players[local_player_id].physics.eye.x;
@@ -143,23 +144,19 @@ void cameracontroller_fps(float dt) {
 
     if (window_key_down(WINDOW_KEY_SPRINT) && chat_input_mode == CHAT_NO_INPUT) {
         players[local_player_id].item_disabled = window_time();
-    } else {
-        if (window_time() - players[local_player_id].item_disabled < 0.4F && !players[local_player_id].items_show) {
-            players[local_player_id].items_show_start = window_time();
-            players[local_player_id].items_show = 1;
-        }
+    } else if (window_time() - players[local_player_id].item_disabled < 0.4F && !players[local_player_id].items_show) {
+        players[local_player_id].items_show_start = window_time();
+        players[local_player_id].items_show = 1;
     }
 
-    players[local_player_id].input.buttons.lmb = button_map[0];
+    SETBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY, button_map[0]);
 
-    if (players[local_player_id].held_item != TOOL_GUN
-       || (settings.hold_down_sights && !players[local_player_id].items_show)) {
-        players[local_player_id].input.buttons.rmb = button_map[1];
-    }
+    if (players[local_player_id].held_item != TOOL_GUN || (settings.hold_down_sights && !players[local_player_id].items_show))
+        SETBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY, button_map[1]);
 
     if (chat_input_mode != CHAT_NO_INPUT) {
-        players[local_player_id].input.keys = (Keys) {0};
-        players[local_player_id].input.buttons = (Buttons) {0};
+        players[local_player_id].input.keys    = 0;
+        players[local_player_id].input.buttons = 0;
     }
 
     float lx = players[local_player_id].orientation_smooth.x * pow(0.7F, dt * 60.0F)

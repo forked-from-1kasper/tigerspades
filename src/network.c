@@ -50,11 +50,11 @@ int network_map_cached = 0;
 Position network_pos_last;
 Orientation network_orient_last;
 
-float network_pos_update        = 0.0F;
-float network_orient_update     = 0.0F;
-Keys network_keys_last          = {0};
-Buttons network_buttons_last    = {0};
-unsigned char network_tool_last = 255;
+float network_pos_update           = 0.0F;
+float network_orient_update        = 0.0F;
+unsigned char network_keys_last    = 0;
+unsigned char network_buttons_last = 0;
+unsigned char network_tool_last    = 255;
 
 void * compressed_chunk_data;
 int compressed_chunk_data_size;
@@ -546,31 +546,21 @@ void read_PacketInputData(void * data, int len) {
     struct PacketInputData * p = (struct PacketInputData*) data;
     if (p->player_id < PLAYERS_MAX) {
         if (p->player_id != local_player_id)
-            players[p->player_id].input.keys = (Keys) {
-                .up     = p->keys & MASK_INPUT_UP,
-                .down   = p->keys & MASK_INPUT_DOWN,
-                .left   = p->keys & MASK_INPUT_LEFT,
-                .right  = p->keys & MASK_INPUT_RIGHT,
-                .jump   = p->keys & MASK_INPUT_JUMP,
-                .crouch = p->keys & MASK_INPUT_CROUCH,
-                .sneak  = p->keys & MASK_INPUT_SNEAK,
-                .sprint = p->keys & MASK_INPUT_SPRINT
-            };
+            players[p->player_id].input.keys = p->keys;
 
-        players[p->player_id].physics.jump = (p->keys & MASK_INPUT_JUMP) > 0;
+        players[p->player_id].physics.jump = (p->keys & MASK(INPUT_JUMP)) > 0;
     }
 }
 
 void read_PacketWeaponInput(void * data, int len) {
     struct PacketWeaponInput * p = (struct PacketWeaponInput*) data;
     if (p->player_id < PLAYERS_MAX && p->player_id != local_player_id) {
-        players[p->player_id].input.buttons.lmb = p->input & MASK_BUTTON_PRIMARY;
-        players[p->player_id].input.buttons.rmb = p->input & MASK_BUTTON_SECONDARY;
+        players[p->player_id].input.buttons = p->input;
 
-        if (p->input & MASK_BUTTON_PRIMARY)
-            players[p->player_id].input.buttons.lmb_start = window_time();
-        if (p->input & MASK_BUTTON_SECONDARY)
-            players[p->player_id].input.buttons.rmb_start = window_time();
+        if (p->input & MASK(BUTTON_PRIMARY))
+            players[p->player_id].start.lmb = window_time();
+        if (p->input & MASK(BUTTON_SECONDARY))
+            players[p->player_id].start.rmb = window_time();
     }
 }
 
@@ -602,11 +592,12 @@ void read_PacketKillAction(void * data, int len) {
             }
         }
         players[p->player_id].alive = 0;
-        players[p->player_id].input.keys = (Keys) {0};
-        players[p->player_id].input.buttons = (Buttons) {0};
-        if (p->player_id != p->killer_id) {
+        players[p->player_id].input.keys = 0;
+        players[p->player_id].input.buttons = 0;
+
+        if (p->player_id != p->killer_id)
             players[p->killer_id].score++;
-        }
+
         char * gun_name[3] = {"Rifle", "SMG", "Shotgun"};
         char m[256];
         switch (p->kill_type) {
@@ -723,13 +714,13 @@ void read_PacketMoveObject(void * data, int len) {
                 gamestate.gamemode.ctf.team_2_base.z = letohf(p->z);
                 break;
             case TEAM_1_FLAG:
-                gamestate.gamemode.ctf.intels &= ~TEAM_1_INTEL;
+                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_1_INTEL);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->z);
                 break;
             case TEAM_2_FLAG:
-                gamestate.gamemode.ctf.intels &= ~TEAM_2_INTEL;
+                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_2_INTEL);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.z = letohf(p->z);
@@ -785,14 +776,14 @@ void read_PacketIntelDrop(void * data, int len) {
         char drop_str[128];
         switch (players[p->player_id].team) {
             case TEAM_1:
-                gamestate.gamemode.ctf.intels &= ~TEAM_2_INTEL; // drop opposing team's intel
+                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_2_INTEL); // drop opposing team's intel
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.z = letohf(p->z);
                 sprintf(drop_str, "%s has dropped the %s Intel", players[p->player_id].name, gamestate.team_2.name);
                 break;
             case TEAM_2:
-                gamestate.gamemode.ctf.intels &= ~TEAM_1_INTEL;
+                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_1_INTEL);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->z);
@@ -809,12 +800,12 @@ void read_PacketIntelPickup(void * data, int len) {
         char pickup_str[128];
         switch (players[p->player_id].team) {
             case TEAM_1:
-                gamestate.gamemode.ctf.intels |= TEAM_2_INTEL; // pickup opposing team's intel
+                gamestate.gamemode.ctf.intels |= MASK(TEAM_2_INTEL); // pickup opposing team's intel
                 gamestate.gamemode.ctf.team_2_intel_location.held.player_id = p->player_id;
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_2.name);
                 break;
             case TEAM_2:
-                gamestate.gamemode.ctf.intels |= TEAM_1_INTEL;
+                gamestate.gamemode.ctf.intels |= MASK(TEAM_1_INTEL);
                 gamestate.gamemode.ctf.team_1_intel_location.held.player_id = p->player_id;
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_1.name);
                 break;
@@ -1062,21 +1053,6 @@ int network_connect_string(char * addr) {
     return network_connect(ip, port);
 }
 
-bool keys_ineq(Keys * k1, Keys * k2) {
-    return k1->up     != k2->up      ||
-           k1->down   != k2->down    ||
-           k1->left   != k2->left    ||
-           k1->right  != k2->right   ||
-           k1->jump   != k2->jump    ||
-           k1->crouch != k2->crouch  ||
-           k1->sneak  != k2->sneak   ||
-           k1->sprint != k2->sprint;
-}
-
-bool buttons_ineq(Buttons * b1, Buttons * b2) {
-    return b1->lmb != b2->lmb || b1->rmb != b2->rmb;
-}
-
 int network_update() {
     if (network_connected) {
         if (window_time() - network_stats_last >= 1.0F) {
@@ -1116,27 +1092,19 @@ int network_update() {
         }
 
         if (network_logged_in && players[local_player_id].team != TEAM_SPECTATOR && players[local_player_id].alive) {
-            if (keys_ineq(&players[local_player_id].input.keys, &network_keys_last)) {
+            if (players[local_player_id].input.keys != network_keys_last) {
                 struct PacketInputData in;
                 in.player_id = local_player_id;
-                in.keys = (players[local_player_id].input.keys.up     << INPUT_UP)
-                        | (players[local_player_id].input.keys.down   << INPUT_DOWN)
-                        | (players[local_player_id].input.keys.left   << INPUT_LEFT)
-                        | (players[local_player_id].input.keys.right  << INPUT_RIGHT)
-                        | (players[local_player_id].input.keys.jump   << INPUT_JUMP)
-                        | (players[local_player_id].input.keys.crouch << INPUT_CROUCH)
-                        | (players[local_player_id].input.keys.sneak  << INPUT_SNEAK)
-                        | (players[local_player_id].input.keys.sprint << INPUT_SPRINT);
+                in.keys = players[local_player_id].input.keys;
                 network_send(PACKET_INPUTDATA_ID, &in, sizeof(in));
 
                 network_keys_last = players[local_player_id].input.keys;
             }
-            if (buttons_ineq(&players[local_player_id].input.buttons, &network_buttons_last) &&
-                players[local_player_id].input.keys.sprint == 0) {
+            if ((players[local_player_id].input.buttons != network_buttons_last) &&
+               !(players[local_player_id].input.keys & MASK(INPUT_SPRINT))) {
                 struct PacketWeaponInput in;
                 in.player_id = local_player_id;
-                in.input = (players[local_player_id].input.buttons.lmb << BUTTON_PRIMARY)
-                         | (players[local_player_id].input.buttons.rmb << BUTTON_SECONDARY);
+                in.input = players[local_player_id].input.buttons;
                 network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
 
                 network_buttons_last = players[local_player_id].input.buttons;

@@ -20,22 +20,10 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-typedef struct {
-    unsigned char up;
-    unsigned char down;
-    unsigned char left;
-    unsigned char right;
-    unsigned char jump;
-    unsigned char crouch;
-    unsigned char sneak;
-    unsigned char sprint;
-} Keys;
+#define MASK(X)    (1 << X)
+#define UNMASK(X) ~(1 << X)
 
-typedef struct {
-    unsigned char lmb;
-    unsigned char rmb;
-    float lmb_start, rmb_start;
-} Buttons;
+#define SETBIT(dest, bit, value) { dest &= UNMASK(bit); dest |= (value << bit); }
 
 const char * network_reason_disconnect(int code);
 
@@ -49,9 +37,6 @@ int network_connect_string(char * addr);
 int network_update(void);
 int network_status(void);
 void network_init(void);
-
-bool keys_ineq(Keys *, Keys *);
-bool buttons_ineq(Buttons *, Buttons *);
 
 void read_PacketMapChunk(void * data, int len);
 void read_PacketChatMessage(void * data, int len);
@@ -94,8 +79,8 @@ extern int network_received_packets;
 
 extern float network_pos_update;
 extern float network_orient_update;
-extern Keys network_keys_last;
-extern Buttons network_buttons_last;
+extern unsigned char network_keys_last;
+extern unsigned char network_buttons_last;
 extern unsigned char network_tool_last;
 
 #define VERSION_075 3
@@ -165,22 +150,14 @@ struct PacketInputData {
     unsigned char keys;
 };
 
-#define INPUT_UP           0
-#define INPUT_DOWN         1
-#define INPUT_LEFT         2
-#define INPUT_RIGHT        3
-#define INPUT_JUMP         4
-#define INPUT_CROUCH       5
-#define INPUT_SNEAK        6
-#define INPUT_SPRINT       7
-#define MASK_INPUT_UP     (1 << INPUT_UP)
-#define MASK_INPUT_DOWN   (1 << INPUT_DOWN)
-#define MASK_INPUT_LEFT   (1 << INPUT_LEFT)
-#define MASK_INPUT_RIGHT  (1 << INPUT_RIGHT)
-#define MASK_INPUT_JUMP   (1 << INPUT_JUMP)
-#define MASK_INPUT_CROUCH (1 << INPUT_CROUCH)
-#define MASK_INPUT_SNEAK  (1 << INPUT_SNEAK)
-#define MASK_INPUT_SPRINT (1 << INPUT_SPRINT)
+#define INPUT_UP     0
+#define INPUT_DOWN   1
+#define INPUT_LEFT   2
+#define INPUT_RIGHT  3
+#define INPUT_JUMP   4
+#define INPUT_CROUCH 5
+#define INPUT_SNEAK  6
+#define INPUT_SPRINT 7
 
 #define PACKET_WEAPONINPUT_ID 4
 struct PacketWeaponInput {
@@ -188,10 +165,8 @@ struct PacketWeaponInput {
     unsigned char input;
 };
 
-#define BUTTON_PRIMARY         0
-#define BUTTON_SECONDARY       1
-#define MASK_BUTTON_PRIMARY   (1 << BUTTON_PRIMARY)
-#define MASK_BUTTON_SECONDARY (1 << BUTTON_SECONDARY)
+#define BUTTON_PRIMARY   0
+#define BUTTON_SECONDARY 1
 
 #define PACKET_MOVEOBJECT_ID 11
 struct PacketMoveObject {
@@ -199,6 +174,7 @@ struct PacketMoveObject {
     unsigned char team;
     float x, y, z;
 };
+
 #define TEAM_1_FLAG 0
 #define TEAM_2_FLAG 1
 #define TEAM_1_BASE 2
@@ -234,18 +210,20 @@ struct PacketSetHP {
     unsigned char type;
     float x, y, z;
 };
+
 #define DAMAGE_SOURCE_FALL 0
-#define DAMAGE_SOURCE_GUN 1
+#define DAMAGE_SOURCE_GUN  1
 
 #define PACKET_HIT_ID 5
 struct PacketHit {
     unsigned char player_id;
     unsigned char hit_type;
 };
+
 #define HITTYPE_TORSO 0
-#define HITTYPE_HEAD 1
-#define HITTYPE_ARMS 2
-#define HITTYPE_LEGS 3
+#define HITTYPE_HEAD  1
+#define HITTYPE_ARMS  2
+#define HITTYPE_LEGS  3
 #define HITTYPE_SPADE 4
 
 #define PACKET_KILLACTION_ID 16
@@ -255,12 +233,13 @@ struct PacketKillAction {
     unsigned char kill_type;
     unsigned char respawn_time;
 };
-#define KILLTYPE_WEAPON 0
-#define KILLTYPE_HEADSHOT 1
-#define KILLTYPE_MELEE 2
-#define KILLTYPE_GRENADE 3
-#define KILLTYPE_FALL 4
-#define KILLTYPE_TEAMCHANGE 5
+
+#define KILLTYPE_WEAPON      0
+#define KILLTYPE_HEADSHOT    1
+#define KILLTYPE_MELEE       2
+#define KILLTYPE_GRENADE     3
+#define KILLTYPE_FALL        4
+#define KILLTYPE_TEAMCHANGE  5
 #define KILLTYPE_CLASSCHANGE 6
 
 #define PACKET_RESTOCK_ID 26
@@ -306,8 +285,9 @@ struct PacketExistingPlayer {
     unsigned char blue, green, red;
     char name[17];
 };
-#define WEAPON_RIFLE 0
-#define WEAPON_SMG 1
+
+#define WEAPON_RIFLE   0
+#define WEAPON_SMG     1
 #define WEAPON_SHOTGUN 2
 
 #define PACKET_CREATEPLAYER_ID 12
@@ -325,9 +305,10 @@ struct PacketBlockAction {
     unsigned char action_type;
     int x, y, z;
 };
-#define ACTION_BUILD 0
+
+#define ACTION_BUILD   0
 #define ACTION_DESTROY 1
-#define ACTION_SPADE 2
+#define ACTION_SPADE   2
 #define ACTION_GRENADE 3
 
 #define PACKET_BLOCKLINE_ID 14
@@ -355,9 +336,10 @@ struct PacketSetTool {
     unsigned char player_id;
     unsigned char tool;
 };
-#define TOOL_SPADE 0
-#define TOOL_BLOCK 1
-#define TOOL_GUN 2
+
+#define TOOL_SPADE   0
+#define TOOL_BLOCK   1
+#define TOOL_GUN     2
 #define TOOL_GRENADE 3
 
 #define PACKET_CHATMESSAGE_ID 17
@@ -366,13 +348,14 @@ struct PacketChatMessage {
     unsigned char chat_type;
     char message[255];
 };
-#define CHAT_ALL 0
-#define CHAT_TEAM 1
-#define CHAT_SYSTEM 2
-#define CHAT_BIG 3
-#define CHAT_INFO 4
+
+#define CHAT_ALL     0
+#define CHAT_TEAM    1
+#define CHAT_SYSTEM  2
+#define CHAT_BIG     3
+#define CHAT_INFO    4
 #define CHAT_WARNING 5
-#define CHAT_ERROR 6
+#define CHAT_ERROR   6
 
 #define PACKET_FOGCOLOR_ID 27
 struct PacketFogColor {
@@ -436,8 +419,8 @@ struct PacketStateData {
     } gamemode_data;
 };
 
-#define TEAM_1_INTEL (1 << 0)
-#define TEAM_2_INTEL (1 << 1)
+#define TEAM_1_INTEL 0
+#define TEAM_2_INTEL 1
 
 #define PACKET_TERRITORYCAPTURE_ID 21
 struct PacketTerritoryCapture {
@@ -476,9 +459,9 @@ struct PacketPlayerProperties {
 
 enum Extension {
     EXT_PLAYER_PROPERTIES = 0x00,
-    EXT_256PLAYERS = 0xC0,
-    EXT_MESSAGES = 0xC1,
-    EXT_KICKREASON = 0xC2,
+    EXT_256PLAYERS        = 0xC0,
+    EXT_MESSAGES          = 0xC1,
+    EXT_KICKREASON        = 0xC2,
 };
 
 #pragma pack(pop)

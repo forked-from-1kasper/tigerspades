@@ -62,15 +62,17 @@ char chat[2][10][256] = {{{0}}}; // chat[0] is current input
 
 unsigned int chat_color[2][10];
 float chat_timer[2][10];
-void chat_add(int channel, unsigned int color, const char* msg) {
+void chat_add(int channel, unsigned int color, const char * msg) {
     for (int k = 9; k > 1; k--) {
         strcpy(chat[channel][k], chat[channel][k - 1]);
         chat_color[channel][k] = chat_color[channel][k - 1];
         chat_timer[channel][k] = chat_timer[channel][k - 1];
     }
+
     strcpy(chat[channel][1], msg);
     chat_color[channel][1] = color;
     chat_timer[channel][1] = window_time();
+
     if (channel == 0)
         log_info("%s", msg);
 }
@@ -79,7 +81,7 @@ int chat_popup_color;
 float chat_popup_timer = 0.0F;
 float chat_popup_duration = 0.0F;
 
-void chat_showpopup(const char* msg, float duration, int color) {
+void chat_showpopup(const char * msg, float duration, int color) {
     strcpy(chat_popup, msg);
     chat_popup_timer = window_time();
     chat_popup_duration = duration;
@@ -117,7 +119,7 @@ void drawScene() {
     matrix_upload();
 
     if (gamestate.gamemode_type == GAMEMODE_CTF) {
-        if (!(gamestate.gamemode.ctf.intels & TEAM_1_INTEL)) {
+        if (!(gamestate.gamemode.ctf.intels & MASK(TEAM_1_INTEL))) {
             float x = gamestate.gamemode.ctf.team_1_intel_location.dropped.x;
             float y = 63.0F - gamestate.gamemode.ctf.team_1_intel_location.dropped.z + 1.0F;
             float z = gamestate.gamemode.ctf.team_1_intel_location.dropped.y;
@@ -128,7 +130,8 @@ void drawScene() {
             kv6_render(&model_intel, TEAM_1);
             matrix_pop(matrix_model);
         }
-        if (!(gamestate.gamemode.ctf.intels & TEAM_2_INTEL)) {
+
+        if (!(gamestate.gamemode.ctf.intels & MASK(TEAM_2_INTEL))) {
             float x = gamestate.gamemode.ctf.team_2_intel_location.dropped.x;
             float y = 63.0F - gamestate.gamemode.ctf.team_2_intel_location.dropped.z + 1.0F;
             float z = gamestate.gamemode.ctf.team_2_intel_location.dropped.y;
@@ -139,6 +142,7 @@ void drawScene() {
             kv6_render(&model_intel, TEAM_2);
             matrix_pop(matrix_model);
         }
+
         if (map_object_visible(gamestate.gamemode.ctf.team_1_base.x, 63.0F - gamestate.gamemode.ctf.team_1_base.z + 1.0F,
                               gamestate.gamemode.ctf.team_1_base.y)) {
             matrix_push(matrix_model);
@@ -150,6 +154,7 @@ void drawScene() {
             kv6_render(&model_tent, TEAM_1);
             matrix_pop(matrix_model);
         }
+
         if (map_object_visible(gamestate.gamemode.ctf.team_2_base.x, 63.0F - gamestate.gamemode.ctf.team_2_base.z + 1.0F,
                               gamestate.gamemode.ctf.team_2_base.y)) {
             matrix_push(matrix_model);
@@ -162,6 +167,7 @@ void drawScene() {
             matrix_pop(matrix_model);
         }
     }
+
     if (gamestate.gamemode_type == GAMEMODE_TC) {
         for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
             matrix_push(matrix_model);
@@ -224,9 +230,12 @@ void display() {
 
             if (camera_mode == CAMERAMODE_FPS) {
                 weapon_update();
-                if (players[local_player_id].input.buttons.lmb && players[local_player_id].held_item == TOOL_BLOCK
-                   && (window_time() - players[local_player_id].item_showup) >= 0.5F && local_player_blocks > 0) {
-                    int* pos = camera_terrain_pick(0);
+
+                if ((players[local_player_id].input.buttons & MASK(BUTTON_PRIMARY)) &&
+                    (players[local_player_id].held_item == TOOL_BLOCK) &&
+                    (window_time() - players[local_player_id].item_showup >= 0.5F) &&
+                    (local_player_blocks > 0)) {
+                    int * pos = camera_terrain_pick(0);
                     if (pos != NULL && pos[1] > 1
                        && distance3D(camera_x, camera_y, camera_z, pos[0], pos[1], pos[2]) < 5.0F * 5.0F
                        && !(pos[0] == (int)camera_x && pos[1] == (int)camera_y + 0 && pos[2] == (int)camera_z)
@@ -244,8 +253,10 @@ void display() {
                         // read_PacketBlockAction(&blk,sizeof(blk));
                     }
                 }
-                if (players[local_player_id].input.buttons.lmb && players[local_player_id].held_item == TOOL_GRENADE
-                   && window_time() - players[local_player_id].input.buttons.lmb_start > 3.0F) {
+
+                if ((players[local_player_id].input.buttons & MASK(BUTTON_PRIMARY)) &&
+                    (players[local_player_id].held_item == TOOL_GRENADE) &&
+                    (window_time() - players[local_player_id].start.lmb > 3.0F)) {
                     local_player_grenades = max(local_player_grenades - 1, 0);
                     struct PacketGrenade g;
                     g.player_id = local_player_id;
@@ -255,14 +266,14 @@ void display() {
                     g.fuse_length = g.vx = g.vy = g.vz = 0.0F;
                     network_send(PACKET_GRENADE_ID, &g, sizeof(g));
                     read_PacketGrenade(&g, sizeof(g));
-                    players[local_player_id].input.buttons.lmb_start = window_time();
+                    players[local_player_id].start.lmb = window_time();
                 }
             }
 
-            int* pos = NULL;
+            int * pos = NULL;
             switch (players[local_id].held_item) {
                 case TOOL_BLOCK:
-                    if (!players[local_id].input.keys.sprint && render_fpv) {
+                    if (!(players[local_id].input.keys & MASK(INPUT_SPRINT)) && render_fpv) {
                         if (is_local)
                             pos = camera_terrain_pick(0);
                         else
@@ -282,7 +293,7 @@ void display() {
                 glDepthMask(GL_FALSE);
                 struct Point cubes[64];
                 int amount = 0;
-                if (is_local && local_player_drag_active && players[local_player_id].input.buttons.rmb
+                if (is_local && local_player_drag_active && (players[local_player_id].input.buttons & MASK(BUTTON_SECONDARY))
                    && players[local_player_id].held_item == TOOL_BLOCK) {
                     amount = map_cube_line(local_player_drag_x, local_player_drag_z, 63 - local_player_drag_y, pos[0],
                                            pos[2], 63 - pos[1], cubes);
@@ -337,10 +348,10 @@ void display() {
 
             if (window_time() - players[local_player_id].item_disabled < 0.3F) {
                 players[local_player_id].item_showup = window_time();
-                if (players[local_player_id].input.buttons.lmb)
-                    players[local_player_id].input.buttons.lmb_start = window_time() + 0.5F;
-                if (players[local_player_id].input.buttons.rmb)
-                    players[local_player_id].input.buttons.rmb_start = window_time() + 0.5F;
+                if (players[local_player_id].input.buttons & MASK(BUTTON_PRIMARY))
+                    players[local_player_id].start.lmb = window_time() + 0.5F;
+                if (players[local_player_id].input.buttons & MASK(BUTTON_SECONDARY))
+                    players[local_player_id].start.rmb = window_time() + 0.5F;
             } else {
                 if (hud_active->render_localplayer) {
                     float tmp2 = players[local_player_id].physics.eye.y;

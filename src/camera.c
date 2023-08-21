@@ -47,8 +47,8 @@ float camera_fov_scaled() {
             && cameracontroller_bodyview_mode);
     int local_id = (camera_mode == CAMERAMODE_FPS) ? local_player_id : cameracontroller_bodyview_player;
 
-    if (render_fpv && players[local_id].held_item == TOOL_GUN && players[local_id].input.buttons.rmb
-       && !players[local_id].input.keys.sprint && players[local_id].alive)
+    if (render_fpv && players[local_id].held_item == TOOL_GUN && (players[local_id].input.buttons & MASK(BUTTON_SECONDARY))
+       && !(players[local_id].input.keys & MASK(INPUT_SPRINT)) && players[local_id].alive)
         return CAMERA_DEFAULT_FOV * atan(tan((CAMERA_DEFAULT_FOV / 180.0F * PI) / 2) / 2.0F) * 2.0F;
     return settings.camera_fov;
 }
@@ -73,21 +73,21 @@ void camera_overflow_adjust() {
 
 void camera_apply() {
     switch (camera_mode) {
-        case CAMERAMODE_FPS: cameracontroller_fps_render(); break;
-        case CAMERAMODE_BODYVIEW: cameracontroller_bodyview_render(); break;
+        case CAMERAMODE_FPS:       cameracontroller_fps_render();       break;
+        case CAMERAMODE_BODYVIEW:  cameracontroller_bodyview_render();  break;
         case CAMERAMODE_SPECTATOR: cameracontroller_spectator_render(); break;
         case CAMERAMODE_SELECTION: cameracontroller_selection_render(); break;
-        case CAMERAMODE_DEATH: cameracontroller_death_render(); break;
+        case CAMERAMODE_DEATH:     cameracontroller_death_render();     break;
     }
 }
 
 void camera_update(float dt) {
     switch (camera_mode) {
-        case CAMERAMODE_FPS: cameracontroller_fps(dt); break;
-        case CAMERAMODE_BODYVIEW: cameracontroller_bodyview(dt); break;
+        case CAMERAMODE_FPS:       cameracontroller_fps(dt);       break;
+        case CAMERAMODE_BODYVIEW:  cameracontroller_bodyview(dt);  break;
         case CAMERAMODE_SPECTATOR: cameracontroller_spectator(dt); break;
         case CAMERAMODE_SELECTION: cameracontroller_selection(dt); break;
-        case CAMERAMODE_DEATH: cameracontroller_death(dt); break;
+        case CAMERAMODE_DEATH:     cameracontroller_death(dt);     break;
     }
 }
 

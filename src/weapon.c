@@ -69,8 +69,10 @@ void weapon_update() {
         }
     } else {
         if (screen_current == SCREEN_NONE && window_time() - players[local_player_id].item_disabled >= 0.5F) {
-            if (players[local_player_id].input.buttons.lmb && players[local_player_id].held_item == TOOL_GUN
-               && local_player_ammo > 0 && window_time() - weapon_last_shot >= delay) {
+            if ((players[local_player_id].input.buttons & MASK(BUTTON_PRIMARY)) &&
+                (players[local_player_id].held_item == TOOL_GUN) &&
+                (local_player_ammo > 0) &&
+                (window_time() - weapon_last_shot >= delay)) {
                 weapon_shoot();
                 local_player_ammo = max(local_player_ammo - 1, 0);
                 weapon_last_shot = window_time();
@@ -81,106 +83,108 @@ void weapon_update() {
 
 float weapon_recoil_anim(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return 0.3F;
-        case WEAPON_SMG: return 0.125F;
+        case WEAPON_RIFLE:   return 0.3F;
+        case WEAPON_SMG:     return 0.125F;
         case WEAPON_SHOTGUN: return 0.75F;
-        default: return 0.0F;
+        default:             return 0.0F;
     }
 }
 
 int weapon_block_damage(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return 50;
-        case WEAPON_SMG: return 34;
+        case WEAPON_RIFLE:   return 50;
+        case WEAPON_SMG:     return 34;
         case WEAPON_SHOTGUN: return 20;
-        default: return 0;
+        default:             return 0;
     }
 }
 
 float weapon_delay(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return 0.5F;
-        case WEAPON_SMG: return 0.1F;
+        case WEAPON_RIFLE:   return 0.5F;
+        case WEAPON_SMG:     return 0.1F;
         case WEAPON_SHOTGUN: return 1.0F;
-        default: return 0.0F;
+        default:             return 0.0F;
     }
 }
 
-struct Sound_wav* weapon_sound(int gun) {
+struct Sound_wav * weapon_sound(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return &sound_rifle_shoot;
-        case WEAPON_SMG: return &sound_smg_shoot;
+        case WEAPON_RIFLE:   return &sound_rifle_shoot;
+        case WEAPON_SMG:     return &sound_smg_shoot;
         case WEAPON_SHOTGUN: return &sound_shotgun_shoot;
-        default: return NULL;
+        default:             return NULL;
     }
 }
 
-struct Sound_wav* weapon_sound_reload(int gun) {
+struct Sound_wav * weapon_sound_reload(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return &sound_rifle_reload;
-        case WEAPON_SMG: return &sound_smg_reload;
+        case WEAPON_RIFLE:   return &sound_rifle_reload;
+        case WEAPON_SMG:     return &sound_smg_reload;
         case WEAPON_SHOTGUN: return &sound_shotgun_reload;
-        default: return NULL;
+        default:             return NULL;
     }
 }
 
-void weapon_spread(Player * p, float* d) {
+void weapon_spread(Player * p, float * d) {
     float spread = 0.0F;
     switch (p->weapon) {
         case WEAPON_RIFLE:   spread = 0.006F; break;
         case WEAPON_SMG:     spread = 0.012F; break;
         case WEAPON_SHOTGUN: spread = 0.024F; break;
     }
-    d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * (p->input.buttons.rmb ? 0.5F : 1.0F)
-        * ((p->input.keys.crouch && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
-    d[1] += (ms_rand() - ms_rand()) / 16383.0F * spread * (p->input.buttons.rmb ? 0.5F : 1.0F)
-        * ((p->input.keys.crouch && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
-    d[2] += (ms_rand() - ms_rand()) / 16383.0F * spread * (p->input.buttons.rmb ? 0.5F : 1.0F)
-        * ((p->input.keys.crouch && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
+    d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASK(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
+        * (((p->input.keys & MASK(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
+    d[1] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASK(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
+        * (((p->input.keys & MASK(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
+    d[2] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASK(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
+        * (((p->input.keys & MASK(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
 }
 
-void weapon_recoil(int gun, double* horiz_recoil, double* vert_recoil) {
+void weapon_recoil(int gun, double * horiz_recoil, double * vert_recoil) {
     switch (gun) {
         case WEAPON_RIFLE:
             *horiz_recoil = 0.0001;
-            *vert_recoil = 0.050000001;
+            *vert_recoil  = 0.050000001;
             break;
         case WEAPON_SMG:
             *horiz_recoil = 0.00005;
-            *vert_recoil = 0.0125;
+            *vert_recoil  = 0.0125;
             break;
         case WEAPON_SHOTGUN:
             *horiz_recoil = 0.0002;
-            *vert_recoil = 0.1;
+            *vert_recoil  = 0.1;
             break;
-        default: *horiz_recoil = 0.0F; *vert_recoil = 0.0F;
+        default:
+            *horiz_recoil = 0.0F;
+            *vert_recoil  = 0.0F;
     }
 }
 
 int weapon_ammo(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return 10;
-        case WEAPON_SMG: return 30;
+        case WEAPON_RIFLE:   return 10;
+        case WEAPON_SMG:     return 30;
         case WEAPON_SHOTGUN: return 6;
-        default: return 0;
+        default:             return 0;
     }
 }
 
 int weapon_ammo_reserved(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return 50;
-        case WEAPON_SMG: return 120;
+        case WEAPON_RIFLE:   return 50;
+        case WEAPON_SMG:     return 120;
         case WEAPON_SHOTGUN: return 48;
-        default: return 0;
+        default:             return 0;
     }
 }
 
-struct kv6_t* weapon_casing(int gun) {
+struct kv6_t * weapon_casing(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE: return &model_semi_casing;
-        case WEAPON_SMG: return &model_smg_casing;
+        case WEAPON_RIFLE:   return &model_semi_casing;
+        case WEAPON_SMG:     return &model_smg_casing;
         case WEAPON_SHOTGUN: return &model_shotgun_casing;
-        default: return NULL;
+        default:             return NULL;
     }
 }
 
@@ -243,11 +247,10 @@ void weapon_shoot() {
                    players[local_player_id].physics.eye.y + player_height(&players[local_player_id]),
                    players[local_player_id].physics.eye.z, o[0], o[1], o[2], 128.0F);
 
-        if (buttons_ineq(&players[local_player_id].input.buttons, &network_buttons_last)) {
+        if (players[local_player_id].input.buttons != network_buttons_last) {
             struct PacketWeaponInput in;
             in.player_id = local_player_id;
-            in.input = (players[local_player_id].input.buttons.lmb << BUTTON_PRIMARY)
-                     | (players[local_player_id].input.buttons.rmb << BUTTON_SECONDARY);
+            in.input = players[local_player_id].input.buttons;
             network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
 
             network_buttons_last = players[local_player_id].input.buttons;
@@ -311,18 +314,21 @@ void weapon_shoot() {
         horiz_recoil *= -1.0;
     }
 
-    if ((players[local_player_id].input.keys.up || players[local_player_id].input.keys.down
-        || players[local_player_id].input.keys.left || players[local_player_id].input.keys.right)
-       && !players[local_player_id].input.buttons.rmb) {
-        vert_recoil *= 2.0;
+    if (((players[local_player_id].input.keys   & MASK(INPUT_UP))   ||
+         (players[local_player_id].input.keys   & MASK(INPUT_DOWN)) ||
+         (players[local_player_id].input.keys   & MASK(INPUT_LEFT)) ||
+         (players[local_player_id].input.keys   & MASK(INPUT_RIGHT))) &&
+       !(players[local_player_id].input.buttons & MASK(BUTTON_SECONDARY))) {
+        vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     }
+
     if (players[local_player_id].physics.airborne) {
-        vert_recoil *= 2.0;
+        vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     } else {
-        if (players[local_player_id].input.keys.crouch) {
-            vert_recoil *= 0.5;
+        if (players[local_player_id].input.keys & MASK(INPUT_CROUCH)) {
+            vert_recoil  *= 0.5;
             horiz_recoil *= 0.5;
         }
     }

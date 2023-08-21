@@ -124,10 +124,14 @@ typedef struct {
     float item_showup, item_disabled, items_show_start;
     unsigned char items_show;
     TrueColor block;
+
     struct {
-        Keys    keys;
-        Buttons buttons;
+        unsigned char keys, buttons;
     } input;
+
+    struct {
+        float lmb, rmb;
+    } start;
 
     struct {
         unsigned char jump, airborne, wade;
