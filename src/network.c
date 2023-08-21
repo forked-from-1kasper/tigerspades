@@ -285,7 +285,7 @@ void read_PacketStateData(void * data, int len) {
         gamestate.gamemode.ctf.capture_limit = p->gamemode_data.ctf.capture_limit;
         gamestate.gamemode.ctf.intels        = p->gamemode_data.ctf.intels;
 
-        if (p->gamemode_data.ctf.intels & MASK(TEAM_1_INTEL))
+        if (p->gamemode_data.ctf.intels & MASKON(TEAM_1_INTEL))
             gamestate.gamemode.ctf.team_1_intel_location.held.player_id = p->gamemode_data.ctf.team_1_intel_location.held.player_id;
         else {
             gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->gamemode_data.ctf.team_1_intel_location.dropped.x);
@@ -293,7 +293,7 @@ void read_PacketStateData(void * data, int len) {
             gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->gamemode_data.ctf.team_1_intel_location.dropped.z);
         }
 
-        if (p->gamemode_data.ctf.intels & MASK(TEAM_2_INTEL))
+        if (p->gamemode_data.ctf.intels & MASKON(TEAM_2_INTEL))
             gamestate.gamemode.ctf.team_2_intel_location.held.player_id = p->gamemode_data.ctf.team_2_intel_location.held.player_id;
         else {
             gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->gamemode_data.ctf.team_2_intel_location.dropped.x);
@@ -585,7 +585,7 @@ void read_PacketInputData(void * data, int len) {
         if (p->player_id != local_player_id)
             players[p->player_id].input.keys = p->keys;
 
-        players[p->player_id].physics.jump = (p->keys & MASK(INPUT_JUMP)) > 0;
+        players[p->player_id].physics.jump = (p->keys & MASKON(INPUT_JUMP)) > 0;
     }
 }
 
@@ -594,9 +594,9 @@ void read_PacketWeaponInput(void * data, int len) {
     if (p->player_id < PLAYERS_MAX && p->player_id != local_player_id) {
         players[p->player_id].input.buttons = p->input;
 
-        if (p->input & MASK(BUTTON_PRIMARY))
+        if (p->input & MASKON(BUTTON_PRIMARY))
             players[p->player_id].start.lmb = window_time();
-        if (p->input & MASK(BUTTON_SECONDARY))
+        if (p->input & MASKON(BUTTON_SECONDARY))
             players[p->player_id].start.rmb = window_time();
     }
 }
@@ -751,13 +751,13 @@ void read_PacketMoveObject(void * data, int len) {
                 gamestate.gamemode.ctf.team_2_base.z = letohf(p->z);
                 break;
             case TEAM_1_FLAG:
-                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_1_INTEL);
+                gamestate.gamemode.ctf.intels &= MASKOFF(TEAM_1_INTEL);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->z);
                 break;
             case TEAM_2_FLAG:
-                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_2_INTEL);
+                gamestate.gamemode.ctf.intels &= MASKOFF(TEAM_2_INTEL);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.z = letohf(p->z);
@@ -813,14 +813,14 @@ void read_PacketIntelDrop(void * data, int len) {
         char drop_str[128];
         switch (players[p->player_id].team) {
             case TEAM_1:
-                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_2_INTEL); // drop opposing team's intel
+                gamestate.gamemode.ctf.intels &= MASKOFF(TEAM_2_INTEL); // drop opposing team's intel
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_2_intel_location.dropped.z = letohf(p->z);
                 sprintf(drop_str, "%s has dropped the %s Intel", players[p->player_id].name, gamestate.team_2.name);
                 break;
             case TEAM_2:
-                gamestate.gamemode.ctf.intels &= UNMASK(TEAM_1_INTEL);
+                gamestate.gamemode.ctf.intels &= MASKOFF(TEAM_1_INTEL);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->x);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.y = letohf(p->y);
                 gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->z);
@@ -837,12 +837,12 @@ void read_PacketIntelPickup(void * data, int len) {
         char pickup_str[128];
         switch (players[p->player_id].team) {
             case TEAM_1:
-                gamestate.gamemode.ctf.intels |= MASK(TEAM_2_INTEL); // pickup opposing team's intel
+                gamestate.gamemode.ctf.intels |= MASKON(TEAM_2_INTEL); // pickup opposing team's intel
                 gamestate.gamemode.ctf.team_2_intel_location.held.player_id = p->player_id;
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_2.name);
                 break;
             case TEAM_2:
-                gamestate.gamemode.ctf.intels |= MASK(TEAM_1_INTEL);
+                gamestate.gamemode.ctf.intels |= MASKON(TEAM_1_INTEL);
                 gamestate.gamemode.ctf.team_1_intel_location.held.player_id = p->player_id;
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_1.name);
                 break;
@@ -1138,7 +1138,7 @@ int network_update() {
                 network_keys_last = players[local_player_id].input.keys;
             }
             if ((players[local_player_id].input.buttons != network_buttons_last) &&
-               !(players[local_player_id].input.keys & MASK(INPUT_SPRINT))) {
+               !(players[local_player_id].input.keys & MASKON(INPUT_SPRINT))) {
                 struct PacketWeaponInput in;
                 in.player_id = local_player_id;
                 in.input = players[local_player_id].input.buttons;

@@ -20,10 +20,10 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#define MASK(X)    (1 << X)
-#define UNMASK(X) ~(1 << X)
+#define MASKON(X)   (1 << X)
+#define MASKOFF(X) ~(1 << X)
 
-#define SETBIT(dest, bit, value) { dest &= UNMASK(bit); dest |= (value << bit); }
+#define SETBIT(dest, bit, value) { dest &= MASKOFF(bit); dest |= (value << bit); }
 
 const char * network_reason_disconnect(int code);
 

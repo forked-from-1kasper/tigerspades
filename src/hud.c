@@ -146,7 +146,7 @@ static void hud_ingame_render3D() {
 
     if (!network_map_transfer) {
         if (camera_mode == CAMERAMODE_FPS && players[local_player_id].items_show) {
-            players[local_player_id].input.buttons &= UNMASK(BUTTON_SECONDARY);
+            players[local_player_id].input.buttons &= MASKOFF(BUTTON_SECONDARY);
 
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player_id].held_item == TOOL_SPADE) * 0.5F,
@@ -288,14 +288,14 @@ static void hud_ingame_render3D() {
         if (gamestate.gamemode_type == GAMEMODE_CTF) {
             switch (players[local_player_id].team) {
                 case TEAM_1:
-                    if ((gamestate.gamemode.ctf.intels & MASK(TEAM_2_INTEL))
+                    if ((gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))
                      && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player_id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_2;
                     }
                     break;
                 case TEAM_2:
-                    if ((gamestate.gamemode.ctf.intels & MASK(TEAM_1_INTEL))
+                    if ((gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))
                      && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player_id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_1;
@@ -636,9 +636,9 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                 char id_str[16];
                 sprintf(id_str, "#%i", pt[k].id);
                 if (gamestate.gamemode_type == GAMEMODE_CTF &&
-                      (((gamestate.gamemode.ctf.intels & MASK(TEAM_1_INTEL)) &&
+                      (((gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL)) &&
                         (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == pt[k].id)) ||
-                       ((gamestate.gamemode.ctf.intels & MASK(TEAM_2_INTEL)) &&
+                       ((gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL)) &&
                         (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == pt[k].id)))) {
                     texture_draw(&texture_intel,
                                  settings.window_width / 4.0F * mul
@@ -699,7 +699,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
             glColor3f(1.0F, 1.0F, 1.0F);
 
             if (players[local_id].held_item == TOOL_GUN &&
-                (players[local_id].input.buttons & MASK(BUTTON_SECONDARY)) &&
+                (players[local_id].input.buttons & MASKON(BUTTON_SECONDARY)) &&
                 players[local_id].alive) {
                 struct texture * zoom;
                 switch (players[local_id].weapon) {
@@ -956,7 +956,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                 tracer_minimap(1, scalef, minimap_x, minimap_y);
 
                 if (gamestate.gamemode_type == GAMEMODE_CTF) {
-                    if (!(gamestate.gamemode.ctf.intels & MASK(TEAM_1_INTEL))) {
+                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))) {
                         glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
                         texture_draw_rotated(
                             &texture_intel, minimap_x + gamestate.gamemode.ctf.team_1_intel_location.dropped.x * scalef,
@@ -976,7 +976,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                             minimap_y - gamestate.gamemode.ctf.team_1_base.y * scalef, 12 * scalef, 12 * scalef, 0.0F);
                     }
 
-                    if (!(gamestate.gamemode.ctf.intels & MASK(TEAM_2_INTEL))) {
+                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))) {
                         glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
                         texture_draw_rotated(
                             &texture_intel, minimap_x + gamestate.gamemode.ctf.team_2_intel_location.dropped.x * scalef,
@@ -1080,7 +1080,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                         texture_draw_rotated(&texture_medical, settings.window_width - 143 * scalef + tent1_x * scalef,
                                              (585 - tent1_y) * scalef, 12 * scalef, 12 * scalef, 0.0F);
                     }
-                    if (!(gamestate.gamemode.ctf.intels & MASK(TEAM_1_INTEL))) {
+                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.x, view_x), view_x + 128.0F)
                             - view_x;
@@ -1102,7 +1102,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                         texture_draw_rotated(&texture_medical, settings.window_width - 143 * scalef + tent2_x * scalef,
                                              (585 - tent2_y) * scalef, 12 * scalef, 12 * scalef, 0.0F);
                     }
-                    if (!(gamestate.gamemode.ctf.intels & MASK(TEAM_2_INTEL))) {
+                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.x, view_x), view_x + 128.0F)
                             - view_x;
@@ -1286,7 +1286,7 @@ static void hud_ingame_mouselocation(double x, double y) {
 
     float s = 1.0F;
     if (camera_mode == CAMERAMODE_FPS && players[local_player_id].held_item == TOOL_GUN &&
-        (players[local_player_id].input.buttons & MASK(BUTTON_SECONDARY))) {
+        (players[local_player_id].input.buttons & MASKON(BUTTON_SECONDARY))) {
         s = 0.5F;
     }
 
@@ -1306,7 +1306,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
     if (button == WINDOW_MOUSE_RMB) {
         if (action == WINDOW_PRESS && players[local_player_id].held_item == TOOL_GUN
            && !settings.hold_down_sights && !players[local_player_id].items_show) {
-            players[local_player_id].input.buttons ^= MASK(BUTTON_SECONDARY);
+            players[local_player_id].input.buttons ^= MASKON(BUTTON_SECONDARY);
         }
 
         if (local_player_drag_active && action == WINDOW_RELEASE && players[local_player_id].held_item == TOOL_BLOCK) {

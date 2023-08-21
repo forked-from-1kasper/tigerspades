@@ -47,8 +47,8 @@ float camera_fov_scaled() {
             && cameracontroller_bodyview_mode);
     int local_id = (camera_mode == CAMERAMODE_FPS) ? local_player_id : cameracontroller_bodyview_player;
 
-    if (render_fpv && players[local_id].held_item == TOOL_GUN && (players[local_id].input.buttons & MASK(BUTTON_SECONDARY))
-       && !(players[local_id].input.keys & MASK(INPUT_SPRINT)) && players[local_id].alive)
+    if (render_fpv && players[local_id].held_item == TOOL_GUN && (players[local_id].input.buttons & MASKON(BUTTON_SECONDARY))
+       && !(players[local_id].input.keys & MASKON(INPUT_SPRINT)) && players[local_id].alive)
         return CAMERA_DEFAULT_FOV * atan(tan((CAMERA_DEFAULT_FOV / 180.0F * PI) / 2) / 2.0F) * 2.0F;
     return settings.camera_fov;
 }
@@ -169,7 +169,7 @@ int * camera_terrain_pick(unsigned char mode) {
 // kindly borrowed from
 // https://stackoverflow.com/questions/16505905/walk-a-line-between-two-points-in-a-3d-voxel-space-visiting-all-cells
 // adapted, original code by Wivlaro
-int* camera_terrain_pickEx(unsigned char mode, float gx0, float gy0, float gz0, float ray_x, float ray_y, float ray_z) {
+int * camera_terrain_pickEx(unsigned char mode, float gx0, float gy0, float gz0, float ray_x, float ray_y, float ray_z) {
     float gx1 = gx0 + ray_x * 128.0F;
     float gy1 = gy0 + ray_y * 128.0F;
     float gz1 = gz0 + ray_z * 128.0F;

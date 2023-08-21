@@ -34,8 +34,8 @@ void weapon_update() {
     float t, delay = weapon_delay(players[local_player_id].weapon);
     int bullets = weapon_can_reload();
     switch (players[local_player_id].weapon) {
-        case WEAPON_RIFLE: t = 2.5F; break;
-        case WEAPON_SMG: t = 2.5F; break;
+        case WEAPON_RIFLE:   t = 2.5F;           break;
+        case WEAPON_SMG:     t = 2.5F;           break;
         case WEAPON_SHOTGUN: t = 0.5F * bullets; break;
     }
 
@@ -69,7 +69,7 @@ void weapon_update() {
         }
     } else {
         if (screen_current == SCREEN_NONE && window_time() - players[local_player_id].item_disabled >= 0.5F) {
-            if ((players[local_player_id].input.buttons & MASK(BUTTON_PRIMARY)) &&
+            if ((players[local_player_id].input.buttons & MASKON(BUTTON_PRIMARY)) &&
                 (players[local_player_id].held_item == TOOL_GUN) &&
                 (local_player_ammo > 0) &&
                 (window_time() - weapon_last_shot >= delay)) {
@@ -133,12 +133,12 @@ void weapon_spread(Player * p, float * d) {
         case WEAPON_SMG:     spread = 0.012F; break;
         case WEAPON_SHOTGUN: spread = 0.024F; break;
     }
-    d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASK(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
-        * (((p->input.keys & MASK(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
-    d[1] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASK(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
-        * (((p->input.keys & MASK(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
-    d[2] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASK(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
-        * (((p->input.keys & MASK(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
+    d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
+        * (((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
+    d[1] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
+        * (((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
+    d[2] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
+        * (((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
 }
 
 void weapon_recoil(int gun, double * horiz_recoil, double * vert_recoil) {
@@ -314,11 +314,11 @@ void weapon_shoot() {
         horiz_recoil *= -1.0;
     }
 
-    if (((players[local_player_id].input.keys   & MASK(INPUT_UP))   ||
-         (players[local_player_id].input.keys   & MASK(INPUT_DOWN)) ||
-         (players[local_player_id].input.keys   & MASK(INPUT_LEFT)) ||
-         (players[local_player_id].input.keys   & MASK(INPUT_RIGHT))) &&
-       !(players[local_player_id].input.buttons & MASK(BUTTON_SECONDARY))) {
+    if (((players[local_player_id].input.keys   & MASKON(INPUT_UP))   ||
+         (players[local_player_id].input.keys   & MASKON(INPUT_DOWN)) ||
+         (players[local_player_id].input.keys   & MASKON(INPUT_LEFT)) ||
+         (players[local_player_id].input.keys   & MASKON(INPUT_RIGHT))) &&
+       !(players[local_player_id].input.buttons & MASKON(BUTTON_SECONDARY))) {
         vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     }
@@ -327,7 +327,7 @@ void weapon_shoot() {
         vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     } else {
-        if (players[local_player_id].input.keys & MASK(INPUT_CROUCH)) {
+        if (players[local_player_id].input.keys & MASKON(INPUT_CROUCH)) {
             vert_recoil  *= 0.5;
             horiz_recoil *= 0.5;
         }
