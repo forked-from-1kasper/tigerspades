@@ -92,12 +92,12 @@ static void printJoinMsg(int team, char * name) {
         default:
         case TEAM_SPECTATOR: t = "Spectator"; break;
     }
-    char s[64];
-    sprintf(s, "%s joined the %s team", name, t);
-    chat_add(0, 0x0000FF, s);
+
+    char s[64]; sprintf(s, "%s joined the %s team", name, t);
+    chat_add(0, (TrueColor) {0, 0, 255, 255}, s);
 }
 
-void read_PacketMapChunk(void* data, int len) {
+void read_PacketMapChunk(void * data, int len) {
     // increase allocated memory if it is not enough to store the next chunk
     if (compressed_chunk_data_offset + len > compressed_chunk_data_size) {
         compressed_chunk_data_size += 1024 * 1024;
@@ -115,11 +115,11 @@ void read_PacketChatMessage(void * data, int len) {
     char m[256];
     switch (p->chat_type) {
         case CHAT_ERROR: sound_create(SOUND_LOCAL, &sound_beep2, 0.0F, 0.0F, 0.0F);
-        case CHAT_BIG: chat_showpopup(p->message, 5.0F, rgb(255, 0, 0)); return;
-        case CHAT_INFO: chat_showpopup(p->message, 5.0F, rgb(255, 255, 255)); return;
+        case CHAT_BIG: chat_showpopup(p->message, 5.0F, (TrueColor) {255, 0, 0, 255}); return;
+        case CHAT_INFO: chat_showpopup(p->message, 5.0F, (TrueColor) {255, 255, 255, 255}); return;
         case CHAT_WARNING:
             sound_create(SOUND_LOCAL, &sound_beep1, 0.0F, 0.0F, 0.0F);
-            chat_showpopup(p->message, 5.0F, rgb(255, 255, 0));
+            chat_showpopup(p->message, 5.0F, (TrueColor) {255, 255, 0, 255});
             return;
         case CHAT_SYSTEM:
             if (p->player_id == 255) {
@@ -150,20 +150,21 @@ void read_PacketChatMessage(void * data, int len) {
     }
     strncat(m, p->message, body_len);
 
-    unsigned int color;
+    TrueColor color = {0, 0, 0, 255};
     switch (p->chat_type) {
-        case CHAT_SYSTEM: color = 0x0000FF; break;
-        case CHAT_TEAM:
+        case CHAT_SYSTEM: color.b = 255; break;
+        case CHAT_TEAM: {
             switch (players[p->player_id].connected ? players[p->player_id].team : players[local_player_id].team) {
-                case TEAM_1: color = rgb(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
-                case TEAM_2: color = rgb(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
-                case TEAM_SPECTATOR:
-                default: color = rgb(0, 0, 0); break;
+                case TEAM_1: color.r = gamestate.team_1.red; color.g = gamestate.team_1.green; color.b = gamestate.team_1.blue; break;
+                case TEAM_2: color.r = gamestate.team_2.red; color.g = gamestate.team_2.green; color.b = gamestate.team_2.blue; break;
+                default: break;
             }
             break;
-        default:
-        case CHAT_ALL: color = 0xFFFFFF; break;
+        }
+
+        default: color.r = color.g = color.b = 255; break;
     }
+
     chat_add(0, color, m);
 }
 
@@ -466,7 +467,7 @@ void read_PacketPlayerLeft(void * data, int len) {
         players[p->player_id].score = 0;
         char s[32];
         sprintf(s, "%s disconnected", players[p->player_id].name);
-        chat_add(0, 0x0000FF, s);
+        chat_add(0, (TrueColor) {0, 0, 255, 255}, s);
     }
 }
 
@@ -489,10 +490,17 @@ void read_PacketMapStart(void * data, int len) {
         p->map_name[sizeof(p->map_name) - 1] = 0;
         log_info("map name: %s", p->map_name);
         log_info("map crc32: 0x%08X", p->crc32);
+
         char filename[128];
-        sprintf(filename, "cache/%02X%02X%02X%02X.vxl", red(p->crc32), green(p->crc32), blue(p->crc32),
-                alpha(p->crc32));
+        sprintf(filename, "cache/%02X%02X%02X%02X.vxl",
+            BYTE0(p->crc32),
+            BYTE1(p->crc32),
+            BYTE2(p->crc32),
+            BYTE3(p->crc32)
+        );
+
         log_info("%s", filename);
+
         if (file_exists(filename)) {
             network_map_cached = 1;
             void * mapd = file_load(filename);
@@ -656,14 +664,14 @@ void read_PacketKillAction(void * data, int len) {
             case KILLTYPE_CLASSCHANGE: sprintf(m, "%s changed weapons", players[p->player_id].name); break;
         }
         if (p->killer_id == local_player_id || p->player_id == local_player_id) {
-            chat_add(1, 0x0000FF, m);
+            chat_add(1, (TrueColor) {0, 0, 255, 255}, m);
         } else {
             switch (players[p->killer_id].team) {
                 case TEAM_1:
-                    chat_add(1, rgb(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue), m);
+                    chat_add(1, (TrueColor) {gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue, 255}, m);
                     break;
                 case TEAM_2:
-                    chat_add(1, rgb(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue), m);
+                    chat_add(1, (TrueColor) {gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue, 255}, m);
                     break;
             }
         }
@@ -789,7 +797,7 @@ void read_PacketIntelCapture(void * data, int len) {
         }
         sound_create(SOUND_LOCAL, p->winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
         players[p->player_id].score += 10;
-        chat_add(0, 0x0000FF, capture_str);
+        chat_add(0, (TrueColor) {255, 0, 0, 255}, capture_str);
         if (p->winning) {
             char * name = NULL;
 
@@ -799,7 +807,7 @@ void read_PacketIntelCapture(void * data, int len) {
             }
 
             sprintf(capture_str, "%s Team Wins!", name);
-            chat_showpopup(capture_str, 5.0F, rgb(255, 0, 0));
+            chat_showpopup(capture_str, 5.0F, (TrueColor) {255, 0, 0, 255});
 
             gamestate.gamemode.ctf.team_1_score = 0;
             gamestate.gamemode.ctf.team_2_score = 0;
@@ -827,7 +835,8 @@ void read_PacketIntelDrop(void * data, int len) {
                 sprintf(drop_str, "%s has dropped the %s Intel", players[p->player_id].name, gamestate.team_1.name);
                 break;
         }
-        chat_add(0, 0x0000FF, drop_str);
+
+        chat_add(0, (TrueColor) {0, 0, 255, 255}, drop_str);
     }
 }
 
@@ -847,7 +856,8 @@ void read_PacketIntelPickup(void * data, int len) {
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_1.name);
                 break;
         }
-        chat_add(0, 0x0000FF, pickup_str);
+
+        chat_add(0, (TrueColor) {0, 0, 255, 255}, pickup_str);
         sound_create(SOUND_LOCAL, &sound_pickup, 0.0F, 0.0F, 0.0F);
     }
 }
@@ -861,16 +871,19 @@ void read_PacketTerritoryCapture(void * data, int len) {
         char y = (int)(gamestate.gamemode.tc.territory[p->tent].y / 64.0F) + '1';
         char capture_str[128];
         char * team_n;
+
         switch (p->team) {
             case TEAM_1: team_n = gamestate.team_1.name; break;
             case TEAM_2: team_n = gamestate.team_2.name; break;
         }
+
         if (team_n) {
             sprintf(capture_str, "%s have captured %c%c", team_n, x, y);
-            chat_add(0, 0x0000FF, capture_str);
+            chat_add(0, (TrueColor) {0, 0, 255, 255}, capture_str);
+
             if (p->winning) {
                 sprintf(capture_str, "%s Team Wins!", team_n);
-                chat_showpopup(capture_str, 5.0F, rgb(255, 0, 0));
+                chat_showpopup(capture_str, 5.0F, (TrueColor) {255, 0, 0, 255});
             }
         }
     }
@@ -1009,6 +1022,7 @@ void network_disconnect() {
             switch (event.type) {
                 case ENET_EVENT_TYPE_RECEIVE: enet_packet_destroy(event.packet); break;
                 case ENET_EVENT_TYPE_DISCONNECT: return;
+                default: break;
             }
         }
 
@@ -1040,7 +1054,7 @@ int network_connect_sub(char * ip, int port, int version) {
         }
         return 1;
     }
-    chat_showpopup("No response", 3.0F, rgb(255, 0, 0));
+    chat_showpopup("No response", 3.0F, (TrueColor) {255, 0, 0, 255});
     enet_peer_reset(peer);
     return 0;
 }
@@ -1117,14 +1131,17 @@ int network_update() {
                     enet_packet_destroy(event.packet);
                     break;
                 }
+
                 case ENET_EVENT_TYPE_DISCONNECT:
                     hud_change(&hud_serverlist);
-                    chat_showpopup(network_reason_disconnect(event.data), 10.0F, rgb(255, 0, 0));
+                    chat_showpopup(network_reason_disconnect(event.data), 10.0F, (TrueColor) {255, 0, 0, 255});
                     log_error("server disconnected! reason: %s", network_reason_disconnect(event.data));
                     event.peer->data = NULL;
                     network_connected = 0;
                     network_logged_in = 0;
                     return 0;
+
+                default: break;
             }
         }
 

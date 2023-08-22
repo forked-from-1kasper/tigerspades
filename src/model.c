@@ -59,13 +59,13 @@ struct kv6_t model_semi_casing;
 struct kv6_t model_smg_casing;
 struct kv6_t model_shotgun_casing;
 
-static void kv6_load_file(struct kv6_t* kv6, char* filename, float scale) {
-    void* data = file_load(filename);
+static void kv6_load_file(struct kv6_t * kv6, char * filename, float scale) {
+    void * data = file_load(filename);
     kv6_load(kv6, data, scale);
     free(data);
 }
 
-static void kv6_check_dimensions(struct kv6_t* kv6, float max) {
+static void kv6_check_dimensions(struct kv6_t * kv6, float max) {
     if (max(max(kv6->xsiz, kv6->ysiz), kv6->zsiz) * kv6->scale > max) {
         log_error("Model dimensions too large");
         kv6->voxel_count = 0;
@@ -168,15 +168,15 @@ void kv6_load(struct kv6_t * kv6, void * bytes, float scale) {
         CHECK_ALLOCATION_ERROR(kv6->voxels)
 
         for (size_t k = 0; k < kv6->voxel_count; k++) {
-            uint32_t color = buffer_read32(bytes, index);
-            index += 4;
-            uint16_t zpos = buffer_read16(bytes, index);
-            index += 2;
+            TrueColor color = readBGRA(bytes + index); index += 4;
+            uint16_t zpos = buffer_read16(bytes, index); index += 2;
             uint8_t visfaces = buffer_read8(bytes, index++); // 0x00zZyYxX
             uint8_t lighting = buffer_read8(bytes, index++); // compressed normal vector (also referred to as lighting)
 
+            color.a = lighting;
+
             kv6->voxels[k] = (struct kv6_voxel) {
-                .color = (color & 0xFFFFFF) | (lighting << 24),
+                .color = color,
                 .visfaces = visfaces,
                 .z = (kv6->zsiz - 1) - zpos,
             };
@@ -204,7 +204,7 @@ void kv6_load(struct kv6_t * kv6, void * bytes, float scale) {
     }
 }
 
-void kv6_rebuild(struct kv6_t* kv6) {
+void kv6_rebuild(struct kv6_t * kv6) {
     if (kv6->has_display_list) {
         glx_displaylist_destroy(kv6->display_list + 0);
         glx_displaylist_destroy(kv6->display_list + 1);
@@ -225,9 +225,9 @@ void kv6_calclight(int x, int y, int z) {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, ldiffuse);
 }
 
-static int kv6_voxel_cmp(const void* a, const void* b) {
-    const struct kv6_voxel* A = a;
-    const struct kv6_voxel* B = b;
+static int kv6_voxel_cmp(const void * a, const void * b) {
+    const struct kv6_voxel * A = a;
+    const struct kv6_voxel * B = b;
 
     if (A->x == B->x) {
         if (A->y == B->y) {
@@ -288,11 +288,12 @@ static void greedy_mesh(struct kv6_t* kv6, struct kv6_voxel* voxel, uint8_t* mar
                         break;
                 }
 
-                struct kv6_voxel* neighbour
-                    = bsearch(&lookup, kv6->voxels, kv6->voxel_count, sizeof(struct kv6_voxel), kv6_voxel_cmp);
+                struct kv6_voxel * neighbour = bsearch(&lookup, kv6->voxels, kv6->voxel_count, sizeof(struct kv6_voxel), kv6_voxel_cmp);
 
                 if (!neighbour || !(neighbour->visfaces & face)
-                   || (neighbour->color & 0xFFFFFF) != (voxel->color & 0xFFFFFF)
+                   || neighbour->color.r != voxel->color.r
+                   || neighbour->color.g != voxel->color.g
+                   || neighbour->color.b != voxel->color.b
                    || marked[neighbour - kv6->voxels] & face) {
                     break;
                 } else {
@@ -317,7 +318,7 @@ static void greedy_mesh(struct kv6_t* kv6, struct kv6_voxel* voxel, uint8_t* mar
 }
 
 static int kv6_program = -1;
-void kv6_render(struct kv6_t* kv6, unsigned char team) {
+void kv6_render(struct kv6_t * kv6, unsigned char team) {
     if (!kv6)
         return;
     if (team == TEAM_SPECTATOR)
@@ -337,10 +338,10 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
 
             struct kv6_voxel * voxel = kv6->voxels;
             for (size_t k = 0; k < kv6->voxel_count; k++, voxel++) {
-                int b = red(voxel->color);
-                int g = green(voxel->color);
-                int r = blue(voxel->color);
-                int a = alpha(voxel->color);
+                int r = voxel->color.r;
+                int g = voxel->color.g;
+                int b = voxel->color.b;
+                int a = voxel->color.a;
 
                 struct tesselator * tess = &tess_color;
 
@@ -493,10 +494,10 @@ void kv6_render(struct kv6_t* kv6, unsigned char team) {
             glx_displaylist_create(kv6->display_list + 1, false, true);
 
             for (int i = 0; i < kv6->voxel_count; i++) {
-                int b = red(kv6->voxels[i].color);
-                int g = green(kv6->voxels[i].color);
-                int r = blue(kv6->voxels[i].color);
-                int a = alpha(kv6->voxels[i].color);
+                int r = kv6->voxels[i].color.r;
+                int g = kv6->voxels[i].color.g;
+                int b = kv6->voxels[i].color.b;
+                int a = kv6->voxels[i].color.a;
 
                 int ind = ((r | g | b) == 0) ? 1 : 0;
 

@@ -56,10 +56,11 @@
 #endif
 
 #ifndef min
-#define min(a, b) ((a) < (b) ? (a) : (b))
+    #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
+
 #ifndef max
-#define max(a, b) ((a) > (b) ? (a) : (b))
+    #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
 #define absf(a) (((a) > 0) ? (a) : -(a))
@@ -70,14 +71,10 @@
 #define len2D(x, y) sqrt(pow(x, 2) + pow(y, 2))
 #define len3D(x, y, z) sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2))
 
-#define rgba(r, g, b, a) (((int)(a) << 24) | ((int)(b) << 16) | ((int)(g) << 8) | (int)(r))
-#define abgr(r, g, b, a) (((int)(r) << 24) | ((int)(g) << 16) | ((int)(b) << 8) | (int)(a))
-#define rgb(r, g, b) (((b) << 16) | ((g) << 8) | (r))
-#define rgb2bgr(col) rgb(blue(col), green(col), red(col))
-#define red(col) ((col)&0xFF)
-#define green(col) (((col) >> 8) & 0xFF)
-#define blue(col) (((col) >> 16) & 0xFF)
-#define alpha(col) (((col) >> 24) & 0xFF)
+#define BYTE0(col) ((col) & 0xFF)
+#define BYTE1(col) (((col) >> 8) & 0xFF)
+#define BYTE2(col) (((col) >> 16) & 0xFF)
+#define BYTE3(col) (((col) >> 24) & 0xFF)
 
 #define PI 3.1415F
 #define DOUBLEPI (PI * 2.0F)
@@ -86,9 +83,13 @@
 
 #define MOUSE_SENSITIVITY 0.002F
 
-#define CHAT_NO_INPUT 0
-#define CHAT_ALL_INPUT 1
+#define CHAT_NO_INPUT   0
+#define CHAT_ALL_INPUT  1
 #define CHAT_TEAM_INPUT 2
+
+typedef struct {
+    uint8_t r, g, b, a;
+} TrueColor;
 
 extern int chat_input_mode;
 extern float last_cy;
@@ -96,15 +97,15 @@ extern float last_cy;
 extern int fps;
 
 extern char chat[2][10][256];
-extern unsigned int chat_color[2][10];
+extern TrueColor chat_color[2][10];
 extern float chat_timer[2][10];
 extern char chat_popup[256];
 extern float chat_popup_timer;
 extern float chat_popup_duration;
-extern int chat_popup_color;
-void chat_add(int channel, unsigned int color, const char* msg);
-void chat_showpopup(const char* msg, float duration, int color);
-const char* reason_disconnect(int code);
+extern TrueColor chat_popup_color;
+void chat_add(int channel, TrueColor, const char *);
+void chat_showpopup(const char * msg, float duration, TrueColor);
+const char * reason_disconnect(int code);
 
 #define SCREEN_NONE 0
 #define SCREEN_TEAM_SELECT 1
@@ -140,11 +141,10 @@ int ms_rand(void);
     #define htoles32(x) (x)
 #endif
 
-typedef struct { uint8_t r, g, b, a; } TrueColor;
-
 void writeRGBA(uint32_t *, TrueColor);
 void writeBGR(uint32_t *, TrueColor);
 
 TrueColor readBGR(uint32_t *);
+TrueColor readBGRA(uint32_t *);
 
 #endif

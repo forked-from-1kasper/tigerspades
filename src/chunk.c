@@ -173,7 +173,7 @@ static __attribute__((always_inline)) inline float solid_sunblock(struct libvxl_
     return (float) i / 127.0F;
 }
 
-void* chunk_generate(void* data) {
+void * chunk_generate(void * data) {
     pthread_detach(pthread_self());
 
     while (1) {

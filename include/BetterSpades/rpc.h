@@ -29,7 +29,7 @@ enum RPC_VALUE {
 
 void rpc_init(void);
 void rpc_deinit(void);
-void rpc_setv(enum RPC_VALUE v, char* x);
+void rpc_setv(enum RPC_VALUE v, char * x);
 void rpc_seti(enum RPC_VALUE v, int x);
 void rpc_update(void);
 

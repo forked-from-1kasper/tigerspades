@@ -85,11 +85,11 @@ static int mu_text_width(mu_Font font, const char* text, int len) {
     }
 }
 
-static void mu_text_color(mu_Context* ctx, int red, int green, int blue) {
+static void mu_text_color(mu_Context * ctx, int red, int green, int blue) {
     ctx->style->colors[MU_COLOR_TEXT] = mu_color(red, green, blue, 255);
 }
 
-static void mu_text_color_default(mu_Context* ctx) {
+static void mu_text_color_default(mu_Context * ctx) {
     ctx->style->colors[MU_COLOR_TEXT] = mu_color(230, 230, 230, 255);
 }
 
@@ -866,13 +866,13 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
 
             for (int k = 0; k < 6; k++) {
                 if (window_time() - chat_timer[0][k + 1] < 10.0F || chat_input_mode != CHAT_NO_INPUT) {
-                    glColor3ub(red(chat_color[0][k + 1]), green(chat_color[0][k + 1]), blue(chat_color[0][k + 1]));
+                    glColor3ub(chat_color[0][k + 1].r, chat_color[0][k + 1].g, chat_color[0][k + 1].b);
                     font_render(11.0F * scalef, settings.window_height * 0.15F - 10.0F * scalef * k, 8.0F * scalef,
                                 chat[0][k + 1]);
                 }
 
                 if (window_time() - chat_timer[1][k + 1] < 10.0F) {
-                    glColor3ub(red(chat_color[1][k + 1]), green(chat_color[1][k + 1]), blue(chat_color[1][k + 1]));
+                    glColor3ub(chat_color[1][k + 1].r, chat_color[1][k + 1].g, chat_color[1][k + 1].b);
                     font_render(11.0F * scalef, settings.window_height - 22.0F * scalef - 10.0F * scalef * k,
                                 8.0F * scalef, chat[1][k + 1]);
                 }
@@ -1194,7 +1194,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                         27.0F * scalef, play_time);
         }
         if (window_time() - chat_popup_timer < chat_popup_duration) {
-            glColor3ub(red(chat_popup_color), green(chat_popup_color), blue(chat_popup_color));
+            glColor3ub(chat_popup_color.r, chat_popup_color.g, chat_popup_color.b);
             font_render((settings.window_width - font_length(53.0F * scalef, chat_popup)) / 2.0F,
                         settings.window_height / 2.0F, 53.0F * scalef, chat_popup);
         }
@@ -1419,7 +1419,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                 }
                 if (local_player_ammo == 0 && window_time() - players[local_player_id].item_showup >= 0.5F) {
                     sound_create(SOUND_LOCAL, &sound_empty, 0.0F, 0.0F, 0.0F);
-                    chat_showpopup("RELOAD", 0.4F, rgb(255, 0, 0));
+                    chat_showpopup("RELOAD", 0.4F, (TrueColor) {255, 0, 0, 255});
                 }
             }
         }
@@ -1558,7 +1558,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 sound_volume(settings.volume / 10.0F);
                 char volstr[64];
                 sprintf(volstr, "Volume: %i", settings.volume);
-                chat_add(0, 0x0000FF, volstr);
+                chat_add(0, (TrueColor) {0, 0, 255, 255}, volstr);
             }
 
             if (key == WINDOW_KEY_COMMAND) {
@@ -2107,9 +2107,9 @@ static void server_c(char* address, char* name) {
     }
 }
 
-static struct texture* hud_serverlist_ui_images(int icon_id, bool* resize) {
+static struct texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     if (icon_id >= 32) {
-        struct serverlist_news_entry* current = &serverlist_news;
+        struct serverlist_news_entry * current = &serverlist_news;
         int index = 32;
         while (current) {
             if (index == icon_id)
@@ -2139,7 +2139,7 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
     mu_Rect frame = mu_rect(settings.window_width * 0.125F, 0, settings.window_width * 0.75F, settings.window_height);
 
     if (mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE)) {
-        mu_Container* cnt = mu_get_current_container(ctx);
+        mu_Container * cnt = mu_get_current_container(ctx);
         cnt->rect = frame;
 
         int A = ctx->text_width(ctx->style->font, "Servers", 0) * 1.5F;
@@ -2164,7 +2164,7 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
             mu_begin_panel(ctx, "News");
             mu_layout_row(ctx, 0, NULL, 0);
 
-            struct serverlist_news_entry* current = &serverlist_news;
+            struct serverlist_news_entry * current = &serverlist_news;
             int index = 0;
             while (current) {
                 mu_layout_begin_column(ctx);
@@ -2177,7 +2177,7 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
                         file_url(current->url);
                 }
                 mu_layout_height(ctx, 0);
-                mu_text_color(ctx, red(current->color), green(current->color), blue(current->color));
+                mu_text_color(ctx, BYTE0(current->color), BYTE1(current->color), BYTE2(current->color));
                 mu_text(ctx, current->caption);
                 mu_text_color_default(ctx);
                 mu_layout_end_column(ctx);
@@ -2305,7 +2305,7 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
     if (serverlist_is_outdated
        && mu_begin_window_ex(ctx, "NEW CLIENT VERSION AVAILABLE!", mu_rect(300, 200, 350, 200),
                              MU_OPT_HOLDFOCUS | MU_OPT_NORESIZE | MU_OPT_NOCLOSE)) {
-        mu_Container* cnt = mu_get_current_container(ctx);
+        mu_Container * cnt = mu_get_current_container(ctx);
         mu_bring_to_front(ctx, cnt);
         cnt->rect = mu_rect((settings.window_width - 350 * scaley) / 2, 200 * scaley, 350 * scaley, 200 * scaley);
         mu_layout_row(ctx, 1, (int[]) {-1}, -ctx->text_height(ctx->style->font) * 1.75F);
@@ -2324,7 +2324,7 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
     if (window_time() - chat_popup_timer < chat_popup_duration
        && mu_begin_window_ex(ctx, "Disconnected from server", mu_rect(200, 250, 300, 100),
                              MU_OPT_HOLDFOCUS | MU_OPT_NORESIZE | MU_OPT_NOCLOSE)) {
-        mu_Container* cnt = mu_get_current_container(ctx);
+        mu_Container * cnt = mu_get_current_container(ctx);
         mu_bring_to_front(ctx, cnt);
         cnt->rect = mu_rect((settings.window_width - 300 * scaley) / 2, 250 * scaley, 300 * scaley, 100 * scaley);
         mu_layout_row(ctx, 2, (int[]) {ctx->text_width(ctx->style->font, "Reason:", 0) * 1.5F, -1}, 0);
@@ -2336,11 +2336,11 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
     if (request_news) {
         switch (http_process(request_news)) {
             case HTTP_STATUS_COMPLETED: {
-                JSON_Value* js = json_parse_string(request_news->response_data);
-                JSON_Array* news = json_value_get_array(js);
+                JSON_Value * js = json_parse_string(request_news->response_data);
+                JSON_Array * news = json_value_get_array(js);
                 int news_entries = json_array_get_count(news);
 
-                struct serverlist_news_entry* current = &serverlist_news;
+                struct serverlist_news_entry * current = &serverlist_news;
                 memset(current, 0, sizeof(struct serverlist_news_entry));
 
                 for (int k = 0; k < news_entries; k++) {
@@ -2352,9 +2352,9 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
                     current->tile_size = json_object_get_number(s, "tilesize");
                     current->color = json_object_get_number(s, "color");
                     if (json_object_get_string(s, "image")) {
-                        char* img = (char*)json_object_get_string(s, "image");
+                        char * img = (char*) json_object_get_string(s, "image");
                         int size = base64_decode(img, strlen(img));
-                        unsigned char* buffer;
+                        unsigned char * buffer;
                         int width, height;
                         lodepng_decode32(&buffer, &width, &height, img, size);
                         texture_create_buffer(&current->image, width, height, buffer, 1);
@@ -2370,16 +2370,20 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
                 request_news = NULL;
                 break;
             }
-            case HTTP_STATUS_FAILED:
+
+            case HTTP_STATUS_FAILED: {
                 http_release(request_news);
                 request_news = NULL;
                 break;
+            }
+
+            default: break;
         }
     }
 
     if (request_version) {
         switch (http_process(request_version)) {
-            case HTTP_STATUS_COMPLETED:
+            case HTTP_STATUS_COMPLETED: {
                 serverlist_is_outdated = 1;
                 log_info("newest game version: %s", request_version->response_data);
                 log_info("current game version: %s", BETTERSPADES_VERSION);
@@ -2387,10 +2391,15 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
                 http_release(request_version);
                 request_version = NULL;
                 break;
-            case HTTP_STATUS_FAILED:
+            }
+
+            case HTTP_STATUS_FAILED: {
                 http_release(request_version);
                 request_version = NULL;
                 break;
+            }
+
+            default: break;
         }
     }
 
@@ -2399,8 +2408,8 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
         switch (http_process(request_serverlist)) {
             case HTTP_STATUS_PENDING: render_status_icon = 1; break;
             case HTTP_STATUS_COMPLETED: {
-                JSON_Value* js = json_parse_string(request_serverlist->response_data);
-                JSON_Array* servers = json_value_get_array(js);
+                JSON_Value * js = json_parse_string(request_serverlist->response_data);
+                JSON_Array * servers = json_value_get_array(js);
                 server_count = json_array_get_count(servers);
 
                 pthread_mutex_lock(&serverlist_lock);

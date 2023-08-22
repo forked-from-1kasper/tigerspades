@@ -41,3 +41,14 @@ TrueColor readBGR(uint32_t * src) {
 
     return retval;
 }
+
+TrueColor readBGRA(uint32_t * src) {
+    TrueColor retval;
+
+    retval.b = *((uint8_t*) src + 0);
+    retval.g = *((uint8_t*) src + 1);
+    retval.r = *((uint8_t*) src + 2);
+    retval.a = *((uint8_t*) src + 3);
+
+    return retval;
+}

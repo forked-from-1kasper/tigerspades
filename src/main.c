@@ -60,9 +60,9 @@ int chat_input_mode = CHAT_NO_INPUT;
 
 char chat[2][10][256] = {{{0}}}; // chat[0] is current input
 
-unsigned int chat_color[2][10];
+TrueColor chat_color[2][10];
 float chat_timer[2][10];
-void chat_add(int channel, unsigned int color, const char * msg) {
+void chat_add(int channel, TrueColor color, const char * msg) {
     for (int k = 9; k > 1; k--) {
         strcpy(chat[channel][k], chat[channel][k - 1]);
         chat_color[channel][k] = chat_color[channel][k - 1];
@@ -76,12 +76,13 @@ void chat_add(int channel, unsigned int color, const char * msg) {
     if (channel == 0)
         log_info("%s", msg);
 }
+
 char chat_popup[256] = {};
-int chat_popup_color;
+TrueColor chat_popup_color;
 float chat_popup_timer = 0.0F;
 float chat_popup_duration = 0.0F;
 
-void chat_showpopup(const char * msg, float duration, int color) {
+void chat_showpopup(const char * msg, float duration, TrueColor color) {
     strcpy(chat_popup, msg);
     chat_popup_timer = window_time();
     chat_popup_duration = duration;
@@ -626,7 +627,7 @@ void keys(struct window_instance * window, int key, int action, int mods) {
         free(pic_data);
 
         sprintf(pic_name, "Saved screenshot as screenshots/%ld.png", (long)pic_time);
-        chat_add(0, 0x0000FF, pic_name);
+        chat_add(0, (TrueColor) {0, 0, 255, 255}, pic_name);
     }
 
     if (key == WINDOW_KEY_SAVE_MAP && action == WINDOW_PRESS) { // save map
@@ -638,7 +639,7 @@ void keys(struct window_instance * window, int key, int action, int mods) {
         map_save_file(save_name);
 
         sprintf(save_name, "Saved map as vxl/%ld.vxl", (long)save_time);
-        chat_add(0, 0x0000FF, save_name);
+        chat_add(0, (TrueColor) {0, 0, 255, 255}, save_name);
     }
 }
 

@@ -273,27 +273,27 @@ void texture_resize_pow2(struct texture * t, int min_size) {
     CHECK_ALLOCATION_ERROR(pixels_new)
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
-            float px = (float)x / (float)w * (float)t->width;
-            float py = (float)y / (float)h * (float)t->height;
-            float u = px - (int)px;
-            float v = py - (int)py;
-            unsigned int aa = ((unsigned int*)t->pixels)[(int)px + (int)py * t->width];
-            unsigned int ba = ((unsigned int*)t->pixels)[min((int)px + (int)py * t->width + 1, t->width * t->height)];
-            unsigned int ab
-                = ((unsigned int*)t->pixels)[min((int)px + (int)py * t->width + t->width, t->width * t->height)];
-            unsigned int bb
-                = ((unsigned int*)t->pixels)[min((int)px + (int)py * t->width + 1 + t->width, t->width * t->height)];
+            float px = (float) x / (float) w * (float) t->width;
+            float py = (float) y / (float) h * (float) t->height;
+            float u = px - (int) px;
+            float v = py - (int) py;
+
+            unsigned int aa = ((unsigned int*) t->pixels)[(int) px + (int) py * t->width];
+            unsigned int ba = ((unsigned int*) t->pixels)[min((int) px + (int) py * t->width + 1, t->width * t->height)];
+            unsigned int ab = ((unsigned int*) t->pixels)[min((int) px + (int) py * t->width + t->width, t->width * t->height)];
+            unsigned int bb = ((unsigned int*) t->pixels)[min((int) px + (int) py * t->width + 1 + t->width, t->width * t->height)];
+
             pixels_new[x + y * w] = 0;
-            pixels_new[x + y * w] |= (int)((1.0F - v) * u * red(ba) + (1.0F - v) * (1.0F - u) * red(aa)
-                                           + v * u * red(bb) + v * (1.0F - u) * red(ab));
-            pixels_new[x + y * w] |= (int)((1.0F - v) * u * green(ba) + (1.0F - v) * (1.0F - u) * green(aa)
-                                           + v * u * green(bb) + v * (1.0F - u) * green(ab))
+            pixels_new[x + y * w] |= (int) ((1.0F - v) * u * BYTE0(ba) + (1.0F - v) * (1.0F - u) * BYTE0(aa)
+                                            + v * u * BYTE0(bb) + v * (1.0F - u) * BYTE0(ab));
+            pixels_new[x + y * w] |= (int) ((1.0F - v) * u * BYTE1(ba) + (1.0F - v) * (1.0F - u) * BYTE1(aa)
+                                            + v * u * BYTE1(bb) + v * (1.0F - u) * BYTE1(ab))
                 << 8;
-            pixels_new[x + y * w] |= (int)((1.0F - v) * u * blue(ba) + (1.0F - v) * (1.0F - u) * blue(aa)
-                                           + v * u * blue(bb) + v * (1.0F - u) * blue(ab))
+            pixels_new[x + y * w] |= (int) ((1.0F - v) * u * BYTE2(ba) + (1.0F - v) * (1.0F - u) * BYTE2(aa)
+                                            + v * u * BYTE2(bb) + v * (1.0F - u) * BYTE2(ab))
                 << 16;
-            pixels_new[x + y * w] |= (int)((1.0F - v) * u * alpha(ba) + (1.0F - v) * (1.0F - u) * alpha(aa)
-                                           + v * u * alpha(bb) + v * (1.0F - u) * alpha(ab))
+            pixels_new[x + y * w] |= (int) ((1.0F - v) * u * BYTE3(ba) + (1.0F - v) * (1.0F - u) * BYTE3(aa)
+                                            + v * u * BYTE3(bb) + v * (1.0F - u) * BYTE3(ab))
                 << 24;
         }
     }

@@ -38,11 +38,11 @@ struct rpc {
 } rpc_state;
 
 #ifdef USE_RPC
-static void rpc_joingame(const char* joinSecret) {
+static void rpc_joingame(const char * joinSecret) {
     log_info("discord join %s!", joinSecret);
 }
 
-static void rpc_joinrequest(const DiscordUser* request) {
+static void rpc_joinrequest(const DiscordUser * request) {
     Discord_Respond(request->userId, DISCORD_REPLY_YES);
 }
 #endif
@@ -68,7 +68,7 @@ void rpc_deinit() {
 #endif
 }
 
-void rpc_setv(enum RPC_VALUE v, char* x) {
+void rpc_setv(enum RPC_VALUE v, char * x) {
     switch (v) {
         case RPC_VALUE_SERVERNAME:
             if (strcmp(rpc_state.server_name, x) != 0) {
@@ -82,6 +82,8 @@ void rpc_setv(enum RPC_VALUE v, char* x) {
                 rpc_state.needs_update = 1;
             }
             break;
+
+        default: break;
     }
 }
 
@@ -99,6 +101,8 @@ void rpc_seti(enum RPC_VALUE v, int x) {
                 rpc_state.needs_update = 1;
             }
             break;
+
+        default: break;
     }
 }
 

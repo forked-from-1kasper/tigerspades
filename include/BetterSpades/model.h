@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <BetterSpades/common.h>
 #include <BetterSpades/aabb.h>
 #include <BetterSpades/glx.h>
 #include <BetterSpades/tesselator.h>
@@ -37,7 +38,7 @@
 struct kv6_voxel {
     uint16_t x, y, z;
     uint8_t visfaces;
-    uint32_t color;
+    TrueColor color;
 };
 
 struct kv6_t {
@@ -45,7 +46,7 @@ struct kv6_t {
     float xpiv, ypiv, zpiv;
     bool has_display_list, colorize;
     struct glx_displaylist display_list[2];
-    struct kv6_voxel* voxels;
+    struct kv6_voxel * voxels;
     int voxel_count;
     float scale;
     float red, green, blue;

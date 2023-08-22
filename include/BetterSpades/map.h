@@ -50,11 +50,11 @@ int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, struct Point *
 void map_vxl_setgeom(int x, int y, int z, unsigned int t, unsigned int * map);
 void map_vxl_setcolor(int x, int y, int z, unsigned int t, unsigned int * map);
 int map_placedblock_color(int color);
-void map_vxl_load(void* v, size_t size);
+void map_vxl_load(void * v, size_t size);
 void map_collapsing_render(void);
 void map_collapsing_update(float dt);
 int map_height_at(int x, int z);
-void map_save_file(const char* filename);
-void map_copy_blocks(struct libvxl_chunk_copy* copy, size_t x, size_t y);
+void map_save_file(const char * filename);
+void map_copy_blocks(struct libvxl_chunk_copy * copy, size_t x, size_t y);
 
 #endif
