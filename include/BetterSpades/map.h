@@ -49,7 +49,6 @@ void map_set(int x, int y, int z, TrueColor);
 int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, struct Point * cube_array);
 void map_vxl_setgeom(int x, int y, int z, unsigned int t, unsigned int * map);
 void map_vxl_setcolor(int x, int y, int z, unsigned int t, unsigned int * map);
-int map_dirt_color(int x, int y, int z);
 int map_placedblock_color(int color);
 void map_vxl_load(void* v, size_t size);
 void map_collapsing_render(void);
