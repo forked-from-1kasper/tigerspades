@@ -765,7 +765,7 @@ int main(int argc, char ** argv) {
 
     srand(t);
 
-    log_info("Game started!");
+    log_info("BetterSpades " BETTERSPADES_VERSION);
 
     config_reload();
 

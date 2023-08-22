@@ -355,7 +355,6 @@ void texture_init() {
     texture_create(&texture_tracer, "png/tracer.png");
 
     texture_create(&texture_ui_wait, "png/ui/wait.png");
-    texture_filter(&texture_ui_wait, TEXTURE_FILTER_LINEAR);
     texture_create(&texture_ui_join, "png/ui/join.png");
     texture_create(&texture_ui_reload, "png/ui/reload.png");
     texture_create(&texture_ui_bg, "png/ui/bg.png");
@@ -365,15 +364,11 @@ void texture_init() {
     texture_create(&texture_ui_collapsed, "png/ui/collapsed.png");
     texture_create(&texture_ui_expanded, "png/ui/expanded.png");
     texture_create(&texture_ui_flags, "png/ui/flags.png");
-    texture_filter(&texture_ui_flags, TEXTURE_FILTER_LINEAR);
     texture_create(&texture_ui_alert, "png/ui/alert.png");
-    texture_filter(&texture_ui_alert, TEXTURE_FILTER_LINEAR);
 
 #ifdef USE_TOUCH
     texture_create(&texture_ui_knob, "png/ui/knob.png");
-    texture_filter(&texture_ui_knob, TEXTURE_FILTER_LINEAR);
     texture_create(&texture_ui_joystick, "png/ui/joystick.png");
-    texture_filter(&texture_ui_joystick, TEXTURE_FILTER_LINEAR);
 #endif
 
     unsigned int pixels[64 * 64];

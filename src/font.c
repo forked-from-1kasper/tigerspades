@@ -31,12 +31,12 @@
 
 #define FONT_BAKE_START 31
 
-static short* font_vertex_buffer;
-static short* font_coords_buffer;
+static short * font_vertex_buffer;
+static short * font_coords_buffer;
 static enum font_type font_current_type = FONT_FIXEDSYS;
 
-static void* font_data_fixedsys;
-static void* font_data_smallfnt;
+static void * font_data_fixedsys;
+static void * font_data_smallfnt;
 
 static HashTable fonts_backed;
 
@@ -119,7 +119,7 @@ static struct font_backed_data* font_find(float h) {
     glGenTextures(1, &f.texture_id);
     glBindTexture(GL_TEXTURE_2D, f.texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, f.w, f.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     free(temp_bitmap);
@@ -222,8 +222,8 @@ void font_render(float x, float y, float h, char * text) {
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, font->texture_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glEnable(GL_BLEND);
