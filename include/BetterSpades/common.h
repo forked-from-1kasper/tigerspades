@@ -91,6 +91,8 @@ typedef struct {
     uint8_t r, g, b, a;
 } TrueColor;
 
+extern const TrueColor White, Black, Red, Green, Blue, Yellow, Cyan, Magenta;
+
 extern int chat_input_mode;
 extern float last_cy;
 

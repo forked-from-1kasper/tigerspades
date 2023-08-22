@@ -627,7 +627,7 @@ void keys(struct window_instance * window, int key, int action, int mods) {
         free(pic_data);
 
         sprintf(pic_name, "Saved screenshot as screenshots/%ld.png", (long)pic_time);
-        chat_add(0, (TrueColor) {255, 0, 0, 255}, pic_name);
+        chat_add(0, Red, pic_name);
     }
 
     if (key == WINDOW_KEY_SAVE_MAP && action == WINDOW_PRESS) { // save map
@@ -639,7 +639,7 @@ void keys(struct window_instance * window, int key, int action, int mods) {
         map_save_file(save_name);
 
         sprintf(save_name, "Saved map as vxl/%ld.vxl", (long)save_time);
-        chat_add(0, (TrueColor) {255, 0, 0, 255}, save_name);
+        chat_add(0, Red, save_name);
     }
 }
 

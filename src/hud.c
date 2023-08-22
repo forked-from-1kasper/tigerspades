@@ -1419,7 +1419,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                 }
                 if (local_player_ammo == 0 && window_time() - players[local_player_id].item_showup >= 0.5F) {
                     sound_create(SOUND_LOCAL, &sound_empty, 0.0F, 0.0F, 0.0F);
-                    chat_showpopup("RELOAD", 0.4F, (TrueColor) {255, 0, 0, 255});
+                    chat_showpopup("RELOAD", 0.4F, Red);
                 }
             }
         }
@@ -1558,7 +1558,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 sound_volume(settings.volume / 10.0F);
                 char volstr[64];
                 sprintf(volstr, "Volume: %i", settings.volume);
-                chat_add(0, (TrueColor) {255, 0, 0, 255}, volstr);
+                chat_add(0, Red, volstr);
             }
 
             if (key == WINDOW_KEY_COMMAND) {

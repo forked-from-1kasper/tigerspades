@@ -224,7 +224,7 @@ static bool falling_blocks_pivot(void * key, void * value, void * user) {
     float * pivot = (float*) user;
     uint32_t pos = *(uint32_t*) key;
 
-    map_set(pos_keyx(pos), pos_keyy(pos), pos_keyz(pos), (TrueColor) {0xFF, 0xFF, 0xFF, 0xFF});
+    map_set(pos_keyx(pos), pos_keyy(pos), pos_keyz(pos), White);
     pivot[0] += pos_keyx(pos);
     pivot[1] += pos_keyy(pos);
     pivot[2] += pos_keyz(pos);

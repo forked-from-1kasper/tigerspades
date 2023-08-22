@@ -360,10 +360,13 @@ void player_render_all() {
                         break;
                     case CAMERA_HITTYPE_PLAYER:
                         sound_create_sticky(&sound_spade_whack, players + k, k);
-                        particle_create((TrueColor) {0xFF, 0x00, 0x00, 0xFF},
-                                        players[hit.player_id].physics.eye.x,
-                                        players[hit.player_id].physics.eye.y + player_section_height(hit.player_section),
-                                        players[hit.player_id].physics.eye.z, 3.5F, 1.0F, 8, 0.1F, 0.4F);
+                        particle_create(
+                            Red,
+                            players[hit.player_id].physics.eye.x,
+                            players[hit.player_id].physics.eye.y + player_section_height(hit.player_section),
+                            players[hit.player_id].physics.eye.z,
+                            3.5F, 1.0F, 8, 0.1F, 0.4F
+                        );
                         if (k == local_player_id) {
                             struct PacketHit h;
                             h.player_id = hit.player_id;
@@ -443,10 +446,13 @@ void player_render_all() {
                             sound_create_sticky((hit.player_section == HITTYPE_HEAD) ? &sound_spade_whack :
                                                                                        &sound_hitplayer,
                                                 players + hit.player_id, hit.player_id);
-                            particle_create((TrueColor) {0xFF, 0x00, 0x00, 0xFF},
-                                            players[hit.player_id].physics.eye.x,
-                                            players[hit.player_id].physics.eye.y + player_section_height(hit.player_section),
-                                            players[hit.player_id].physics.eye.z, 3.5F, 1.0F, 8, 0.1F, 0.4F);
+                            particle_create(
+                                Red,
+                                players[hit.player_id].physics.eye.x,
+                                players[hit.player_id].physics.eye.y + player_section_height(hit.player_section),
+                                players[hit.player_id].physics.eye.z,
+                                3.5F, 1.0F, 8, 0.1F, 0.4F
+                            );
                             break;
                         }
                         case CAMERA_HITTYPE_BLOCK:

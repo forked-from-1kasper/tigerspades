@@ -1,5 +1,14 @@
 #include <BetterSpades/common.h>
 
+const TrueColor White   = {0xFF, 0xFF, 0xFF, 0xFF};
+const TrueColor Black   = {0x00, 0x00, 0x00, 0xFF};
+const TrueColor Red     = {0xFF, 0x00, 0x00, 0xFF};
+const TrueColor Green   = {0x00, 0xFF, 0x00, 0xFF};
+const TrueColor Blue    = {0x00, 0x00, 0xFF, 0xFF};
+const TrueColor Yellow  = {0xFF, 0xFF, 0x00, 0xFF};
+const TrueColor Cyan    = {0x00, 0xFF, 0xFF, 0xFF};
+const TrueColor Magenta = {0xFF, 0x00, 0xFF, 0xFF};
+
 #define BSWAP32(T, ident)                                         \
     T ident (T inval) {                                           \
         T outval;                                                 \

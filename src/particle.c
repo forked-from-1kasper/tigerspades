@@ -169,7 +169,7 @@ void particle_create_casing(Player * p) {
                       .vz    = p->casing_dir.z * 3.5F,
                       .fade  = window_time(),
                       .type  = p->weapon,
-                      .color = (TrueColor) {0xFF, 0xFF, 0x00, 0xFF},
+                      .color = Yellow,
                   });
 }
 
