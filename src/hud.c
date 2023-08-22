@@ -1558,7 +1558,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 sound_volume(settings.volume / 10.0F);
                 char volstr[64];
                 sprintf(volstr, "Volume: %i", settings.volume);
-                chat_add(0, (TrueColor) {0, 0, 255, 255}, volstr);
+                chat_add(0, (TrueColor) {255, 0, 0, 255}, volstr);
             }
 
             if (key == WINDOW_KEY_COMMAND) {
@@ -2009,59 +2009,72 @@ static void hud_serverlist_init() {
     window_textinput(1);
 }
 
-static int hud_serverlist_sort(const void * a, const void * b) {
-    struct serverlist_entry* aa = (struct serverlist_entry*)a;
-    struct serverlist_entry* bb = (struct serverlist_entry*)b;
+typedef int (*serverlist_sort)(const struct serverlist_entry *, const struct serverlist_entry *);
 
-    if (strcmp(aa->country, "LAN") == 0) {
+static serverlist_sort hud_serverlist_sort_chosen = NULL;
+bool serverlist_descending = true;
+
+static int hud_serverlist_cmp(const void * a, const void * b) {
+    const struct serverlist_entry * A = (const struct serverlist_entry*) a;
+    const struct serverlist_entry * B = (const struct serverlist_entry*) b;
+
+    return serverlist_descending ? hud_serverlist_sort_chosen(A, B) : -hud_serverlist_sort_chosen(A, B);
+}
+
+static void hud_serverlist_sort(serverlist_sort cmp) {
+    if (cmp != hud_serverlist_sort_chosen) {
+        hud_serverlist_sort_chosen = cmp;
+        serverlist_descending      = true;
+    } else serverlist_descending = !serverlist_descending;
+
+    qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_cmp);
+}
+
+static int hud_serverlist_sort_default(const void * a, const void * b) {
+    const struct serverlist_entry * A = (const struct serverlist_entry*) a;
+    const struct serverlist_entry * B = (const struct serverlist_entry*) b;
+
+    if (strcmp(A->country, "LAN") == 0)
         return -1;
-    }
-    if (strcmp(bb->country, "LAN") == 0) {
+
+    if (strcmp(B->country, "LAN") == 0)
         return 1;
+
+    if (A->current == B->current) {
+        if (A->ping == B->ping)
+            return strcmp(A->name, B->name);
+        else {
+            if (A->ping < 0) return +1;
+            if (B->ping < 0) return -1;
+
+            return A->ping - B->ping;
+        }
     }
 
-    if (abs(aa->current - bb->current) == 0)
-        if (abs(aa->ping - bb->ping) == 0)
-            return strcmp(aa->name, bb->name);
-        else
-            return aa->ping - bb->ping;
-
-    return bb->current - aa->current;
+    return B->current - A->current;
 }
 
-static int hud_serverlist_sort_players(const void* a, const void* b) {
-    struct serverlist_entry* aa = (struct serverlist_entry*)a;
-    struct serverlist_entry* bb = (struct serverlist_entry*)b;
-
-    return bb->current - aa->current;
+static int hud_serverlist_sort_players(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+    return b->current - a->current;
 }
 
-static int hud_serverlist_sort_name(const void* a, const void* b) {
-    struct serverlist_entry* aa = (struct serverlist_entry*)a;
-    struct serverlist_entry* bb = (struct serverlist_entry*)b;
-
-    return strcmp(aa->name, bb->name);
+static int hud_serverlist_sort_name(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+    return strcmp(a->name, b->name);
 }
 
-static int hud_serverlist_sort_map(const void* a, const void* b) {
-    struct serverlist_entry* aa = (struct serverlist_entry*)a;
-    struct serverlist_entry* bb = (struct serverlist_entry*)b;
-
-    return strcmp(aa->map, bb->map);
+static int hud_serverlist_sort_map(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+    return strcmp(a->map, b->map);
 }
 
-static int hud_serverlist_sort_mode(const void* a, const void* b) {
-    struct serverlist_entry* aa = (struct serverlist_entry*)a;
-    struct serverlist_entry* bb = (struct serverlist_entry*)b;
-
-    return strcmp(aa->gamemode, bb->gamemode);
+static int hud_serverlist_sort_mode(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+    return strcmp(a->gamemode, b->gamemode);
 }
 
-static int hud_serverlist_sort_ping(const void* a, const void* b) {
-    struct serverlist_entry* aa = (struct serverlist_entry*)a;
-    struct serverlist_entry* bb = (struct serverlist_entry*)b;
+static int hud_serverlist_sort_ping(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+    if (a->ping < 0) return +1;
+    if (b->ping < 0) return -1;
 
-    return aa->ping - bb->ping;
+    return a->ping - b->ping;
 }
 
 static void hud_serverlist_pingupdate(void* e, float time_delta, char* aos) {
@@ -2077,7 +2090,7 @@ static void hud_serverlist_pingupdate(void* e, float time_delta, char* aos) {
         memcpy(serverlist + server_count - 1, e, sizeof(struct serverlist_entry));
     }
 
-    qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort);
+    qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_default);
     pthread_mutex_unlock(&serverlist_lock);
 }
 
@@ -2121,9 +2134,9 @@ static struct texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     }
 
     switch (icon_id) {
-        case MU_ICON_CHECK: return &texture_ui_box_check;
-        case MU_ICON_EXPANDED: return &texture_ui_expanded;
-        case MU_ICON_COLLAPSED: return &texture_ui_collapsed;
+        case MU_ICON_CHECK:      return &texture_ui_box_check;
+        case MU_ICON_EXPANDED:   return &texture_ui_expanded;
+        case MU_ICON_COLLAPSED:  return &texture_ui_collapsed;
         case 16: *resize = true; return &texture_ui_join;
         case 17: *resize = true; return &texture_ui_wait;
         default: return NULL;
@@ -2209,27 +2222,31 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
 
         if (mu_button(ctx, "Players")) {
             pthread_mutex_lock(&serverlist_lock);
-            qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_players);
+            hud_serverlist_sort(hud_serverlist_sort_players);
             pthread_mutex_unlock(&serverlist_lock);
         }
+
         if (mu_button(ctx, "Name")) {
             pthread_mutex_lock(&serverlist_lock);
-            qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_name);
+            hud_serverlist_sort(hud_serverlist_sort_name);
             pthread_mutex_unlock(&serverlist_lock);
         }
+
         if (mu_button(ctx, "Map")) {
             pthread_mutex_lock(&serverlist_lock);
-            qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_map);
+            hud_serverlist_sort(hud_serverlist_sort_map);
             pthread_mutex_unlock(&serverlist_lock);
         }
+
         if (mu_button(ctx, "Mode")) {
             pthread_mutex_lock(&serverlist_lock);
-            qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_mode);
+            hud_serverlist_sort(hud_serverlist_sort_mode);
             pthread_mutex_unlock(&serverlist_lock);
         }
+
         if (mu_button(ctx, "Ping")) {
             pthread_mutex_lock(&serverlist_lock);
-            qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_ping);
+            hud_serverlist_sort(hud_serverlist_sort_ping);
             pthread_mutex_unlock(&serverlist_lock);
         }
 
@@ -2444,7 +2461,7 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
                     player_count += serverlist[k].current;
                 }
 
-                qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort);
+                qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_default);
                 pthread_mutex_unlock(&serverlist_lock);
 
                 http_release(request_serverlist);

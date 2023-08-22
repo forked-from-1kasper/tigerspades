@@ -132,11 +132,11 @@ int ms_rand(void);
     #define htoleu32(x) letohu32(x)
     #define htoles32(x) letohs32(x)
 #else
-    #define letohf(x) (x)
+    #define letohf(x)   (x)
     #define letohu32(x) (x)
     #define letohs32(x) (x)
 
-    #define htolef(x) (x)
+    #define htolef(x)   (x)
     #define htoleu32(x) (x)
     #define htoles32(x) (x)
 #endif

@@ -94,7 +94,7 @@ static void printJoinMsg(int team, char * name) {
     }
 
     char s[64]; sprintf(s, "%s joined the %s team", name, t);
-    chat_add(0, (TrueColor) {0, 0, 255, 255}, s);
+    chat_add(0, (TrueColor) {255, 0, 0, 255}, s);
 }
 
 void read_PacketMapChunk(void * data, int len) {
@@ -152,7 +152,7 @@ void read_PacketChatMessage(void * data, int len) {
 
     TrueColor color = {0, 0, 0, 255};
     switch (p->chat_type) {
-        case CHAT_SYSTEM: color.b = 255; break;
+        case CHAT_SYSTEM: color.r = 255; break;
         case CHAT_TEAM: {
             switch (players[p->player_id].connected ? players[p->player_id].team : players[local_player_id].team) {
                 case TEAM_1: color.r = gamestate.team_1.red; color.g = gamestate.team_1.green; color.b = gamestate.team_1.blue; break;
@@ -467,7 +467,7 @@ void read_PacketPlayerLeft(void * data, int len) {
         players[p->player_id].score = 0;
         char s[32];
         sprintf(s, "%s disconnected", players[p->player_id].name);
-        chat_add(0, (TrueColor) {0, 0, 255, 255}, s);
+        chat_add(0, (TrueColor) {255, 0, 0, 255}, s);
     }
 }
 
@@ -664,7 +664,7 @@ void read_PacketKillAction(void * data, int len) {
             case KILLTYPE_CLASSCHANGE: sprintf(m, "%s changed weapons", players[p->player_id].name); break;
         }
         if (p->killer_id == local_player_id || p->player_id == local_player_id) {
-            chat_add(1, (TrueColor) {0, 0, 255, 255}, m);
+            chat_add(1, (TrueColor) {255, 0, 0, 255}, m);
         } else {
             switch (players[p->killer_id].team) {
                 case TEAM_1:
@@ -836,7 +836,7 @@ void read_PacketIntelDrop(void * data, int len) {
                 break;
         }
 
-        chat_add(0, (TrueColor) {0, 0, 255, 255}, drop_str);
+        chat_add(0, (TrueColor) {255, 0, 0, 255}, drop_str);
     }
 }
 
@@ -857,7 +857,7 @@ void read_PacketIntelPickup(void * data, int len) {
                 break;
         }
 
-        chat_add(0, (TrueColor) {0, 0, 255, 255}, pickup_str);
+        chat_add(0, (TrueColor) {255, 0, 0, 255}, pickup_str);
         sound_create(SOUND_LOCAL, &sound_pickup, 0.0F, 0.0F, 0.0F);
     }
 }
@@ -879,7 +879,7 @@ void read_PacketTerritoryCapture(void * data, int len) {
 
         if (team_n) {
             sprintf(capture_str, "%s have captured %c%c", team_n, x, y);
-            chat_add(0, (TrueColor) {0, 0, 255, 255}, capture_str);
+            chat_add(0, (TrueColor) {255, 0, 0, 255}, capture_str);
 
             if (p->winning) {
                 sprintf(capture_str, "%s Team Wins!", team_n);
