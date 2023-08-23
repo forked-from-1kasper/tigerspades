@@ -94,6 +94,7 @@ game: $(BINARY) $(RESPACK)
 	unzip -o $(RESPACK) -d $(GAMEDIR) || true
 
 $(RESPACK):
+	mkdir -p `dirname $(RESPACK)`
 	curl -o $(RESPACK) $(PACKURL)
 
 clean:
