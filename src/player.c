@@ -608,7 +608,7 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     matrix_pop(matrix_model);
     matrix_translate(matrix_model, -torso->size[0] * 0.1F * 0.5F + leg->size[0] * 0.1F * 0.5F,
                      -torso->size[2] * 0.1F * ((p->input.keys & MASKON(INPUT_CROUCH)) ? 0.6F : 1.0F),
-                     (p->input.keys & MASKON(INPUT_CROUCH)) ? (-torso->size[2] * 0.1F * 0.75F) : 0.0F);
+                     p->input.keys & MASKON(INPUT_CROUCH) ? (-torso->size[2] * 0.1F * 0.75F) : 0.0F);
     matrix_rotate(matrix_model, -45.0F * foot_function(p) * a, 1.0F, 0.0F, 0.0F);
     matrix_rotate(matrix_model, -45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
 
@@ -619,7 +619,7 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 
     matrix_identity(matrix_model);
     matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
-    matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH)) * 0.1F - 0.1F * 2, 0.0F);
+    matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
     matrix_pointAt(matrix_model, ox, oy, oz);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
 
@@ -749,7 +749,7 @@ void player_render(Player * p, int id) {
             matrix_pointAt(matrix_model, -oz, 0.0F, ox);
             matrix_translate(
                 matrix_model, (torso->xsiz - model_intel.xsiz) * 0.5F * torso->scale,
-                -(torso->zpiv - torso->zsiz * 0.5F + model_intel.zsiz * ((p->input.keys & MASKON(INPUT_CROUCH)) ? 0.125F : 0.25F)) * torso->scale,
+                -(torso->zpiv - torso->zsiz * 0.5F + model_intel.zsiz * (p->input.keys & MASKON(INPUT_CROUCH) ? 0.125F : 0.25F)) * torso->scale,
                 (torso->ypiv + model_intel.ypiv) * torso->scale
             );
 
@@ -778,8 +778,8 @@ void player_render(Player * p, int id) {
         matrix_pointAt(matrix_model, ox, 0.0F, oz);
         matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
         matrix_translate(matrix_model, torso->xsiz * 0.1F * 0.5F - leg->xsiz * 0.1F * 0.5F,
-                         -torso->zsiz * 0.1F * ((p->input.keys & MASKON(INPUT_CROUCH)) ? 0.6F : 1.0F),
-                         (p->input.keys & MASKON(INPUT_CROUCH)) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
+                         -torso->zsiz * 0.1F * (p->input.keys & MASKON(INPUT_CROUCH) ? 0.6F : 1.0F),
+                         p->input.keys & MASKON(INPUT_CROUCH) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
         matrix_rotate(matrix_model, 45.0F * foot_function(p) * a, 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, 45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
         matrix_upload();
@@ -791,8 +791,8 @@ void player_render(Player * p, int id) {
         matrix_pointAt(matrix_model, ox, 0.0F, oz);
         matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
         matrix_translate(matrix_model, -torso->xsiz * 0.1F * 0.5F + leg->xsiz * 0.1F * 0.5F,
-                         -torso->zsiz * 0.1F * ((p->input.keys & MASKON(INPUT_CROUCH)) ? 0.6F : 1.0F),
-                         (p->input.keys & MASKON(INPUT_CROUCH)) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
+                         -torso->zsiz * 0.1F * (p->input.keys & MASKON(INPUT_CROUCH) ? 0.6F : 1.0F),
+                         p->input.keys & MASKON(INPUT_CROUCH) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
         matrix_rotate(matrix_model, -45.0F * foot_function(p) * a, 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, -45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
         matrix_upload();
@@ -803,7 +803,7 @@ void player_render(Player * p, int id) {
     matrix_push(matrix_model);
     matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
     if (!render_fpv)
-        matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH)) * 0.1F - 0.1F * 2, 0.0F);
+        matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
     matrix_pointAt(matrix_model, ox, oy, oz);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
     if (render_fpv)
