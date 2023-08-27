@@ -181,7 +181,7 @@ Font * choose_font(enum font_type type) {
 void font_init() {
     int max_size = 0; glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
     unifont = upload_subfont("fonts/unifont.bitmap", max_size, 16);
-    uvga    = upload_subfont("fonts/vga.bitmap", max_size, 16);
+    uvga    = upload_subfont("fonts/uvga.bitmap", max_size, 16);
 }
 
 void font_select(enum font_type type) {

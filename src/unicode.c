@@ -85,19 +85,19 @@ uint8_t encode(uint8_t * dest, uint32_t codepoint, Codepage codepage) {
                 dest[0] = codepoint;
                 return 1;
             } else if (codepoint <= 0x7FF) {
-                dest[0] = (codepoint >> 6)             | 0b11000000;
-                dest[1] = (codepoint & 0b111111)       | 0b10000000;
+                dest[0] = (codepoint >> 6)         | 0xC0;
+                dest[1] = (codepoint & 0x3F)       | 0x80;
                 return 2;
             } else if (codepoint <= 0xFFFF) {
-                dest[0] = (codepoint >> 12)            | 0b11100000;
-                dest[1] = (codepoint >> 6 & 0b111111)  | 0b10000000;
-                dest[2] = (codepoint & 0b111111)       | 0b10000000;
+                dest[0] = (codepoint >> 12)        | 0xE0;
+                dest[1] = (codepoint >> 6 & 0x3F)  | 0x80;
+                dest[2] = (codepoint & 0x3F)       | 0x80;
                 return 3;
             } else if (codepoint <= 0x10FFFF) {
-                dest[0] = (codepoint >> 18)            | 0b11110000;
-                dest[1] = (codepoint >> 12 & 0b111111) | 0b10000000;
-                dest[2] = (codepoint >> 6 & 0b111111)  | 0b10000000;
-                dest[3] = (codepoint & 0b111111)       | 0b10000000;
+                dest[0] = (codepoint >> 18)        | 0xF0;
+                dest[1] = (codepoint >> 12 & 0x3F) | 0x80;
+                dest[2] = (codepoint >> 6 & 0x3F)  | 0x80;
+                dest[3] = (codepoint & 0x3F)       | 0x80;
                 return 4;
             } else return 0;
         }
@@ -113,23 +113,23 @@ uint8_t decode(uint8_t * bytes, uint32_t * outptr, Codepage codepage) {
 
     switch (codepage) {
         case UTF8: {
-            if ((bytes[0] >> 7) == 0) {
+            if ((bytes[0] >> 0x07) == 0) {
                 *outptr = bytes[0];
                 return 1;
-            } else if ((bytes[0] >> 5) == 0b110) {
-                *outptr |= (bytes[0] & 0b00011111) << 6;
-                *outptr |= (bytes[1] & 0b00111111);
+            } else if ((bytes[0] & 0xE0) == 0xC0) {
+                *outptr |= (bytes[0] & 0x1F) << 6;
+                *outptr |= (bytes[1] & 0x3F);
                 return 2;
-            } else if ((bytes[0] >> 4) == 0b1110) {
-                *outptr |= (bytes[0] & 0b00001111) << 12;
-                *outptr |= (bytes[1] & 0b00111111) << 6;
-                *outptr |= (bytes[2] & 0b00111111);
+            } else if ((bytes[0] & 0xF0) == 0xE0) {
+                *outptr |= (bytes[0] & 0x0F) << 12;
+                *outptr |= (bytes[1] & 0x3F) << 6;
+                *outptr |= (bytes[2] & 0x3F);
                 return 3;
-            } else if ((bytes[0] >> 3) == 0b11110) {
-                *outptr |= (bytes[0] & 0b00000111) << 18;
-                *outptr |= (bytes[1] & 0b00111111) << 12;
-                *outptr |= (bytes[2] & 0b00111111) << 6;
-                *outptr |= (bytes[3] & 0b00111111);
+            } else if ((bytes[0] & 0xF8) == 0xF0) {
+                *outptr |= (bytes[0] & 0x07) << 18;
+                *outptr |= (bytes[1] & 0x3F) << 12;
+                *outptr |= (bytes[2] & 0x3F) << 6;
+                *outptr |= (bytes[3] & 0x3F);
                 return 4;
             } else { *outptr = 0xFFFD; return 1; }
         }
