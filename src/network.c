@@ -94,7 +94,7 @@ static void printJoinMsg(int team, char * name) {
     }
 
     char s[64]; sprintf(s, "%s joined the %s team", name, t);
-    chat_add(0, Red, s);
+    chat_add(0, Red, s, UTF8);
 }
 
 void read_PacketMapChunk(void * data, int len) {
@@ -111,19 +111,22 @@ void read_PacketMapChunk(void * data, int len) {
 
 void read_PacketChatMessage(void * data, int len) {
     struct PacketChatMessage * p = (struct PacketChatMessage*) data;
-    char n[32] = {0};
-    char m[256];
+
+    Codepage codepage = CP437; uint8_t * msg = p->message;
+    if (*msg == 0xFF) { msg++; codepage = UTF8; }
+
+    char n[32] = {0}; char m[256];
     switch (p->chat_type) {
         case CHAT_ERROR: sound_create(SOUND_LOCAL, &sound_beep2, 0.0F, 0.0F, 0.0F);
-        case CHAT_BIG: chat_showpopup(p->message, 5.0F, Red); return;
-        case CHAT_INFO: chat_showpopup(p->message, 5.0F, White); return;
+        case CHAT_BIG: chat_showpopup(msg, 5.0F, Red, codepage); return;
+        case CHAT_INFO: chat_showpopup(msg, 5.0F, White, codepage); return;
         case CHAT_WARNING:
             sound_create(SOUND_LOCAL, &sound_beep1, 0.0F, 0.0F, 0.0F);
-            chat_showpopup(p->message, 5.0F, Yellow);
+            chat_showpopup(msg, 5.0F, Yellow, codepage);
             return;
         case CHAT_SYSTEM:
             if (p->player_id == 255) {
-                strncpy(network_custom_reason, p->message, 16);
+                strncpy(network_custom_reason, msg, 16);
                 return; // dont add message to chat
             }
             m[0] = 0;
@@ -148,7 +151,7 @@ void read_PacketChatMessage(void * data, int len) {
     if (body_len > m_remaining) {
         body_len = m_remaining;
     }
-    strncat(m, p->message, body_len);
+    strncat(m, msg, body_len);
 
     TrueColor color = {0, 0, 0, 255};
     switch (p->chat_type) {
@@ -165,7 +168,7 @@ void read_PacketChatMessage(void * data, int len) {
         default: color.r = color.g = color.b = 255; break;
     }
 
-    chat_add(0, color, m);
+    chat_add(0, color, m, codepage);
 }
 
 TrueColor white = {0xFF, 0xFF, 0xFF, 0xFF};
@@ -467,7 +470,7 @@ void read_PacketPlayerLeft(void * data, int len) {
         players[p->player_id].score = 0;
         char s[32];
         sprintf(s, "%s disconnected", players[p->player_id].name);
-        chat_add(0, Red, s);
+        chat_add(0, Red, s, UTF8);
     }
 }
 
@@ -664,14 +667,14 @@ void read_PacketKillAction(void * data, int len) {
             case KILLTYPE_CLASSCHANGE: sprintf(m, "%s changed weapons", players[p->player_id].name); break;
         }
         if (p->killer_id == local_player_id || p->player_id == local_player_id) {
-            chat_add(1, Red, m);
+            chat_add(1, Red, m, UTF8);
         } else {
             switch (players[p->killer_id].team) {
                 case TEAM_1:
-                    chat_add(1, (TrueColor) {gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue, 255}, m);
+                    chat_add(1, (TrueColor) {gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue, 255}, m, UTF8);
                     break;
                 case TEAM_2:
-                    chat_add(1, (TrueColor) {gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue, 255}, m);
+                    chat_add(1, (TrueColor) {gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue, 255}, m, UTF8);
                     break;
             }
         }
@@ -797,7 +800,7 @@ void read_PacketIntelCapture(void * data, int len) {
         }
         sound_create(SOUND_LOCAL, p->winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
         players[p->player_id].score += 10;
-        chat_add(0, Red, capture_str);
+        chat_add(0, Red, capture_str, UTF8);
         if (p->winning) {
             char * name = NULL;
 
@@ -807,7 +810,7 @@ void read_PacketIntelCapture(void * data, int len) {
             }
 
             sprintf(capture_str, "%s Team Wins!", name);
-            chat_showpopup(capture_str, 5.0F, Red);
+            chat_showpopup(capture_str, 5.0F, Red, UTF8);
 
             gamestate.gamemode.ctf.team_1_score = 0;
             gamestate.gamemode.ctf.team_2_score = 0;
@@ -836,7 +839,7 @@ void read_PacketIntelDrop(void * data, int len) {
                 break;
         }
 
-        chat_add(0, Red, drop_str);
+        chat_add(0, Red, drop_str, UTF8);
     }
 }
 
@@ -857,7 +860,7 @@ void read_PacketIntelPickup(void * data, int len) {
                 break;
         }
 
-        chat_add(0, Red, pickup_str);
+        chat_add(0, Red, pickup_str, UTF8);
         sound_create(SOUND_LOCAL, &sound_pickup, 0.0F, 0.0F, 0.0F);
     }
 }
@@ -879,11 +882,11 @@ void read_PacketTerritoryCapture(void * data, int len) {
 
         if (team_n) {
             sprintf(capture_str, "%s have captured %c%c", team_n, x, y);
-            chat_add(0, Red, capture_str);
+            chat_add(0, Red, capture_str, UTF8);
 
             if (p->winning) {
                 sprintf(capture_str, "%s Team Wins!", team_n);
-                chat_showpopup(capture_str, 5.0F, Red);
+                chat_showpopup(capture_str, 5.0F, Red, UTF8);
             }
         }
     }
@@ -1054,7 +1057,8 @@ int network_connect_sub(char * ip, int port, int version) {
         }
         return 1;
     }
-    chat_showpopup("No response", 3.0F, Red);
+
+    chat_showpopup("No response", 3.0F, Red, UTF8);
     enet_peer_reset(peer);
     return 0;
 }
@@ -1134,7 +1138,7 @@ int network_update() {
 
                 case ENET_EVENT_TYPE_DISCONNECT:
                     hud_change(&hud_serverlist);
-                    chat_showpopup(network_reason_disconnect(event.data), 10.0F, Red);
+                    chat_showpopup(network_reason_disconnect(event.data), 10.0F, Red, UTF8);
                     log_error("server disconnected! reason: %s", network_reason_disconnect(event.data));
                     event.peer->data = NULL;
                     network_connected = 0;

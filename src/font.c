@@ -22,230 +22,285 @@
 #include <math.h>
 
 #include <hashtable.h>
-#include <stb_truetype.h>
 
+#include <BetterSpades/unicode.h>
 #include <BetterSpades/common.h>
 #include <BetterSpades/file.h>
 #include <BetterSpades/font.h>
 #include <BetterSpades/utils.h>
 
-#define FONT_BAKE_START 31
+typedef struct {
+    char     fontname[128];
+    uint16_t high16;
+    uint8_t  height;
+} __attribute__((packed)) Header;
 
-static short * font_vertex_buffer;
-static short * font_coords_buffer;
+typedef struct {
+    uint16_t low16;
+    uint8_t  stride;
+} __attribute__((packed)) RawGlyph;
+
+typedef struct {
+    uint8_t  page, stride;
+    uint16_t x, y;
+} Glyph;
+
+typedef struct {
+    uint16_t x, y;
+} __attribute__((packed)) Pixel16;
+
+#define BUFFSIZE 512
+typedef struct {
+    uint16_t len;
+    Pixel16  vertex[BUFFSIZE * 4];
+    Pixel16  texcoords[BUFFSIZE * 4];
+} Buffer;
+
+typedef struct {
+    uint16_t high16;
+    Glyph *  table;
+    float    texscale;
+    size_t   npages;
+    Buffer * buffers;
+    GLuint   textures[64];
+} Subfont;
+
+typedef struct {
+    uint32_t  replacement;
+    size_t    length;
+    uint8_t   height;
+    Subfont * special;
+    Subfont * subfonts[];
+} Font;
+
+GLuint upload_page(int texsize, const uint8_t * buff) {
+    GLuint texid;
+    glGenTextures(1, &texid);
+    glBindTexture(GL_TEXTURE_2D, texid);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, texsize, texsize, 0, GL_ALPHA, GL_UNSIGNED_BYTE, buff);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return texid;
+}
+
+Subfont upload_subfont(const char * filename, int texsize, uint16_t height) {
+    FILE * file = fopen(filename, "rb");
+
+    if (!file) {
+        log_fatal("ERROR: failed to open %s", filename);
+        exit(1);
+    }
+
+    Header header; if (fread(&header, sizeof(Header), 1, file) != 1) {
+        log_fatal("ERROR: short font header in %s", filename);
+        exit(1);
+    }
+    header.high16 = letohu16(header.high16);
+
+    if (header.height != height) {
+        log_fatal("ERROR: invalid font height (given %d, expected %d)", header.height, height);
+        exit(1);
+    }
+
+    Subfont font; font.high16 = header.high16;
+    font.table = calloc(65536, sizeof(Glyph));
+
+    uint8_t * buff = calloc(texsize * texsize, 1);
+    size_t x0 = 0, y0 = 0, pagenum = 0;
+
+    for (;;) {
+        RawGlyph glyph;
+
+        if (fread(&glyph, sizeof(RawGlyph), 1, file) < 1) {
+            font.textures[pagenum] = upload_page(texsize, buff);
+            break;
+        }
+
+        glyph.low16 = letohu16(glyph.low16);
+
+        size_t size = ((size_t) header.height) * ((size_t) glyph.stride);
+        uint8_t * data = malloc(size);
+
+        if (fread(data, size, 1, file) != 1) {
+            log_fatal("ERROR: malformed font %s", filename);
+            exit(1);
+        }
+
+        size_t width = glyph.stride * 8;
+
+        if (x0 + width > texsize) { x0 = 0; y0 += header.height; }
+        if (y0 + header.height > texsize) {
+            font.textures[pagenum] = upload_page(texsize, buff);
+            x0 = y0 = 0; pagenum++;
+        }
+
+        font.table[glyph.low16].page   = pagenum;
+        font.table[glyph.low16].stride = glyph.stride;
+
+        font.table[glyph.low16].x = x0;
+        font.table[glyph.low16].y = y0;
+
+        for (size_t dy = 0; dy < header.height; dy++) {
+            for (size_t dx = 0; dx < glyph.stride; dx++) {
+                for (size_t bit = 0; bit < 8; bit++) {
+                    size_t off = (y0 + dy) * texsize + (x0 + 8 * dx + 7 - bit);
+                    buff[off] = data[dy * glyph.stride + dx] & (1 << bit) ? 0xff : 0x00;
+                }
+            }
+        }
+
+        x0 += width;
+    }
+
+    font.texscale = 1.0F / ((float) texsize);
+    font.npages   = pagenum + 1;
+    font.buffers  = calloc(font.npages, sizeof(Buffer));
+
+    log_info("%s (0x%04xXXXX): height = %d, npages = %d", filename, font.high16, height, font.npages);
+
+    free(buff); fclose(file); return font;
+}
+
 static enum font_type font_current_type = FONT_FIXEDSYS;
 
-static void * font_data_fixedsys;
-static void * font_data_smallfnt;
+Subfont unifont, uvga;
 
-static HashTable fonts_backed;
+Font primary   = {.replacement = 0xFFFD, .length = 2, .height = 16, .special = &uvga,    .subfonts = {&uvga, &unifont}};
+Font secondary = {.replacement = 0xFFFD, .length = 1, .height = 16, .special = &unifont, .subfonts = {&unifont}};
 
-struct __attribute__((packed)) font_backed_id {
-    enum font_type type;
-    float size;
-};
-
-struct font_backed_data {
-    stbtt_bakedchar* cdata;
-    GLuint texture_id;
-    int w, h;
-};
+Font * choose_font(enum font_type type) {
+    switch (type) {
+        case FONT_FIXEDSYS: return &primary;
+        case FONT_SMALLFNT: return &secondary;
+        default:            return NULL;
+    }
+}
 
 void font_init() {
-    font_vertex_buffer = malloc(512 * 8 * sizeof(short));
-    CHECK_ALLOCATION_ERROR(font_vertex_buffer)
-    font_coords_buffer = malloc(512 * 8 * sizeof(short));
-    CHECK_ALLOCATION_ERROR(font_coords_buffer)
-
-    font_data_fixedsys = file_load("fonts/Fixedsys.ttf");
-    CHECK_ALLOCATION_ERROR(font_data_fixedsys)
-    font_data_smallfnt = file_load("fonts/Terminal.ttf");
-    CHECK_ALLOCATION_ERROR(font_data_smallfnt)
-
-    ht_setup(&fonts_backed, sizeof(struct font_backed_id), sizeof(struct font_backed_data), 8);
+    int max_size = 0; glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+    unifont = upload_subfont("fonts/unifont.bitmap", max_size, 16);
+    uvga    = upload_subfont("fonts/vga.bitmap", max_size, 16);
 }
 
 void font_select(enum font_type type) {
     font_current_type = type;
 }
 
-static struct font_backed_data* font_find(float h) {
-    if (font_current_type == FONT_SMALLFNT)
-        h *= 1.5F;
+Subfont * get_glyph(Font * font, uint32_t codepoint, Glyph * outglyph) {
+    uint16_t high16 = codepoint >> 16;
 
-    struct font_backed_id id = (struct font_backed_id) {
-        .type = font_current_type,
-        .size = h,
-    };
+    for (size_t k = 0; k < font->length; k++) {
+        Subfont * subfont = font->subfonts[k];
 
-    struct font_backed_data * f_cached = ht_lookup(&fonts_backed, &id);
-
-    if (f_cached)
-        return f_cached;
-
-    void * file;
-    switch (font_current_type) {
-        case FONT_FIXEDSYS: file = font_data_fixedsys; break;
-        case FONT_SMALLFNT: file = font_data_smallfnt; break;
-        default: return NULL;
-    }
-
-    struct font_backed_data f;
-    f.w = 64;
-    f.h = 64;
-    f.cdata = malloc((0xFF - FONT_BAKE_START) * sizeof(stbtt_bakedchar));
-    CHECK_ALLOCATION_ERROR(f.cdata)
-
-    void * temp_bitmap = NULL;
-
-    int max_size = 0;
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
-
-    while (1) {
-        temp_bitmap = realloc(temp_bitmap, f.w * f.h);
-        CHECK_ALLOCATION_ERROR(temp_bitmap)
-        int res = 0;
-        res = stbtt_BakeFontBitmap(file, 0, h, temp_bitmap, f.w, f.h, FONT_BAKE_START, 0xFF - FONT_BAKE_START, f.cdata);
-        if (res > 0 || (f.w == max_size && f.h == max_size))
-            break;
-        if (f.h > f.w)
-            f.w *= 2;
-        else
-            f.h *= 2;
-    }
-
-    log_info("font texsize: %i:%ipx [size %f] type: %i", f.w, f.h, h, font_current_type);
-
-    glGenTextures(1, &f.texture_id);
-    glBindTexture(GL_TEXTURE_2D, f.texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, f.w, f.h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    free(temp_bitmap);
-
-    ht_insert(&fonts_backed, &id, &f);
-
-    return ht_lookup(&fonts_backed, &id);
-}
-
-float font_length(float h, char* text) {
-    struct font_backed_data* font = font_find(h);
-
-    if (!font)
-        return 0.0F;
-
-    stbtt_aligned_quad q;
-    float y = h * 0.75F;
-    float x = 0.0F;
-    float length = 0.0F;
-    for (size_t k = 0; k < strlen(text); k++) {
-        if (text[k] == '\n') {
-            length = fmax(length, x);
-            x = 0.0F;
+        if (subfont->high16 == high16) {
+            Glyph glyph = subfont->table[codepoint & 0xFFFF];
+            if (glyph.stride != 0) { *outglyph = glyph; return subfont; }
         }
-
-        if (text[k] >= FONT_BAKE_START)
-            stbtt_GetBakedQuad(font->cdata, font->w, font->h, text[k] - FONT_BAKE_START, &x, &y, &q, 1);
     }
 
-    return fmax(length, x) + h * 0.125F;
+    *outglyph = font->special->table[font->replacement]; return font->special;
 }
 
-bool font_remove_callback(void* key, void* value, void* user) {
-    struct font_backed_data* f = (struct font_backed_data*)value;
+void clear_buffers(Font * font) {
+    for (size_t k = 0; k < font->length; k++) {
+        Subfont * subfont = font->subfonts[k];
 
-    glDeleteTextures(1, &f->texture_id);
-    free(f->cdata);
-
-    return true;
+        for (size_t i = 0; i < subfont->npages; i++)
+            subfont->buffers[i].len = 0;
+    }
 }
 
-void font_reset() {
-    ht_iterate_remove(&fonts_backed, NULL, font_remove_callback);
-}
+float font_length(int scale, char * text, Codepage codepage) {
+    Font * font = choose_font(font_current_type);
 
-void font_render(float x, float y, float h, char * text) {
-    struct font_backed_data * font = font_find(h);
+    float x = 0, length = 0;
 
-    if (!font) return;
-
-    size_t k = 0;
-    float x2 = x;
-    float y2 = h * 0.75F;
     while (*text) {
         if (*text == '\n') {
-            x2 = x;
-            y2 += h;
+            length = fmax(length, x);
+            x = 0; text++;
+        } else {
+            uint32_t codepoint; text += decode(text, &codepoint, codepage);
+            Glyph glyph; get_glyph(font, codepoint, &glyph); x += scale * glyph.stride * 8;
         }
-
-        if (*text >= FONT_BAKE_START) {
-            stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(font->cdata, font->w, font->h, *text - FONT_BAKE_START, &x2, &y2, &q, 1);
-            font_coords_buffer[k + 0] = q.s0 * 8192.0F;
-            font_coords_buffer[k + 1] = q.t1 * 8192.0F;
-            font_coords_buffer[k + 2] = q.s1 * 8192.0F;
-            font_coords_buffer[k + 3] = q.t1 * 8192.0F;
-            font_coords_buffer[k + 4] = q.s1 * 8192.0F;
-            font_coords_buffer[k + 5] = q.t0 * 8192.0F;
-
-            font_coords_buffer[k + 6] = q.s0 * 8192.0F;
-            font_coords_buffer[k + 7] = q.t1 * 8192.0F;
-            font_coords_buffer[k + 8] = q.s1 * 8192.0F;
-            font_coords_buffer[k + 9] = q.t0 * 8192.0F;
-            font_coords_buffer[k + 10] = q.s0 * 8192.0F;
-            font_coords_buffer[k + 11] = q.t0 * 8192.0F;
-
-            font_vertex_buffer[k + 0] = q.x0;
-            font_vertex_buffer[k + 1] = -q.y1 + y;
-            font_vertex_buffer[k + 2] = q.x1;
-            font_vertex_buffer[k + 3] = -q.y1 + y;
-            font_vertex_buffer[k + 4] = q.x1;
-            font_vertex_buffer[k + 5] = -q.y0 + y;
-
-            font_vertex_buffer[k + 6] = q.x0;
-            font_vertex_buffer[k + 7] = -q.y1 + y;
-            font_vertex_buffer[k + 8] = q.x1;
-            font_vertex_buffer[k + 9] = -q.y0 + y;
-            font_vertex_buffer[k + 10] = q.x0;
-            font_vertex_buffer[k + 11] = -q.y0 + y;
-            k += 12;
-        }
-
-        text++;
     }
 
-    glMatrixMode(GL_TEXTURE);
-    glLoadIdentity();
-    glScalef(1.0F / 8192.0F, 1.0F / 8192.0F, 1.0F);
-    glMatrixMode(GL_MODELVIEW);
+    return fmax(length, x);
+}
+
+void font_render(float x, float y, int scale, uint8_t * text, Codepage codepage) {
+    Font * font = choose_font(font_current_type);
+    clear_buffers(font);
+
+    float x0 = x, y0 = y, h = font->height * scale;
+
+    while (*text) {
+        if (*text == '\n') {
+            x0  = x;
+            y0 += h;
+            text++;
+        } else {
+            uint32_t codepoint; text += decode(text, &codepoint, codepage);
+
+            Glyph glyph; Subfont * subfont = get_glyph(font, codepoint, &glyph);
+            Buffer * buffer = &subfont->buffers[glyph.page];
+
+            float width = glyph.stride * 8;
+
+            buffer->texcoords[buffer->len * 4 + 0] = (Pixel16) {glyph.x, glyph.y + font->height};
+            buffer->texcoords[buffer->len * 4 + 1] = (Pixel16) {glyph.x + width, glyph.y + font->height};
+            buffer->texcoords[buffer->len * 4 + 2] = (Pixel16) {glyph.x + width, glyph.y};
+            buffer->texcoords[buffer->len * 4 + 3] = (Pixel16) {glyph.x, glyph.y};
+
+            buffer->vertex[buffer->len * 4 + 0] = (Pixel16) {x0, y0 - h};
+            buffer->vertex[buffer->len * 4 + 1] = (Pixel16) {x0 + scale * width, y0 - h};
+            buffer->vertex[buffer->len * 4 + 2] = (Pixel16) {x0 + scale * width, y0};
+            buffer->vertex[buffer->len * 4 + 3] = (Pixel16) {x0, y0};
+
+            buffer->len++; x0 += scale * width;
+        }
+    }
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, font->texture_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glVertexPointer(2, GL_SHORT, 0, font_vertex_buffer);
-    glTexCoordPointer(2, GL_SHORT, 0, font_coords_buffer);
-    glDrawArrays(GL_TRIANGLES, 0, k / 2);
+    glMatrixMode(GL_TEXTURE);
+
+    for (size_t k = 0; k < font->length; k++) {
+        Subfont * subfont = font->subfonts[k];
+
+        glLoadIdentity(); glScalef(subfont->texscale, subfont->texscale, 1.0F);
+
+        for (size_t i = 0; i < subfont->npages; i++) {
+            Buffer * buffer = &subfont->buffers[i];
+            if (buffer->len == 0) continue;
+
+            glBindTexture(GL_TEXTURE_2D, subfont->textures[i]);
+            glVertexPointer(2, GL_SHORT, 0, buffer->vertex);
+            glTexCoordPointer(2, GL_SHORT, 0, buffer->texcoords);
+            glDrawArrays(GL_QUADS, 0, buffer->len * 4);
+        }
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_BLEND);
+
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
-
-    glDisable(GL_BLEND);
-    glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 
     glMatrixMode(GL_TEXTURE);
     glLoadIdentity();
+
     glMatrixMode(GL_MODELVIEW);
 }
 
-void font_centered(float x, float y, float h, char* text) {
-    font_render(x - font_length(h, text) / 2.0F, y, h, text);
+void font_centered(float x, float y, int h, uint8_t * text, Codepage codepage) {
+    font_render(x - font_length(h, text, codepage) / 2.0F, y, h, text, codepage);
 }

@@ -346,7 +346,7 @@ struct PacketSetTool {
 struct PacketChatMessage {
     unsigned char player_id;
     unsigned char chat_type;
-    char message[255];
+    unsigned char message[255];
 };
 
 #define CHAT_ALL     0

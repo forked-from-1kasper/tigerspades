@@ -20,16 +20,18 @@
 #ifndef FONT_H
 #define FONT_H
 
+#include <BetterSpades/common.h>
+#include <stdbool.h>
+
 enum font_type {
     FONT_FIXEDSYS,
     FONT_SMALLFNT,
 };
 
 void font_init(void);
-void font_reset(void);
-float font_length(float h, char* text);
-void font_render(float x, float y, float h, char* text);
-void font_centered(float x, float y, float h, char* text);
+float font_length(int scale, char * text, Codepage);
+void font_render(float x, float y, int scale, uint8_t *, Codepage);
+void font_centered(float x, float y, int scale, uint8_t *, Codepage);
 void font_select(enum font_type type);
 
 #endif

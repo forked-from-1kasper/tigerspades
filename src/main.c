@@ -62,14 +62,24 @@ char chat[2][10][256] = {{{0}}}; // chat[0] is current input
 
 TrueColor chat_color[2][10];
 float chat_timer[2][10];
-void chat_add(int channel, TrueColor color, const char * msg) {
+
+void chat_strcopy(uint8_t * dest, const uint8_t * src, Codepage codepage) {
+    while (*src) {
+        uint32_t codepoint; src += decode(src, &codepoint, codepage);
+        dest += encode(dest, codepoint, UTF8);
+    }
+
+    *dest = 0;
+}
+
+void chat_add(int channel, TrueColor color, const uint8_t * msg, Codepage codepage) {
     for (int k = 9; k > 1; k--) {
         strcpy(chat[channel][k], chat[channel][k - 1]);
         chat_color[channel][k] = chat_color[channel][k - 1];
         chat_timer[channel][k] = chat_timer[channel][k - 1];
     }
 
-    strcpy(chat[channel][1], msg);
+    chat_strcopy(chat[channel][1], msg, codepage);
     chat_color[channel][1] = color;
     chat_timer[channel][1] = window_time();
 
@@ -82,8 +92,8 @@ TrueColor chat_popup_color;
 float chat_popup_timer = 0.0F;
 float chat_popup_duration = 0.0F;
 
-void chat_showpopup(const char * msg, float duration, TrueColor color) {
-    strcpy(chat_popup, msg);
+void chat_showpopup(const uint8_t * msg, float duration, TrueColor color, Codepage codepage) {
+    chat_strcopy(chat_popup, msg, codepage);
     chat_popup_timer = window_time();
     chat_popup_duration = duration;
     chat_popup_color = color;
@@ -405,23 +415,25 @@ void display() {
     matrix_identity(matrix_model);
     matrix_upload();
     matrix_upload_p();
-    float scalex = settings.window_width / 800.0F;
-    float scalef = settings.window_height / 600.0F;
+
+    float scalex = fmax(1, round(settings.window_width / 800.0F));
+    float scaley = fmax(1, round(settings.window_height / 600.0F));
+    float scale  = fmin(scalex, scaley);
 
     if (hud_active->render_2D) {
-        mu_Context* ctx = hud_active->ctx;
+        mu_Context * ctx = hud_active->ctx;
 
         if (ctx) {
-            hud_active->ctx->style->padding = 10 * scalef - 5;
-            hud_active->ctx->style->spacing = 8 * scalef - 4;
-            hud_active->ctx->style->title_height = 48 * scalef - 24;
-            hud_active->ctx->style->scrollbar_size = 12 * scalef;
-            hud_active->ctx->style->thumb_size = 8 * scalef;
+            hud_active->ctx->style->padding        = 10 * scale - 5;
+            hud_active->ctx->style->spacing        = 8  * scale - 4;
+            hud_active->ctx->style->title_height   = 48 * scale - 24;
+            hud_active->ctx->style->scrollbar_size = 12 * scale;
+            hud_active->ctx->style->thumb_size     = 8  * scale;
 
             mu_begin(ctx);
         }
 
-        hud_active->render_2D(ctx, scalex, scalef);
+        hud_active->render_2D(ctx, scale, scale);
 
         if (ctx) {
             mu_end(ctx);
@@ -429,13 +441,13 @@ void display() {
             glEnable(GL_BLEND);
             glEnable(GL_SCISSOR_TEST);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            mu_Command* cmd = NULL;
+            mu_Command * cmd = NULL;
             while (mu_next_command(ctx, &cmd)) {
                 switch (cmd->type) {
                     case MU_COMMAND_TEXT:
                         glColor4ub(cmd->text.color.r, cmd->text.color.g, cmd->text.color.b, cmd->text.color.a);
                         font_render(cmd->text.pos.x, settings.window_height - cmd->text.pos.y,
-                                    ctx->text_height(cmd->text.font), cmd->text.str);
+                                    ctx->text_height(cmd->text.font) / 16.0F, cmd->text.str, UTF8);
                         glEnable(GL_BLEND);
                         break;
                     case MU_COMMAND_RECT:
@@ -450,14 +462,14 @@ void display() {
                         if (cmd->icon.id >= HUD_FLAG_INDEX_START - 1) {
                             float u, v;
                             texture_flag_offset(cmd->icon.id - HUD_FLAG_INDEX_START, &u, &v);
-
-                            texture_draw_sector(&texture_ui_flags, cmd->icon.rect.x,
-                                                settings.window_height - cmd->icon.rect.y - size * 0.167F, size,
-                                                size * 0.667F, u, v, 18.0F / 256.0F, 12.0F / 256.0F);
+                            texture_draw_sector(
+                                &texture_ui_flags, cmd->icon.rect.x, settings.window_height - cmd->icon.rect.y,
+                                size, size, u, v, 16.0F / 256.0F, 16.0F / 256.0F
+                            );
                             glEnable(GL_BLEND);
                         } else if (hud_active->ui_images) {
                             bool resize = false;
-                            struct texture* img = hud_active->ui_images(cmd->icon.id, &resize);
+                            struct texture * img = hud_active->ui_images(cmd->icon.id, &resize);
 
                             if (img) {
                                 texture_draw(img, cmd->icon.rect.x, settings.window_height - cmd->icon.rect.y,
@@ -520,7 +532,6 @@ void init() {
 }
 
 void reshape(struct window_instance * window, int width, int height) {
-    font_reset();
     glViewport(0, 0, width, height);
     settings.window_width = width;
     settings.window_height = height;
@@ -548,18 +559,17 @@ static int mu_key_translate(int key) {
     }
 }
 
-void text_input(struct window_instance * window, unsigned int codepoint) {
+void text_input(struct window_instance * window, uint8_t * buff) {
     if (hud_active->ctx)
-        mu_input_text(hud_active->ctx, (char[2]) {codepoint, 0});
+        mu_input_text(hud_active->ctx, buff);
 
     if (chat_input_mode == CHAT_NO_INPUT)
         return;
 
+    size_t size = strlen(buff);
     int len = strlen(chat[0][0]);
-    if (len < 128) {
-        chat[0][0][len] = codepoint;
-        chat[0][0][len + 1] = 0;
-    }
+    if (len + size <= 128)
+        strcpy(&chat[0][0][len], buff);
 }
 
 void keys(struct window_instance * window, int key, int action, int mods) {
@@ -626,20 +636,20 @@ void keys(struct window_instance * window, int key, int action, int mods) {
                               settings.window_width, settings.window_height);
         free(pic_data);
 
-        sprintf(pic_name, "Saved screenshot as screenshots/%ld.png", (long)pic_time);
-        chat_add(0, Red, pic_name);
+        sprintf(pic_name, "Saved screenshot as screenshots/%ld.png", (long) pic_time);
+        chat_add(0, Red, pic_name, UTF8);
     }
 
     if (key == WINDOW_KEY_SAVE_MAP && action == WINDOW_PRESS) { // save map
         time_t save_time;
         time(&save_time);
         char save_name[128];
-        sprintf(save_name, "vxl/%ld.vxl", (long)save_time);
+        sprintf(save_name, "vxl/%ld.vxl", (long) save_time);
 
         map_save_file(save_name);
 
-        sprintf(save_name, "Saved map as vxl/%ld.vxl", (long)save_time);
-        chat_add(0, Red, save_name);
+        sprintf(save_name, "Saved map as vxl/%ld.vxl", (long) save_time);
+        chat_add(0, Red, save_name, UTF8);
     }
 }
 

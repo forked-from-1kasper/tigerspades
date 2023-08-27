@@ -91,6 +91,10 @@ typedef struct {
     uint8_t r, g, b, a;
 } TrueColor;
 
+typedef enum {
+    UTF8, CP437, CP1252
+} Codepage;
+
 extern const TrueColor White, Black, Red, Green, Blue, Yellow, Cyan, Magenta;
 
 extern int chat_input_mode;
@@ -105,13 +109,13 @@ extern char chat_popup[256];
 extern float chat_popup_timer;
 extern float chat_popup_duration;
 extern TrueColor chat_popup_color;
-void chat_add(int channel, TrueColor, const char *);
-void chat_showpopup(const char * msg, float duration, TrueColor);
+void chat_add(int channel, TrueColor, const uint8_t *, Codepage);
+void chat_showpopup(const uint8_t *, float duration, TrueColor, Codepage);
 const char * reason_disconnect(int code);
 
-#define SCREEN_NONE 0
+#define SCREEN_NONE        0
 #define SCREEN_TEAM_SELECT 1
-#define SCREEN_GUN_SELECT 2
+#define SCREEN_GUN_SELECT  2
 
 extern int ms_seed;
 int ms_rand(void);
@@ -126,22 +130,28 @@ int ms_rand(void);
     }
 
 #ifdef __BIG_ENDIAN__
+    uint16_t letohu16(uint16_t);
+    int16_t  letohs16(int16_t);
+
     float    letohf(float);
     uint32_t letohu32(uint32_t);
     int      letohs32(int);
 
-    #define htolef(x)   letohf(x)
-    #define htoleu32(x) letohu32(x)
-    #define htoles32(x) letohs32(x)
 #else
+    #define letohu16(x) (x)
+    #define letohs16(x) (x)
+
     #define letohf(x)   (x)
     #define letohu32(x) (x)
     #define letohs32(x) (x)
-
-    #define htolef(x)   (x)
-    #define htoleu32(x) (x)
-    #define htoles32(x) (x)
 #endif
+
+#define htoleu16(x) letohu16(x)
+#define htoles16(x) letohs16(x)
+
+#define htolef(x)   letohf(x)
+#define htoleu32(x) letohu32(x)
+#define htoles32(x) letohs32(x)
 
 void writeRGBA(uint32_t *, TrueColor);
 void writeBGR(uint32_t *, TrueColor);

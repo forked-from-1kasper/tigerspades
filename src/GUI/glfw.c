@@ -7,6 +7,7 @@
 #include <BetterSpades/window.h>
 #include <BetterSpades/config.h>
 #include <BetterSpades/hud.h>
+#include <BetterSpades/font.h>
 
 #ifdef OS_WINDOWS
     #include <sysinfoapi.h>
@@ -75,7 +76,8 @@ static void window_impl_reshape(GLFWwindow * window, int width, int height) {
 }
 
 static void window_impl_textinput(GLFWwindow * window, unsigned int codepoint) {
-    text_input(hud_window, codepoint);
+    uint8_t buff[5]; uint8_t size = encode(buff, codepoint, UTF8); buff[size] = 0;
+    text_input(hud_window, buff);
 }
 
 static void window_impl_keys(GLFWwindow * window, int key, int scancode, int action, int mods) {

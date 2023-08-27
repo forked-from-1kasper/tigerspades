@@ -98,7 +98,8 @@ void window_update() {
                 }
                 break;
             }
-            case SDL_TEXTINPUT: text_input(hud_window, event.text.text[0]); break;
+
+            case SDL_TEXTINPUT: text_input(hud_window, event.text.text); break;
 
             case SDL_FINGERDOWN:
                 if (hud_active->input_touch) {

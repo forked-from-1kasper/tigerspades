@@ -25,7 +25,7 @@
 #ifdef USE_GLUT
 
 void window_keyboard(unsigned char key, int x, int y) {
-    if (isprint(key)) text_input(hud_window, key);
+    if (isprint(key)) text_input(hud_window, (uint8_t[]) {key, 0});
 
     int mod = glutGetModifiers() & GLUT_ACTIVE_CTRL;
     window_sendkey(WINDOW_PRESS, toupper(key), mod);

@@ -665,7 +665,7 @@ void player_render(Player * p, int id) {
         glEnable(GL_ALPHA_TEST);
         glAlphaFunc(GL_GREATER, 0.5F);
         glDisable(GL_DEPTH_TEST);
-        font_centered(0, 0, 64, p->name);
+        font_centered(0, 0, 4, p->name, UTF8);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_ALPHA_TEST);
         matrix_pop(matrix_model);

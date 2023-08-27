@@ -91,7 +91,7 @@ game: $(BINARY) $(RESPACK)
 	mkdir -p $(GAMEDIR)
 	cp $(BINARY) $(GAMEDIR)
 	cp -r $(RESDIR)/* $(GAMEDIR)
-	unzip -o $(RESPACK) -d $(GAMEDIR) || true
+	unzip -o $(RESPACK) -d $(GAMEDIR) -x png/command.png png/medical.png png/intel.png png/player.png || true
 
 $(RESPACK):
 	mkdir -p `dirname $(RESPACK)`
