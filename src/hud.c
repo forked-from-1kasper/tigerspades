@@ -797,7 +797,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
         }
 
         if (camera_mode != CAMERAMODE_SELECTION) {
-            int chat_y = 7 * 18.0F * scalef;
+            int chat_y = 8 * 18.0F * scalef;
 
             font_select(FONT_SMALLFNT);
 
