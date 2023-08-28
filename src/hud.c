@@ -645,7 +645,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                     texture_draw(&texture_intel,
                                  settings.window_width / 4.0F * mul
                                      - font_length(1.0F * scalef, players[pt[k].id].name, UTF8) - 27.0F * scalef,
-                                 (427 - 16 * cntt[mul - 1]) * scalef, 1.0F * scalef, 68.0F * scalef);
+                                 (427 - 16 * cntt[mul - 1]) * scalef, 16.0F * scalef, 16.0F * scalef);
                 }
                 font_render(settings.window_width / 4.0F * mul - font_length(1.0F * scalef, players[pt[k].id].name, UTF8),
                             (427 - 16 * cntt[mul - 1]) * scalef, 1.0F * scalef, players[pt[k].id].name, UTF8);
