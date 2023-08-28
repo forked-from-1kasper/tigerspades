@@ -725,7 +725,8 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                     settings.window_height * (zoom_factor * 0.5F + 0.5F),
                     (settings.window_width - settings.window_height * aspect_ratio * zoom_factor) / 2.0F,
                     settings.window_height * zoom_factor, (float)(zoom->width - 1) / (float)zoom->width, 0.0F,
-                    1.0F / (float)zoom->width, 1.0F);
+                    1.0F / (float) zoom->width, 1.0F
+                );
             } else {
                 texture_draw(&texture_target, (settings.window_width - 16) / 2.0F, (settings.window_height + 16) / 2.0F,
                              16, 16);
@@ -738,29 +739,25 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
             }
 
             int health = is_local ? (players[local_id].alive ? local_player_health : 0) : (players[local_id].alive ? 100 : 0);
+
             if (health <= 30)
                 glColor3f(1, 0, 0);
             else
                 glColor3f(1, 1, 1);
 
-            char hp[4];
-            sprintf(hp, "%i", health);
-            font_render(settings.window_width / 2.0F - font_length(2.0F * scalef, hp, UTF8) - 4.0F * scalef, 44.0F * scalef, 2.0F * scalef, hp, UTF8);
-            texture_draw(&texture_health, settings.window_width / 2.0F, 44.0F * scalef, 32.0F * scalef, 32.0F * scalef);
+            char hp[4]; sprintf(hp, "%i", health);
+            font_render(8.0F * scalef, 32.0F * scalef, 2.0F * scalef, hp, UTF8);
 
-            char item_mini_str[32];
-            struct texture * item_mini;
-            int off = 0;
-            glColor3f(1.0F, 1.0F, 0.0F);
+            char item_mini_str[32]; int off = 0;
+            glColor3f(1.0F, 1.0F, 1.0F);
+
             switch (players[local_id].held_item) {
                 default:
                 case TOOL_BLOCK: off = 64 * scalef;
                 case TOOL_SPADE:
-                    item_mini = &texture_block;
                     sprintf(item_mini_str, "%i", is_local ? local_player_blocks : 50);
                     break;
                 case TOOL_GRENADE:
-                    item_mini = &texture_grenade;
                     sprintf(item_mini_str, "%i", is_local ? local_player_grenades : 3);
                     break;
                 case TOOL_GUN: {
@@ -768,21 +765,14 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
                     int ammo_reserve = is_local ? local_player_ammo_reserved : players[local_id].ammo_reserved;
                     sprintf(item_mini_str, "%02i/%02i", ammo, ammo_reserve);
 
-                    switch (players[local_id].weapon) {
-                        case WEAPON_RIFLE:   item_mini = &texture_ammo_semi;    break;
-                        case WEAPON_SMG:     item_mini = &texture_ammo_smg;     break;
-                        case WEAPON_SHOTGUN: item_mini = &texture_ammo_shotgun; break;
-                    }
-
                     if (ammo == 0) glColor3f(1.0F, 0.0F, 0.0F);
                     break;
                 }
             }
 
-            texture_draw(item_mini, settings.window_width - 44.0F * scalef - off, 44.0F * scalef, 32.0F * scalef, 32.0F * scalef);
-            font_render(settings.window_width - font_length(2.0F * scalef, item_mini_str, UTF8) - 48.0F * scalef - off, 44.0F * scalef, 2.0F * scalef, item_mini_str, UTF8);
-            glColor3f(1.0F, 1.0F, 1.0F);
+            font_render(settings.window_width - font_length(2.0F * scalef, item_mini_str, UTF8) - 8.0F * scalef - off, 32.0F * scalef, 2.0F * scalef, item_mini_str, UTF8);
 
+            glColor3f(1.0F, 1.0F, 1.0F);
             if (players[local_id].held_item == TOOL_BLOCK) {
                 for (int y = 0; y < 8; y++) {
                     for (int x = 0; x < 8; x++) {

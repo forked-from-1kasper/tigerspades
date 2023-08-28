@@ -58,10 +58,11 @@ static bool tracer_minimap_single(void * obj, void * user) {
     } else {
         float tracer_x = t->r.origin[X] - info->minimap_x;
         float tracer_y = t->r.origin[Z] - info->minimap_y;
+
         if (tracer_x > 0.0F && tracer_x < 128.0F && tracer_y > 0.0F && tracer_y < 128.0F) {
             float ang = -atan2(t->r.direction[Z], t->r.direction[X]) - HALFPI;
             texture_draw_rotated(&texture_tracer, settings.window_width - 143 * info->scalef + tracer_x * info->scalef,
-                                 (585 - tracer_y) * info->scalef, 15 * info->scalef, 15 * info->scalef, ang);
+                                 settings.window_height - (15 + tracer_y) * info->scalef, 15 * info->scalef, 15 * info->scalef, ang);
         }
     }
 

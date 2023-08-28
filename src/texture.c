@@ -32,13 +32,6 @@ struct texture texture_minimap;
 struct texture texture_gradient;
 struct texture texture_dummy;
 
-struct texture texture_health;
-struct texture texture_block;
-struct texture texture_grenade;
-struct texture texture_ammo_semi;
-struct texture texture_ammo_smg;
-struct texture texture_ammo_shotgun;
-
 struct texture texture_color_selection;
 
 struct texture texture_zoom_semi;
@@ -334,13 +327,6 @@ void texture_gradient_fog(unsigned int * gradient) {
 
 void texture_init() {
     texture_create(&texture_splash, "png/splash.png");
-
-    texture_create(&texture_health, "png/health.png");
-    texture_create(&texture_block, "png/block.png");
-    texture_create(&texture_grenade, "png/grenade.png");
-    texture_create(&texture_ammo_semi, "png/semiammo.png");
-    texture_create(&texture_ammo_smg, "png/smgammo.png");
-    texture_create(&texture_ammo_shotgun, "png/shotgunammo.png");
 
     texture_create(&texture_zoom_semi, "png/semi.png");
     texture_create(&texture_zoom_smg, "png/smg.png");
