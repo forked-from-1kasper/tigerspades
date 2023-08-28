@@ -907,34 +907,17 @@ void read_PacketHandshakeInit(void * data, int len) {
     network_send(PACKET_HANDSHAKERETURN_ID, data, len);
 }
 
+static const char * operatingsystem = OS " " ARCH;
+
 void read_PacketVersionGet(void * data, int len) {
     struct PacketVersionSend ver;
     ver.client   = 'B';
     ver.major    = BETTERSPADES_MAJOR;
     ver.minor    = BETTERSPADES_MINOR;
     ver.revision = BETTERSPADES_PATCH;
-#ifndef OPENGL_ES
-#ifdef OS_WINDOWS
-    char * os = "BetterSpades (Windows) " GIT_COMMIT_HASH;
-#endif
-#ifdef OS_LINUX
-    char * os = "BetterSpades (Linux) " GIT_COMMIT_HASH;
-#endif
-#ifdef OS_APPLE
-    char * os = "BetterSpades (Apple) " GIT_COMMIT_HASH;
-#endif
-#ifdef OS_HAIKU
-    char * os = "BetterSpades (Haiku) " GIT_COMMIT_HASH;
-#endif
-#else
-#ifdef USE_TOUCH
-    char * os = "BetterSpades (Android) " GIT_COMMIT_HASH;
-#else
-    char * os = "BetterSpades (Embedded) " GIT_COMMIT_HASH;
-#endif
-#endif
-    strcpy(ver.operatingsystem, os);
-    network_send(PACKET_VERSIONSEND_ID, &ver, sizeof(ver) - sizeof(ver.operatingsystem) + strlen(os));
+
+    strcpy(ver.operatingsystem, operatingsystem);
+    network_send(PACKET_VERSIONSEND_ID, &ver, sizeof(ver) - sizeof(ver.operatingsystem) + strlen(operatingsystem));
 }
 
 void read_PacketExtInfo(void * data, int len) {

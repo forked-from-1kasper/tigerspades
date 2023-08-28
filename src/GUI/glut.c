@@ -108,7 +108,7 @@ void window_init(int * argc, char ** argv) {
     glutInitWindowSize(settings.window_width, settings.window_height);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
-    glutCreateWindow("BetterSpades " BETTERSPADES_VERSION);
+    glutCreateWindow("TigerSpades " BETTERSPADES_VERSION);
 
     glutReshapeFunc(window_reshape);
     glutKeyboardFunc(window_keyboard);

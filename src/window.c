@@ -301,9 +301,9 @@ void window_title(char * suffix) {
     char title[128];
 
     if (suffix)
-        snprintf(title, sizeof(title) - 1, "BetterSpades %s — %s (%s)", BETTERSPADES_VERSION, suffix, TOOLKIT);
+        snprintf(title, sizeof(title) - 1, "TigerSpades %s — %s (%s)", BETTERSPADES_VERSION, suffix, TOOLKIT);
     else
-        sprintf(title, "BetterSpades %s (%s)", BETTERSPADES_VERSION, TOOLKIT);
+        sprintf(title, "TigerSpades %s (%s)", BETTERSPADES_VERSION, TOOLKIT);
 
     #ifdef USE_GLFW
         glfwSetWindowTitle(hud_window->impl, title);

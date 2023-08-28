@@ -1961,13 +1961,12 @@ struct hud hud_ingame = {
 
 /*         HUD_SERVERLIST START        */
 
-static http_t* request_serverlist = NULL;
-static http_t* request_version = NULL;
-static http_t* request_news = NULL;
+static http_t * request_serverlist = NULL;
+static http_t * request_news = NULL;
 static int server_count = 0;
 static int player_count = 0;
 static struct serverlist_entry* serverlist;
-static int serverlist_is_outdated;
+
 static int serverlist_con_established;
 static pthread_mutex_t serverlist_lock;
 
@@ -1991,12 +1990,9 @@ static void hud_serverlist_init() {
 
     window_mousemode(WINDOW_CURSOR_ENABLED);
 
-    player_count = 0;
-    server_count = 0;
-    serverlist_is_outdated = 0;
+    player_count = server_count = 0;
     request_serverlist = http_get("http://services.buildandshoot.com/serverlist.json", NULL);
 
-    request_version = http_get("http://aos.party/bs/version/", NULL);
     if (!serverlist_news_exists)
         request_news = http_get("http://aos.party/bs/news/", NULL);
 
@@ -2317,25 +2313,6 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
         mu_end_window(ctx);
     }
 
-    if (serverlist_is_outdated
-       && mu_begin_window_ex(ctx, "NEW CLIENT VERSION AVAILABLE!", mu_rect(300, 200, 350, 200),
-                             MU_OPT_HOLDFOCUS | MU_OPT_NORESIZE | MU_OPT_NOCLOSE)) {
-        mu_Container * cnt = mu_get_current_container(ctx);
-        mu_bring_to_front(ctx, cnt);
-        cnt->rect = mu_rect((settings.window_width - 350 * scaley) / 2, 200 * scaley, 350 * scaley, 200 * scaley);
-        mu_layout_row(ctx, 1, (int[]) {-1}, -ctx->text_height(ctx->style->font) * 1.75F);
-        mu_text(ctx,
-                "Your game is outdated and should be updated immediately.\n\n"
-                "Head over to https://aos.party/bs.");
-        int A = ctx->text_width(ctx->style->font, "Close", 0) * 1.6F;
-        mu_layout_row(ctx, 2, (int[]) {-A, -1}, 0);
-        if (mu_button(ctx, "Go to website"))
-            file_url("https://aos.party/bs");
-        if (mu_button(ctx, "Close"))
-            cnt->open = 0;
-        mu_end_window(ctx);
-    }
-
     if (window_time() - chat_popup_timer < chat_popup_duration
        && mu_begin_window_ex(ctx, "Disconnected from server", mu_rect(200, 250, 300, 100),
                              MU_OPT_HOLDFOCUS | MU_OPT_NORESIZE | MU_OPT_NOCLOSE)) {
@@ -2389,28 +2366,6 @@ static void hud_serverlist_render(mu_Context* ctx, float scalex, float scaley) {
             case HTTP_STATUS_FAILED: {
                 http_release(request_news);
                 request_news = NULL;
-                break;
-            }
-
-            default: break;
-        }
-    }
-
-    if (request_version) {
-        switch (http_process(request_version)) {
-            case HTTP_STATUS_COMPLETED: {
-                serverlist_is_outdated = 1;
-                log_info("newest game version: %s", request_version->response_data);
-                log_info("current game version: %s", BETTERSPADES_VERSION);
-                serverlist_is_outdated = strcmp(request_version->response_data, BETTERSPADES_VERSION) != 0;
-                http_release(request_version);
-                request_version = NULL;
-                break;
-            }
-
-            case HTTP_STATUS_FAILED: {
-                http_release(request_version);
-                request_version = NULL;
                 break;
             }
 

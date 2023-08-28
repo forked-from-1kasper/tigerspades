@@ -125,7 +125,7 @@ void window_init(int * argc, char ** argv) {
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 
     hud_window->impl
-        = glfwCreateWindow(settings.window_width, settings.window_height, "BetterSpades " BETTERSPADES_VERSION,
+        = glfwCreateWindow(settings.window_width, settings.window_height, "TigerSpades " BETTERSPADES_VERSION,
                            settings.fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
     if (!hud_window->impl) {
         log_fatal("Could not open window");
