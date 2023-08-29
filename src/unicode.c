@@ -113,19 +113,19 @@ uint8_t decode(uint8_t * bytes, uint32_t * outptr, Codepage codepage) {
 
     switch (codepage) {
         case UTF8: {
-            if ((bytes[0] >> 0x07) == 0) {
+            if (OCT1(bytes[0])) {
                 *outptr = bytes[0];
                 return 1;
-            } else if ((bytes[0] & 0xE0) == 0xC0) {
+            } else if (OCT2(bytes[0])) {
                 *outptr |= (bytes[0] & 0x1F) << 6;
                 *outptr |= (bytes[1] & 0x3F);
                 return 2;
-            } else if ((bytes[0] & 0xF0) == 0xE0) {
+            } else if (OCT3(bytes[0])) {
                 *outptr |= (bytes[0] & 0x0F) << 12;
                 *outptr |= (bytes[1] & 0x3F) << 6;
                 *outptr |= (bytes[2] & 0x3F);
                 return 3;
-            } else if ((bytes[0] & 0xF8) == 0xF0) {
+            } else if (OCT4(bytes[0])) {
                 *outptr |= (bytes[0] & 0x07) << 18;
                 *outptr |= (bytes[1] & 0x3F) << 12;
                 *outptr |= (bytes[2] & 0x3F) << 6;

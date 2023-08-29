@@ -47,6 +47,7 @@
 #include <BetterSpades/weapon.h>
 #include <BetterSpades/tracer.h>
 #include <BetterSpades/font.h>
+#include <BetterSpades/unicode.h>
 
 #include <parson.h>
 #include <http.h>
@@ -1828,7 +1829,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
             if (key == WINDOW_KEY_BACKSPACE) {
                 size_t len = strlen(chat[0][0]);
                 if (len > 0) {
-                    while ((((uint8_t*) chat[0][0])[--len] & 0xc0) == 0x80 && len > 0);
+                    while (CONT(chat[0][0][--len]) && len > 0);
                     chat[0][0][len] = 0;
                 }
             }
