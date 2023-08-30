@@ -63,15 +63,6 @@ char chat[2][10][256] = {{{0}}}; // chat[0] is current input
 TrueColor chat_color[2][10];
 float chat_timer[2][10];
 
-void chat_strcopy(uint8_t * dest, const uint8_t * src, Codepage codepage) {
-    while (*src) {
-        uint32_t codepoint; src += decode(src, &codepoint, codepage);
-        dest += encode(dest, codepoint, UTF8);
-    }
-
-    *dest = 0;
-}
-
 void chat_add(int channel, TrueColor color, const uint8_t * msg, Codepage codepage) {
     for (int k = 9; k > 1; k--) {
         strcpy(chat[channel][k], chat[channel][k - 1]);
@@ -79,7 +70,7 @@ void chat_add(int channel, TrueColor color, const uint8_t * msg, Codepage codepa
         chat_timer[channel][k] = chat_timer[channel][k - 1];
     }
 
-    chat_strcopy(chat[channel][1], msg, codepage);
+    reencode(chat[channel][1], msg, codepage, UTF8);
     chat_color[channel][1] = color;
     chat_timer[channel][1] = window_time();
 
@@ -93,7 +84,7 @@ float chat_popup_timer = 0.0F;
 float chat_popup_duration = 0.0F;
 
 void chat_showpopup(const uint8_t * msg, float duration, TrueColor color, Codepage codepage) {
-    chat_strcopy(chat_popup, msg, codepage);
+    reencode(chat_popup, msg, codepage, UTF8);
     chat_popup_timer = window_time();
     chat_popup_duration = duration;
     chat_popup_color = color;

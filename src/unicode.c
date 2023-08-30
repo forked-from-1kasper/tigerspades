@@ -139,3 +139,12 @@ uint8_t decode(uint8_t * bytes, uint32_t * outptr, Codepage codepage) {
         default:     return 0;
     }
 }
+
+void reencode(uint8_t * dest, const uint8_t * src, Codepage inpage, Codepage outpage) {
+    while (*src) {
+        uint32_t codepoint; src += decode(src, &codepoint, inpage);
+        dest += encode(dest, codepoint, outpage);
+    }
+
+    *dest = 0;
+}

@@ -11,5 +11,6 @@
 
 uint8_t encode(uint8_t *, uint32_t, Codepage);
 uint8_t decode(uint8_t *, uint32_t *, Codepage);
+void reencode(uint8_t *, const uint8_t *, Codepage inpage, Codepage outpage);
 
 #endif
