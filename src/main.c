@@ -524,10 +524,12 @@ void init() {
 
 void reshape(struct window_instance * window, int width, int height) {
     glViewport(0, 0, width, height);
-    settings.window_width = width;
+    settings.window_width  = width;
     settings.window_height = height;
+
     if (settings.vsync < 2)
         window_swapping(settings.vsync);
+
     if (settings.vsync > 1)
         window_swapping(0);
 }
@@ -589,6 +591,7 @@ void keys(struct window_instance * window, int key, int action, int mods) {
             window_pressed_keys[key] = 1;
         }
     }
+
     if (action == WINDOW_RELEASE && !config_key(key)->toggle)
         window_pressed_keys[key] = 0;
 

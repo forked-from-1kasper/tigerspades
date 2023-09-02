@@ -2,6 +2,7 @@
 #include <string.h>
 #include <time.h>
 
+#include <BetterSpades/unicode.h>
 #include <BetterSpades/common.h>
 #include <BetterSpades/main.h>
 #include <BetterSpades/window.h>
@@ -76,7 +77,7 @@ static void window_impl_reshape(GLFWwindow * window, int width, int height) {
 }
 
 static void window_impl_textinput(GLFWwindow * window, unsigned int codepoint) {
-    uint8_t buff[5]; uint8_t size = encode(buff, codepoint, UTF8); buff[size] = 0;
+    uint8_t buff[5]; buff[encode(buff, codepoint, UTF8)] = 0;
     text_input(hud_window, buff);
 }
 
