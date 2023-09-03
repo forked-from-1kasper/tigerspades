@@ -5,13 +5,13 @@
 #include <BetterSpades/common.h>
 #include <BetterSpades/list.h>
 
-int list_created(struct list* l) {
+int list_created(List * l) {
     assert(l != NULL);
 
     return l->element_size > 0;
 }
 
-void list_create(struct list* l, size_t element_size) {
+void list_create(List * l, size_t element_size) {
     assert(l != NULL && element_size > 0);
 
     l->data = NULL;
@@ -20,7 +20,7 @@ void list_create(struct list* l, size_t element_size) {
     l->mem_size = 0;
 }
 
-void list_free(struct list* l) {
+void list_free(List * l) {
     assert(l != NULL);
 
     if (l->data) {
@@ -29,7 +29,7 @@ void list_free(struct list* l) {
     }
 }
 
-void* list_find(struct list* l, void* ref, enum list_traverse_direction dir, int (*cmp)(void* obj, void* ref)) {
+void * list_find(List * l, void * ref, enum list_traverse_direction dir, int (*cmp)(void * obj, void * ref)) {
     assert(l != NULL && cmp != NULL);
 
     switch (dir) {
@@ -60,19 +60,19 @@ void* list_find(struct list* l, void* ref, enum list_traverse_direction dir, int
     return NULL;
 }
 
-void list_sort(struct list* l, int (*cmp)(const void* a, const void* b)) {
+void list_sort(List * l, int (*cmp)(const void * a, const void * b)) {
     assert(l != NULL && cmp != NULL);
 
     qsort(l->data, l->elements, l->element_size, cmp);
 }
 
-void* list_get(struct list* l, size_t i) {
+void * list_get(List * l, size_t i) {
     assert(l != NULL && i < l->elements);
 
     return l->data + i * l->element_size;
 }
 
-void* list_add(struct list* l, void* e) {
+void * list_add(List * l, void * val) {
     assert(l != NULL);
 
     if ((l->elements + 1) * l->element_size > l->mem_size) {
@@ -81,15 +81,12 @@ void* list_add(struct list* l, void* e) {
         CHECK_ALLOCATION_ERROR(l->data)
     }
 
-    if (e)
-        memcpy(l->data + l->elements * l->element_size, e, l->element_size);
-    else
-        memset(l->data + l->elements * l->element_size, 0, l->element_size);
+    if (val) memcpy(l->data + l->elements * l->element_size, val, l->element_size);
 
     return l->data + (l->elements++) * l->element_size;
 }
 
-void list_remove(struct list* l, size_t i) {
+void list_remove(List * l, size_t i) {
     assert(l != NULL && i < l->elements);
 
     if (i < l->elements - 1)
@@ -105,10 +102,10 @@ void list_remove(struct list* l, size_t i) {
     }
 }
 
-void list_clear(struct list* l) {
+void list_clear(List * l) {
     assert(l != NULL);
 
-    void* new = realloc(l->data, l->element_size * 64);
+    void * new = realloc(l->data, l->element_size * 64);
 
     if (new) {
         l->data = new;
@@ -118,7 +115,7 @@ void list_clear(struct list* l) {
     l->elements = 0;
 }
 
-int list_size(struct list* l) {
+int list_size(List * l) {
     assert(l != NULL);
 
     return l->elements;

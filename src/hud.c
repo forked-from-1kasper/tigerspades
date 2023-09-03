@@ -1610,6 +1610,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                         }
                     }
                 }
+
                 if (y < 10) {
                     players[local_player_id].block = texture_block_color(3, 0);
                     network_updateColor();
@@ -1623,6 +1624,21 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
 
             if (key == WINDOW_KEY_SNEAK && (camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR)) {
                 cameracontroller_bodyview_mode = !cameracontroller_bodyview_mode;
+            }
+
+            for (int k = 0; k < list_size(&config_keybind); k++) {
+                Keybind * keybind = list_get(&config_keybind, k);
+
+                if (keybind->key == internal) {
+                    struct PacketChatMessage msg;
+                    msg.player_id = local_player_id;
+                    msg.chat_type = CHAT_ALL;
+
+                    size_t size = strlen(keybind->value); strcpy(msg.message, keybind->value);
+                    network_send(PACKET_CHATMESSAGE_ID, &msg, sizeof(msg) - sizeof(msg.message) + size + 1);
+
+                    break;
+                }
             }
 
             if (screen_current == SCREEN_NONE && camera_mode == CAMERAMODE_FPS) {
@@ -1718,6 +1734,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                     return;
                 }
             }
+
             if (screen_current == SCREEN_GUN_SELECT) {
                 int new_gun = 255;
                 switch (key) {
@@ -2504,10 +2521,10 @@ static int int_number(mu_Context* ctx, int* value) {
     return res;
 }
 
-static struct texture* hud_settings_ui_images(int icon_id, bool* resize) {
+static struct texture * hud_settings_ui_images(int icon_id, bool* resize) {
     switch (icon_id) {
-        case MU_ICON_CHECK: return &texture_ui_box_check;
-        case MU_ICON_EXPANDED: return &texture_ui_expanded;
+        case MU_ICON_CHECK:     return &texture_ui_box_check;
+        case MU_ICON_EXPANDED:  return &texture_ui_expanded;
         case MU_ICON_COLLAPSED: return &texture_ui_collapsed;
         default: return NULL;
     }
@@ -2547,7 +2564,7 @@ static void hud_settings_render(mu_Context* ctx, float scalex, float scaley) {
             int width = mu_get_current_container(ctx)->body.w;
 
             for (int k = 0; k < list_size(&config_settings); k++) {
-                struct config_setting* a = list_get(&config_settings, k);
+                struct config_setting * a = list_get(&config_settings, k);
 
                 mu_layout_row(ctx, 3, (int[]) {0.65F * width, -0.05F * width, -1}, 0);
 
@@ -2644,7 +2661,7 @@ struct hud hud_settings = {
 
 /*         HUD_CONTROLS START        */
 
-static struct config_key_pair * hud_controls_edit;
+static int * hud_controls_edit;
 
 static void hud_controls_init() {
     hud_controls_edit = NULL;
@@ -2715,11 +2732,11 @@ static void hud_controls_render(mu_Context* ctx, float scalex, float scaley) {
 
                     char name[32]; window_keyname(a->def, name, sizeof(name));
 
-                    if (hud_controls_edit == a)
+                    if (hud_controls_edit == &a->def)
                         mu_text_color(ctx, 255, 0, 0);
 
                     if (mu_button(ctx, name))
-                        hud_controls_edit = (hud_controls_edit == a) ? NULL : a;
+                        hud_controls_edit = (hud_controls_edit == &a->def) ? NULL : &a->def;
 
                     mu_text_color_default(ctx);
                     mu_pop_id(ctx);
@@ -2739,6 +2756,39 @@ static void hud_controls_render(mu_Context* ctx, float scalex, float scaley) {
             }
         }
 
+        if (mu_header_ex(ctx, "Key bindings", MU_OPT_EXPANDED)) {
+            int width = mu_get_current_container(ctx)->body.w;
+            mu_layout_row(ctx, 2, (int[]) {0.65F * width, -1}, 0);
+
+            for (int k = 0; k < list_size(&config_keybind); k++) {
+                Keybind * keybind = list_get(&config_keybind, k);
+
+                mu_textbox(ctx, keybind->value, sizeof(keybind->value));
+
+                char keyname[32]; window_keyname(keybind->key, keyname, sizeof(keyname));
+
+                mu_push_id(ctx, &k, sizeof(k));
+
+                if (hud_controls_edit == &keybind->key)
+                    mu_text_color(ctx, 255, 0, 0);
+
+                if (mu_button(ctx, keyname))
+                    hud_controls_edit = (hud_controls_edit == &keybind->key) ? NULL : &keybind->key;
+
+                mu_text_color_default(ctx);
+
+                mu_pop_id(ctx);
+            }
+
+            if (mu_button(ctx, "Add")) {
+                Keybind * keybind = list_add(&config_keybind, NULL);
+                keybind->key = 0; memset(keybind->value, 0, sizeof(keybind->value));
+            }
+
+            if (mu_button(ctx, "Save"))
+                config_save();
+        }
+
         mu_end_panel(ctx);
 
         mu_end_window(ctx);
@@ -2751,7 +2801,7 @@ static void hud_controls_touch(void * finger, int action, float x, float y, floa
 
 static void hud_controls_keyboard(int key, int action, int mods, int internal) {
     if (hud_controls_edit) {
-        hud_controls_edit->def = internal;
+        *hud_controls_edit = internal;
         hud_controls_edit = NULL;
         config_save();
     }

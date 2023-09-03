@@ -70,7 +70,7 @@ extern struct RENDER_OPTIONS {
     int chat_shadow;
 } settings, settings_tmp;
 
-extern struct list config_keys;
+extern List config_keys;
 
 struct config_key_pair {
     int internal;
@@ -81,6 +81,11 @@ struct config_key_pair {
     char display[24];
     char category[24];
 };
+
+typedef struct {
+    int key;
+    char value[128];
+} Keybind;
 
 enum {
     CONFIG_TYPE_STRING,
@@ -100,7 +105,7 @@ struct config_setting {
     void (*label_callback)(char* buffer, size_t length, int value, size_t index);
 };
 
-extern struct list config_settings;
+extern List config_settings;
 
 void config_register_key(int internal, int def, const char* name, int toggle, const char* display,
                          const char* category);
@@ -109,5 +114,7 @@ struct config_key_pair* config_key(int key);
 void config_key_reset_togglestates();
 void config_reload(void);
 void config_save(void);
+
+extern List config_keybind;
 
 #endif

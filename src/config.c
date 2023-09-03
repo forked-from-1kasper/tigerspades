@@ -30,14 +30,13 @@
 #include <BetterSpades/sound.h>
 #include <BetterSpades/model.h>
 #include <BetterSpades/camera.h>
+#include <BetterSpades/utils.h>
 
 #include <ini.h>
 
 struct RENDER_OPTIONS settings, settings_tmp;
-struct list config_keys;
-struct list config_settings;
 
-struct list config_file;
+List config_keys, config_settings, config_file, config_keybind;
 
 static void config_sets(const char * section, const char * name, const char * value) {
     for (int k = 0; k < list_size(&config_file); k++) {
@@ -91,16 +90,25 @@ void config_save() {
     config_seti("client", "show_player_arms",  settings.player_arms);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair* e = list_get(&config_keys, k);
+        struct config_key_pair * e = list_get(&config_keys, k);
         if (strlen(e->name) > 0)
             config_seti("controls", e->name, e->def);
+    }
+
+    for (int k = 0; k < list_size(&config_keybind); k++) {
+        Keybind * keybind = list_get(&config_keybind, k);
+
+        if (keybind->key > 0 && strlen(keybind->value) > 0) {
+            char buff[16]; snprintf(buff, sizeof(buff), "%d", keybind->key);
+            config_sets("keybind", buff, keybind->value);
+        }
     }
 
     void * f = file_open("config.ini", "w");
     if (f) {
         char last_section[32] = {0};
         for (int k = 0; k < list_size(&config_file); k++) {
-            struct config_file_entry* e = list_get(&config_file, k);
+            struct config_file_entry * e = list_get(&config_file, k);
             if (strcmp(e->section, last_section) != 0) {
                 file_printf(f, "\r\n[%s]\r\n", e->section);
                 strcpy(last_section, e->section);
@@ -115,11 +123,17 @@ void config_save() {
 }
 
 static int config_read_key(void * user, const char * section, const char * name, const char * value) {
-    struct config_file_entry e;
-    strncpy(e.section, section, sizeof(e.section) - 1);
-    strncpy(e.name, name, sizeof(e.name) - 1);
-    strncpy(e.value, value, sizeof(e.value) - 1);
-    list_add(&config_file, &e);
+    if (strcmp(section, "keybind") != 0) {
+        struct config_file_entry e;
+        strncpy(e.section, section, sizeof(e.section) - 1);
+        strncpy(e.name, name, sizeof(e.name) - 1);
+        strncpy(e.value, value, sizeof(e.value) - 1);
+        list_add(&config_file, &e);
+    } else {
+        Keybind * keybind = list_add(&config_keybind, NULL);
+        keybind->key = atoi(name);
+        strncpy(keybind->value, value, sizeof(keybind->value));
+    }
 
     if (!strcmp(section, "client")) {
         if (!strcmp(name, "name")) {
@@ -165,6 +179,7 @@ static int config_read_key(void * user, const char * section, const char * name,
             settings.player_arms = atoi(value);
         }
     }
+
     if (!strcmp(section, "controls")) {
         for (int k = 0; k < list_size(&config_keys); k++) {
             struct config_key_pair * key = list_get(&config_keys, k);
@@ -175,6 +190,7 @@ static int config_read_key(void * user, const char * section, const char * name,
             }
         }
     }
+
     return 1;
 }
 
@@ -274,6 +290,11 @@ static void config_label_msaa(char * buffer, size_t length, int value, size_t in
 }
 
 void config_reload() {
+    if (!list_created(&config_keybind))
+        list_create(&config_keybind, sizeof(Keybind));
+    else
+        list_clear(&config_keybind);
+
     if (!list_created(&config_file))
         list_create(&config_file, sizeof(struct config_file_entry));
     else
