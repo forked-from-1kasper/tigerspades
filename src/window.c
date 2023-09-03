@@ -215,6 +215,8 @@
 #endif
 
 void window_keyname(int keycode, char * output, size_t length) {
+    if (keycode == 0) { output[0] = '?'; output[1] = 0; return; }
+
     #if defined(OS_WINDOWS) && defined(USE_GLFW)
         GetKeyNameTextA(glfwGetKeyScancode(keycode) << 16, output, length);
     #else
