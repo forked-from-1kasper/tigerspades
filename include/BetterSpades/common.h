@@ -20,6 +20,51 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#if defined(OS_WINDOWS)
+    #define OS "Windows"
+#elif defined(OS_LINUX)
+    #define OS "Linux"
+#elif defined(OS_APPLE)
+    #define OS "Mac"
+#elif defined(OS_HAIKU)
+    #define OS "Haiku"
+#elif defined(USE_TOUCH)
+    #define OS "Android"
+#else
+    #define OS "Unknown"
+#endif
+
+#if defined(__alpha__)
+    #define ARCH "Alpha"
+#elif defined(__x86_64__)
+    #define ARCH "x86-64"
+#elif defined(__arm__)
+    #define ARCH "ARM"
+#elif defined(__aarch64__)
+    #define ARCH "ARM64"
+#elif defined(__i386__)
+    #define ARCH "i386"
+#elif defined(__ia64__)
+    #define ARCH "IA-64"
+#elif defined(__m68k__)
+    #define ARCH "m68k"
+#elif defined(__mips__)
+    #define ARCH "MIPS"
+#elif defined(__powerpc64__) || defined(__ppc_64)
+    #define ARCH "PPC64"
+#elif defined(__powerpc__)
+    #define ARCH "PowerPC"
+#elif defined(__riscv)
+    #define ARCH "RISC-V"
+#elif defined(__sparc__)
+    #define ARCH "SPARC"
+#else
+    #define ARCH ""
+#endif
+
+#define BETTERSPADES_VERSION "v" BETTERSPADES_MAJOR "." BETTERSPADES_MINOR "." BETTERSPADES_PATCH
+#define BETTERSPADES_REVISION BETTERSPADES_VERSION " " ARCH " " GIT_COMMIT_HASH
+
 #ifndef OPENGL_ES
     #define GLEW_STATIC
     #include <GL/glew.h>

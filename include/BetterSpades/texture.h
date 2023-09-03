@@ -22,70 +22,70 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-struct texture {
+typedef struct {
     int width, height;
     int texture_id;
     unsigned char * pixels;
-};
+} Texture;
 
-extern struct texture texture_splash;
-extern struct texture texture_minimap;
-extern struct texture texture_gradient;
-extern struct texture texture_dummy;
+extern Texture texture_splash;
+extern Texture texture_minimap;
+extern Texture texture_gradient;
+extern Texture texture_dummy;
 
-extern struct texture texture_health;
-extern struct texture texture_block;
-extern struct texture texture_grenade;
-extern struct texture texture_ammo_semi;
-extern struct texture texture_ammo_smg;
-extern struct texture texture_ammo_shotgun;
+extern Texture texture_health;
+extern Texture texture_block;
+extern Texture texture_grenade;
+extern Texture texture_ammo_semi;
+extern Texture texture_ammo_smg;
+extern Texture texture_ammo_shotgun;
 
-extern struct texture texture_color_selection;
+extern Texture texture_color_selection;
 
-extern struct texture texture_zoom_semi;
-extern struct texture texture_zoom_smg;
-extern struct texture texture_zoom_shotgun;
+extern Texture texture_zoom_semi;
+extern Texture texture_zoom_smg;
+extern Texture texture_zoom_shotgun;
 
-extern struct texture texture_white;
-extern struct texture texture_target;
-extern struct texture texture_indicator;
+extern Texture texture_white;
+extern Texture texture_target;
+extern Texture texture_indicator;
 
-extern struct texture texture_player;
-extern struct texture texture_medical;
-extern struct texture texture_intel;
-extern struct texture texture_command;
-extern struct texture texture_tracer;
+extern Texture texture_player;
+extern Texture texture_medical;
+extern Texture texture_intel;
+extern Texture texture_command;
+extern Texture texture_tracer;
 
-extern struct texture texture_ui_wait;
-extern struct texture texture_ui_join;
-extern struct texture texture_ui_reload;
-extern struct texture texture_ui_bg;
-extern struct texture texture_ui_input;
-extern struct texture texture_ui_box_empty;
-extern struct texture texture_ui_box_check;
-extern struct texture texture_ui_expanded;
-extern struct texture texture_ui_collapsed;
-extern struct texture texture_ui_flags;
-extern struct texture texture_ui_alert;
-extern struct texture texture_ui_joystick;
-extern struct texture texture_ui_knob;
+extern Texture texture_ui_wait;
+extern Texture texture_ui_join;
+extern Texture texture_ui_reload;
+extern Texture texture_ui_bg;
+extern Texture texture_ui_input;
+extern Texture texture_ui_box_empty;
+extern Texture texture_ui_box_check;
+extern Texture texture_ui_expanded;
+extern Texture texture_ui_collapsed;
+extern Texture texture_ui_flags;
+extern Texture texture_ui_alert;
+extern Texture texture_ui_joystick;
+extern Texture texture_ui_knob;
 
-#define TEXTURE_FILTER_NEAREST 0
-#define TEXTURE_FILTER_LINEAR 1
+#define TEXTURE_FILTER_NEAREST GL_NEAREST
+#define TEXTURE_FILTER_LINEAR  GL_LINEAR
 
 int texture_flag_index(const char * country);
 void texture_flag_offset(int index, float * u, float * v);
-void texture_filter(struct texture * t, int filter);
+void texture_filter(Texture * t, int filter);
 void texture_init(void);
-int texture_create(struct texture * t, char * filename);
-int texture_create_buffer(struct texture * t, int width, int height, unsigned char * buff, int new);
-void texture_delete(struct texture * t);
-void texture_draw(struct texture * t, float x, float y, float w, float h);
-void texture_draw_sector(struct texture * t, float x, float y, float w, float h, float u, float v, float us, float vs);
+int texture_create(Texture * t, char * filename, GLuint filter);
+int texture_create_buffer(Texture * t, int width, int height, unsigned char * buff, int new);
+void texture_delete(Texture * t);
+void texture_draw(Texture * t, float x, float y, float w, float h);
+void texture_draw_sector(Texture * t, float x, float y, float w, float h, float u, float v, float us, float vs);
 void texture_draw_empty(float x, float y, float w, float h);
 void texture_draw_empty_rotated(float x, float y, float w, float h, float angle);
-void texture_draw_rotated(struct texture * t, float x, float y, float w, float h, float angle);
-void texture_resize_pow2(struct texture * t, int min_size);
+void texture_draw_rotated(Texture * t, float x, float y, float w, float h, float angle);
+void texture_resize_pow2(Texture * t, int min_size);
 TrueColor texture_block_color(int x, int y);
 void texture_gradient_fog(unsigned int *);
 

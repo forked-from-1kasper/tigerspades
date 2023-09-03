@@ -704,7 +704,7 @@ static void hud_ingame_render(mu_Context * ctx, float scalex, float scalef) {
             if (players[local_id].held_item == TOOL_GUN &&
                 (players[local_id].input.buttons & MASKON(BUTTON_SECONDARY)) &&
                 players[local_id].alive) {
-                struct texture * zoom;
+                Texture * zoom;
                 switch (players[local_id].weapon) {
                     case WEAPON_RIFLE:   zoom = &texture_zoom_semi;    break;
                     case WEAPON_SMG:     zoom = &texture_zoom_smg;     break;
@@ -1990,7 +1990,7 @@ static int serverlist_con_established;
 static pthread_mutex_t serverlist_lock;
 
 static struct serverlist_news_entry {
-    struct texture image;
+    Texture image;
     char caption[65];
     char url[129];
     float tile_size;
@@ -2133,7 +2133,7 @@ static void server_c(char* address, char* name) {
     }
 }
 
-static struct texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
+static Texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     if (icon_id >= 32) {
         struct serverlist_news_entry * current = &serverlist_news;
         int index = 32;
@@ -2520,7 +2520,7 @@ static int int_number(mu_Context* ctx, int* value) {
     return res;
 }
 
-static struct texture * hud_settings_ui_images(int icon_id, bool* resize) {
+static Texture * hud_settings_ui_images(int icon_id, bool* resize) {
     switch (icon_id) {
         case MU_ICON_CHECK:     return &texture_ui_box_check;
         case MU_ICON_EXPANDED:  return &texture_ui_expanded;
@@ -2553,7 +2553,7 @@ static void hud_settings_render(mu_Context* ctx, float scalex, float scaley) {
         if (mu_button(ctx, "Controls"))
             hud_change(&hud_controls);
 
-        mu_button_ex(ctx, "", 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
+        mu_button_ex(ctx, BETTERSPADES_REVISION, 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
 
         mu_layout_row(ctx, 1, (int[]) {-1}, -1);
 
@@ -2692,7 +2692,7 @@ static void hud_controls_render(mu_Context* ctx, float scalex, float scaley) {
         mu_text_color(ctx, 255, 255, 0);
         mu_button_ex(ctx, "Controls", 0, MU_OPT_NOINTERACT | MU_OPT_ALIGNCENTER);
         mu_text_color_default(ctx);
-        mu_button_ex(ctx, "", 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
+        mu_button_ex(ctx, BETTERSPADES_REVISION, 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
 
         mu_layout_row(ctx, 1, (int[]) {-1}, -1);
 

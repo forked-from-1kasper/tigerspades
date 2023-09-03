@@ -460,7 +460,7 @@ void display() {
                             glEnable(GL_BLEND);
                         } else if (hud_active->ui_images) {
                             bool resize = false;
-                            struct texture * img = hud_active->ui_images(cmd->icon.id, &resize);
+                            Texture * img = hud_active->ui_images(cmd->icon.id, &resize);
 
                             if (img) {
                                 texture_draw(img, cmd->icon.rect.x, settings.window_height - cmd->icon.rect.y,
@@ -770,7 +770,7 @@ int main(int argc, char ** argv) {
 
     srand(t);
 
-    log_info("BetterSpades " BETTERSPADES_VERSION);
+    log_info("TigerSpades " BETTERSPADES_VERSION);
 
     config_reload();
 

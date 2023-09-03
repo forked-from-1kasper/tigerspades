@@ -27,40 +27,40 @@
 #include <log.h>
 #include <lodepng/lodepng.c>
 
-struct texture texture_splash;
-struct texture texture_minimap;
-struct texture texture_gradient;
-struct texture texture_dummy;
+Texture texture_splash;
+Texture texture_minimap;
+Texture texture_gradient;
+Texture texture_dummy;
 
-struct texture texture_color_selection;
+Texture texture_color_selection;
 
-struct texture texture_zoom_semi;
-struct texture texture_zoom_smg;
-struct texture texture_zoom_shotgun;
+Texture texture_zoom_semi;
+Texture texture_zoom_smg;
+Texture texture_zoom_shotgun;
 
-struct texture texture_white;
-struct texture texture_target;
-struct texture texture_indicator;
+Texture texture_white;
+Texture texture_target;
+Texture texture_indicator;
 
-struct texture texture_player;
-struct texture texture_medical;
-struct texture texture_intel;
-struct texture texture_command;
-struct texture texture_tracer;
+Texture texture_player;
+Texture texture_medical;
+Texture texture_intel;
+Texture texture_command;
+Texture texture_tracer;
 
-struct texture texture_ui_wait;
-struct texture texture_ui_join;
-struct texture texture_ui_reload;
-struct texture texture_ui_bg;
-struct texture texture_ui_input;
-struct texture texture_ui_box_empty;
-struct texture texture_ui_box_check;
-struct texture texture_ui_expanded;
-struct texture texture_ui_collapsed;
-struct texture texture_ui_flags;
-struct texture texture_ui_alert;
-struct texture texture_ui_joystick;
-struct texture texture_ui_knob;
+Texture texture_ui_wait;
+Texture texture_ui_join;
+Texture texture_ui_reload;
+Texture texture_ui_bg;
+Texture texture_ui_input;
+Texture texture_ui_box_empty;
+Texture texture_ui_box_check;
+Texture texture_ui_expanded;
+Texture texture_ui_collapsed;
+Texture texture_ui_flags;
+Texture texture_ui_alert;
+Texture texture_ui_joystick;
+Texture texture_ui_knob;
 
 static char * texture_flags[] = {
     "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
@@ -100,22 +100,14 @@ void texture_flag_offset(int index, float * u, float * v) {
     }
 }
 
-void texture_filter(struct texture * t, int filter) {
+void texture_filter(Texture * t, int filter) {
     glBindTexture(GL_TEXTURE_2D, t->texture_id);
-    switch (filter) {
-        case TEXTURE_FILTER_NEAREST:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            break;
-        case TEXTURE_FILTER_LINEAR:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            break;
-    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int texture_create(struct texture * t, char * filename) {
+int texture_create(Texture * t, char * filename, GLuint filter) {
     int sz = file_size(filename);
     void * data = file_load(filename);
     int error = lodepng_decode32(&t->pixels, &t->width, &t->height, data, sz);
@@ -131,14 +123,16 @@ int texture_create(struct texture * t, char * filename) {
     glGenTextures(1, &t->texture_id);
     glBindTexture(GL_TEXTURE_2D, t->texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t->width, t->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int texture_create_buffer(struct texture * t, int width, int height, unsigned char * buff, int new) {
+int texture_create_buffer(Texture * t, int width, int height, unsigned char * buff, int new) {
     if (new)
         glGenTextures(1, &t->texture_id);
     t->width = width;
@@ -155,13 +149,13 @@ int texture_create_buffer(struct texture * t, int width, int height, unsigned ch
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void texture_delete(struct texture * t) {
+void texture_delete(Texture * t) {
     if (t->pixels)
         free(t->pixels);
     glDeleteTextures(1, &t->texture_id);
 }
 
-void texture_draw_sector(struct texture * t, float x, float y, float w, float h, float u, float v, float us, float vs) {
+void texture_draw_sector(Texture * t, float x, float y, float w, float h, float u, float v, float us, float vs) {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -182,7 +176,7 @@ void texture_draw_sector(struct texture * t, float x, float y, float w, float h,
     glDisable(GL_TEXTURE_2D);
 }
 
-void texture_draw(struct texture * t, float x, float y, float w, float h) {
+void texture_draw(Texture * t, float x, float y, float w, float h) {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -193,7 +187,7 @@ void texture_draw(struct texture * t, float x, float y, float w, float h) {
     glDisable(GL_TEXTURE_2D);
 }
 
-void texture_draw_rotated(struct texture * t, float x, float y, float w, float h, float angle) {
+void texture_draw_rotated(Texture * t, float x, float y, float w, float h, float angle) {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -233,7 +227,7 @@ void texture_draw_empty_rotated(float x, float y, float w, float h, float angle)
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void texture_resize_pow2(struct texture * t, int min_size) {
+void texture_resize_pow2(Texture * t, int min_size) {
     if (!t->pixels) return;
 
     int max_size = 0;
@@ -326,37 +320,37 @@ void texture_gradient_fog(unsigned int * gradient) {
 }
 
 void texture_init() {
-    texture_create(&texture_splash, "png/splash.png");
+    texture_create(&texture_splash, "png/splash.png", TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_zoom_semi, "png/semi.png");
-    texture_create(&texture_zoom_smg, "png/smg.png");
-    texture_create(&texture_zoom_shotgun, "png/shotgun.png");
+    texture_create(&texture_zoom_semi, "png/semi.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_zoom_smg, "png/smg.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_zoom_shotgun, "png/shotgun.png", TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_white, "png/white.png");
-    texture_create(&texture_target, "png/target.png");
-    texture_create(&texture_indicator, "png/indicator.png");
+    texture_create(&texture_white, "png/white.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_target, "png/target.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_indicator, "png/indicator.png", TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_player, "png/player.png");
-    texture_create(&texture_medical, "png/medical.png");
-    texture_create(&texture_intel, "png/intel.png");
-    texture_create(&texture_command, "png/command.png");
-    texture_create(&texture_tracer, "png/tracer.png");
+    texture_create(&texture_player, "png/player.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_medical, "png/medical.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_intel, "png/intel.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_command, "png/command.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_tracer, "png/tracer.png", TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_ui_wait, "png/ui/wait.png");
-    texture_create(&texture_ui_join, "png/ui/join.png");
-    texture_create(&texture_ui_reload, "png/ui/reload.png");
-    texture_create(&texture_ui_bg, "png/ui/bg.png");
-    texture_create(&texture_ui_input, "png/ui/input.png");
-    texture_create(&texture_ui_box_empty, "png/ui/box_empty.png");
-    texture_create(&texture_ui_box_check, "png/ui/box_check.png");
-    texture_create(&texture_ui_collapsed, "png/ui/collapsed.png");
-    texture_create(&texture_ui_expanded, "png/ui/expanded.png");
-    texture_create(&texture_ui_flags, "png/ui/flags.png");
-    texture_create(&texture_ui_alert, "png/ui/alert.png");
+    texture_create(&texture_ui_wait, "png/ui/wait.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_join, "png/ui/join.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_reload, "png/ui/reload.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_bg, "png/ui/bg.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_input, "png/ui/input.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_box_empty, "png/ui/box_empty.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_box_check, "png/ui/box_check.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_collapsed, "png/ui/collapsed.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_expanded, "png/ui/expanded.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_flags, "png/ui/flags.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_alert, "png/ui/alert.png", TEXTURE_FILTER_NEAREST);
 
 #ifdef USE_TOUCH
-    texture_create(&texture_ui_knob, "png/ui/knob.png");
-    texture_create(&texture_ui_joystick, "png/ui/joystick.png");
+    texture_create(&texture_ui_knob, "png/ui/knob.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_joystick, "png/ui/joystick.png", TEXTURE_FILTER_NEAREST);
 #endif
 
     unsigned int pixels[64 * 64];
