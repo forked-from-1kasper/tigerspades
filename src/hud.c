@@ -1429,6 +1429,28 @@ static int autocomplete_type_cmp(const void * a, const void * b) {
     return bb->acceptance - aa->acceptance;
 }
 
+void broadcast_chat(unsigned char chat_type, const char * message, size_t size) {
+    struct PacketChatMessage contained;
+    contained.player_id = local_player_id;
+    contained.chat_type = chat_type;
+
+    bool unicode = false;
+
+    for (size_t i = 0; i < size; i++) {
+        if (!OCT1(message[i])) {
+            unicode = true; break;
+        }
+    }
+
+    if (unicode) {
+        contained.message[0] = 0xFF;
+        strcpy(contained.message + 1, message);
+        size++;
+    } else strcpy(contained.message, message);
+
+    network_send(PACKET_CHATMESSAGE_ID, &contained, sizeof(contained) - sizeof(contained.message) + size + 1);
+}
+
 static const char * hud_ingame_completeword(const char * s) {
     // find most likely player name or command
 
@@ -1630,12 +1652,8 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 Keybind * keybind = list_get(&config_keybind, k);
 
                 if (keybind->key == internal) {
-                    struct PacketChatMessage msg;
-                    msg.player_id = local_player_id;
-                    msg.chat_type = CHAT_ALL;
-
-                    size_t size = strlen(keybind->value); strcpy(msg.message, keybind->value);
-                    network_send(PACKET_CHATMESSAGE_ID, &msg, sizeof(msg) - sizeof(msg.message) + size + 1);
+                    size_t size = strlen(keybind->value);
+                    if (size > 0) broadcast_chat(CHAT_ALL, keybind->value, size);
 
                     break;
                 }
@@ -1819,27 +1837,8 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
             if (key == WINDOW_KEY_ESCAPE || key == WINDOW_KEY_ENTER) {
                 size_t size = strlen(chat[0][0]);
 
-                if (key == WINDOW_KEY_ENTER && size > 0) {
-                    struct PacketChatMessage msg;
-                    msg.player_id = local_player_id;
-                    msg.chat_type = (chat_input_mode == CHAT_ALL_INPUT) ? CHAT_ALL : CHAT_TEAM;
-
-                    bool unicode = false;
-
-                    for (size_t i = 0; i < size; i++) {
-                        if (((uint8_t*) chat[0][0])[i] & (1 << 7)) {
-                            unicode = true; break;
-                        }
-                    }
-
-                    if (unicode) {
-                        msg.message[0] = 0xFF;
-                        strcpy(msg.message + 1, chat[0][0]);
-                        size++;
-                    } else strcpy(msg.message, chat[0][0]);
-
-                    send: network_send(PACKET_CHATMESSAGE_ID, &msg, sizeof(msg) - sizeof(msg.message) + size + 1);
-                }
+                if (key == WINDOW_KEY_ENTER && size > 0)
+                    broadcast_chat(chat_input_mode == CHAT_ALL_INPUT ? CHAT_ALL : CHAT_TEAM, chat[0][0], size);
 
                 window_textinput(0);
                 chat_input_mode = CHAT_NO_INPUT;
