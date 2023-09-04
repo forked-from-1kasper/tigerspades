@@ -88,6 +88,7 @@ void config_save() {
     config_seti("client", "hold_down_sights",  settings.hold_down_sights);
     config_seti("client", "chat_shadow",       settings.chat_shadow);
     config_seti("client", "show_player_arms",  settings.player_arms);
+    config_seti("client", "scale",             settings.scale);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair * e = list_get(&config_keys, k);
@@ -113,9 +114,12 @@ void config_save() {
                 file_printf(f, "\r\n[%s]\r\n", e->section);
                 strcpy(last_section, e->section);
             }
+
             file_printf(f, "%s", e->name);
+
             for (int l = 0; l < 31 - strlen(e->name); l++)
                 file_printf(f, " ");
+
             file_printf(f, "= %s\r\n", e->value);
         }
         file_close(f);
@@ -177,6 +181,8 @@ static int config_read_key(void * user, const char * section, const char * name,
             settings.chat_shadow = atoi(value);
         } else if (!strcmp(name, "show_player_arms")) {
             settings.player_arms = atoi(value);
+        } else if (!strcmp(name, "scale")) {
+            settings.scale = atoi(value);
         }
     }
 
@@ -261,6 +267,14 @@ static int config_key_cmp(const void * a, const void * b) {
 
     int cmp = strcmp(A->category, B->category);
     return cmp ? cmp : strcmp(A->display, B->display);
+}
+
+static void config_label_scale(char * buffer, size_t length, int value, size_t index) {
+    if (value == 0) {
+        snprintf(buffer, length, "Auto");
+    } else {
+        snprintf(buffer, length, "%i", value);
+    }
 }
 
 static void config_label_pixels(char * buffer, size_t length, int value, size_t index) {
@@ -421,6 +435,17 @@ void config_reload() {
                  .defaults_length = 7,
                  .help = "Default: 600",
                  .label_callback = config_label_pixels,
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value = &settings_tmp.scale,
+                 .type = CONFIG_TYPE_INT,
+                 .min = 0,
+                 .max = INT_MAX,
+                 .name = "GUI scale",
+                 .defaults = {0, 1, 2, 4, 8, 16, 32, 64},
+                 .defaults_length = 8,
+                 .label_callback = config_label_scale,
              });
     list_add(&config_settings,
              &(struct config_setting) {

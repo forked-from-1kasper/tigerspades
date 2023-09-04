@@ -422,19 +422,16 @@ void window_fromsettings() {
         glfwWindowHint(GLFW_SAMPLES, settings.multisamples);
         glfwSetWindowSize(hud_window->impl, settings.window_width, settings.window_height);
 
-        if (settings.vsync < 2)
-            window_swapping(settings.vsync);
-        if (settings.vsync > 1)
-            window_swapping(0);
-
         const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         if (settings.fullscreen)
             glfwSetWindowMonitor(hud_window->impl, glfwGetPrimaryMonitor(), 0, 0, settings.window_width,
                                  settings.window_height, mode->refreshRate);
         else
             glfwSetWindowMonitor(hud_window->impl, NULL, (mode->width - settings.window_width) / 2,
-                                 (mode->height - settings.window_height) / 2, settings.window_width, settings.window_height,
-                                 0);
+                                 (mode->height - settings.window_height) / 2,
+                                 settings.window_width, settings.window_height, 0);
+
+        int width, height; glfwGetWindowSize(hud_window->impl, &width, &height);
     #endif
 
     #ifdef USE_SDL
@@ -449,6 +446,8 @@ void window_fromsettings() {
             SDL_SetWindowFullscreen(hud_window->impl, SDL_WINDOW_FULLSCREEN);
         else
             SDL_SetWindowFullscreen(hud_window->impl, 0);
+
+        int width, height; SDL_GetWindowSize(hud_window->impl, &width, &height);
     #endif
 
     #ifdef USE_GLUT
@@ -456,7 +455,12 @@ void window_fromsettings() {
             glutFullScreen();
         else
             glutReshapeWindow(settings.window_width, settings.window_height);
+
+        int width  = glutGet(GLUT_WINDOW_WIDTH);
+        int height = glutGet(GLUT_WINDOW_HEIGHT);
     #endif
+
+    reshape(hud_window, width, height);
 }
 
 int window_pressed_keys[64] = {0};

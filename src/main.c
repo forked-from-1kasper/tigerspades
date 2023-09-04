@@ -56,6 +56,12 @@ int ms_rand() {
     return (ms_seed >> 0x10) & 0x7FFF;
 }
 
+static mu_Rect window_clip = { .x = 0, .y = 0, .w = 0x1000000, .h = 0x1000000 };
+
+void window_scissor() {
+    glScissor(window_clip.x, settings.window_height - window_clip.y - window_clip.h, window_clip.w, window_clip.h);
+}
+
 int chat_input_mode = CHAT_NO_INPUT;
 
 char chat[2][10][256] = {{{0}}}; // chat[0] is current input
@@ -202,7 +208,7 @@ void display() {
         if (settings.opengl14) {
             matrix_identity(matrix_projection);
             matrix_perspective(matrix_projection, camera_fov_scaled(),
-                               ((float)settings.window_width) / ((float)settings.window_height), 0.1F,
+                               ((float) settings.window_width) / ((float) settings.window_height), 0.1F,
                                settings.render_distance + CHUNK_SIZE * 4.0F);
             matrix_upload_p();
 
@@ -409,7 +415,7 @@ void display() {
 
     float scalex = fmax(1, round(settings.window_width / 800.0F));
     float scaley = fmax(1, round(settings.window_height / 600.0F));
-    float scale  = fmin(scalex, scaley);
+    float scale  = settings.scale == 0 ? fmin(scalex, scaley) : settings.scale;
 
     if (hud_active->render_2D) {
         mu_Context * ctx = hud_active->ctx;
@@ -424,7 +430,7 @@ void display() {
             mu_begin(ctx);
         }
 
-        hud_active->render_2D(ctx, scale, scale);
+        hud_active->render_2D(ctx, scale);
 
         if (ctx) {
             mu_end(ctx);
@@ -470,12 +476,14 @@ void display() {
                         }
 
                         break;
-                    case MU_COMMAND_CLIP:
-                        glScissor(cmd->clip.rect.x, settings.window_height - (cmd->clip.rect.y + cmd->clip.rect.h),
-                                  cmd->clip.rect.w, cmd->clip.rect.h);
+                    case MU_COMMAND_CLIP: {
+                        window_clip = cmd->clip.rect;
+                        window_scissor();
                         break;
+                    }
                 }
             }
+
             glDisable(GL_SCISSOR_TEST);
             glDisable(GL_BLEND);
         }
@@ -526,6 +534,8 @@ void reshape(struct window_instance * window, int width, int height) {
     glViewport(0, 0, width, height);
     settings.window_width  = width;
     settings.window_height = height;
+
+    window_scissor();
 
     if (settings.vsync < 2)
         window_swapping(settings.vsync);
@@ -746,6 +756,7 @@ int main(int argc, char ** argv) {
     settings.invert_y          = 0;
     settings.smooth_fog        = 0;
     settings.camera_fov        = CAMERA_DEFAULT_FOV;
+    settings.scale             = 0;
     strcpy(settings.name, "DEV_CLIENT");
 
 #ifdef USE_TOUCH
