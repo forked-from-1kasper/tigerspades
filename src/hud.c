@@ -38,7 +38,6 @@
 #include <BetterSpades/network.h>
 #include <BetterSpades/rpc.h>
 #include <BetterSpades/map.h>
-#include <BetterSpades/player.h>
 #include <BetterSpades/camera.h>
 #include <BetterSpades/cameracontroller.h>
 #include <BetterSpades/ping.h>
@@ -48,6 +47,7 @@
 #include <BetterSpades/tracer.h>
 #include <BetterSpades/font.h>
 #include <BetterSpades/unicode.h>
+#include <BetterSpades/player.h>
 
 #include <parson.h>
 #include <http.h>

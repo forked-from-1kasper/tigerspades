@@ -26,6 +26,7 @@
 #include <log.h>
 
 #include <BetterSpades/common.h>
+#include <BetterSpades/ping.h>
 #include <BetterSpades/file.h>
 #include <BetterSpades/font.h>
 #include <BetterSpades/weapon.h>
@@ -42,7 +43,6 @@
 #include <BetterSpades/player.h>
 #include <BetterSpades/hud.h>
 #include <BetterSpades/config.h>
-#include <BetterSpades/ping.h>
 #include <BetterSpades/matrix.h>
 #include <BetterSpades/texture.h>
 #include <BetterSpades/chunk.h>

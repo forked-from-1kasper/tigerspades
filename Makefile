@@ -34,6 +34,10 @@ LDFLAGS =
 ifeq ($(TOOLKIT),SDL)
 	CFLAGS += -DUSE_SDL
 
+	ifeq ($(OS),Windows_NT)
+		LDFLAGS += -lSDL2
+	endif
+
 	ifeq ($(UNAME),Linux)
 		LDFLAGS += -lSDL2
 	endif
@@ -45,11 +49,26 @@ endif
 
 ifeq ($(TOOLKIT),GLFW)
 	CFLAGS += -DUSE_GLFW
-	LDFLAGS += -lglfw
+
+	ifeq ($(OS),Windows_NT)
+		LDFLAGS += -lglfw3
+	endif
+
+	ifeq ($(UNAME),Linux)
+		LDFLAGS += -lglfw
+	endif
+
+	ifeq ($(UNAME),Darwin)
+		LDFLAGS += -lglfw
+	endif
 endif
 
 ifeq ($(TOOLKIT),GLUT)
 	CFLAGS += -DUSE_GLUT
+
+	ifeq ($(OS),Windows_NT)
+		LDFLAGS += -lfreeglut
+	endif
 
 	ifeq ($(UNAME),Linux)
 		LDFLAGS += -lglut
@@ -58,6 +77,10 @@ ifeq ($(TOOLKIT),GLUT)
 	ifeq ($(UNAME),Darwin)
 		LDFLAGS += -framework GLUT
 	endif
+endif
+
+ifeq ($(OS),Windows_NT)
+	LDFLAGS += -lopenal -lopengl32 -lglu32 -lgdi32 -lwinmm -lws2_32 -pthread
 endif
 
 ifeq ($(UNAME),Linux)
