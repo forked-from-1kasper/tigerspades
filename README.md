@@ -6,18 +6,18 @@
 * Runs on very old systems back to OpenGL 1.1 (OpenGL ES support too).
 * Shares similar if not even better performance to voxlap.
 
-## Differences in this fork
-
-* Support of big-endian systems (e.g. PowerPC).
-* Unicode & UTF-8.
-* Customizable key bindings.
-
 #### Why should I use this instead of ...?
 
 * Free of any Jagex code, they can’t shut it down.
 * Open for future expansion.
 * Easy to use.
 * No hidden bugs.
+
+## Differences in this fork
+
+* Support of big-endian systems (e.g. PowerPC).
+* Unicode & UTF-8.
+* Customizable key bindings.
 
 ## System requirements
 
