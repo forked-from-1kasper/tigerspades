@@ -96,15 +96,6 @@ void config_save() {
             config_seti("controls", e->name, e->def);
     }
 
-    for (int k = 0; k < list_size(&config_keybind); k++) {
-        Keybind * keybind = list_get(&config_keybind, k);
-
-        if (keybind->key > 0 && strlen(keybind->value) > 0) {
-            char buff[16]; snprintf(buff, sizeof(buff), "%d", keybind->key);
-            config_sets("keybind", buff, keybind->value);
-        }
-    }
-
     void * f = file_open("config.ini", "w");
     if (f) {
         char last_section[32] = {0};
@@ -122,6 +113,15 @@ void config_save() {
 
             file_printf(f, "= %s\r\n", e->value);
         }
+
+        file_printf(f, "\r\n[keybind]\r\n");
+        for (int k = 0; k < list_size(&config_keybind); k++) {
+            Keybind * keybind = list_get(&config_keybind, k);
+
+            if (keybind->key > 0 && strlen(keybind->value) > 0)
+                file_printf(f, "%d = %s\r\n", keybind->key, keybind->value);
+        }
+
         file_close(f);
     }
 }

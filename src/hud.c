@@ -2604,7 +2604,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
                 }
             }
 
-            mu_layout_row(ctx, 3, (int[]) {0.65F * width, -0.05F * width, -1}, 0);
+            mu_layout_row(ctx, 2, (int[]) {0.65F * width, -1}, 0);
             mu_layout_next(ctx);
 
             if (mu_button(ctx, "Apply changes")) {
@@ -2748,7 +2748,9 @@ static void hud_controls_render(mu_Context* ctx, float scale) {
 
         if (mu_header_ex(ctx, "Key bindings", MU_OPT_EXPANDED)) {
             int width = mu_get_current_container(ctx)->body.w;
-            mu_layout_row(ctx, 2, (int[]) {0.65F * width, -1}, 0);
+            mu_layout_row(ctx, 3, (int[]) {0.65F * width, -0.05F * width, -1}, 0);
+
+            int idel = -1;
 
             for (int k = 0; k < list_size(&config_keybind); k++) {
                 Keybind * keybind = list_get(&config_keybind, k);
@@ -2767,8 +2769,12 @@ static void hud_controls_render(mu_Context* ctx, float scale) {
 
                 mu_text_color_default(ctx);
 
+                if (mu_button(ctx, "X")) idel = k;
+
                 mu_pop_id(ctx);
             }
+
+            mu_layout_row(ctx, 2, (int[]) {0.65F * width, -1}, 0);
 
             if (mu_button(ctx, "Add")) {
                 Keybind * keybind = list_add(&config_keybind, NULL);
@@ -2777,6 +2783,8 @@ static void hud_controls_render(mu_Context* ctx, float scale) {
 
             if (mu_button(ctx, "Save"))
                 config_save();
+
+            if (idel >= 0) list_remove(&config_keybind, idel);
         }
 
         mu_end_panel(ctx);
