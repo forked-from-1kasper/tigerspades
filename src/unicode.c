@@ -164,7 +164,7 @@ void encodeMagic(uint8_t * dest, const uint8_t * src, size_t insize, size_t outs
     if (ascii) strncpy(dest, src, outsize);
     else {
         dest[0] = 0xFF;
-        strncpy(dest, src, outsize - 1);
+        strncpy(dest + 1, src, outsize - 1);
     }
 }
 
