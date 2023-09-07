@@ -104,7 +104,8 @@ void read_PacketMapChunk(void * data, int len) {
         compressed_chunk_data = realloc(compressed_chunk_data, compressed_chunk_data_size);
         CHECK_ALLOCATION_ERROR(compressed_chunk_data)
     }
-    // accept any chunk length for "superior" performance, as pointed out by github/NotAFile
+
+    // accept any chunk length for “superior” performance, as pointed out by github/NotAFile
     memcpy(compressed_chunk_data + compressed_chunk_data_offset, data, len);
     compressed_chunk_data_offset += len;
 }
@@ -267,15 +268,13 @@ void read_PacketBlockLine(void * data, int len) {
 void read_PacketStateData(void * data, int len) {
     struct PacketStateData * p = (struct PacketStateData*) data;
 
-    strncpy(gamestate.team_1.name, p->team_1_name, sizeof(p->team_1_name));
-    gamestate.team_1.name[sizeof(gamestate.team_1.name) - 1] = 0;
+    decodeMagic(gamestate.team_1.name, p->team_1_name, sizeof(gamestate.team_1.name));
 
     gamestate.team_1.red   = p->team_1_red;
     gamestate.team_1.green = p->team_1_green;
     gamestate.team_1.blue  = p->team_1_blue;
 
-    strncpy(gamestate.team_2.name, p->team_2_name, sizeof(p->team_2_name));
-    gamestate.team_2.name[sizeof(gamestate.team_2.name) - 1] = 0;
+    decodeMagic(gamestate.team_2.name, p->team_2_name, sizeof(gamestate.team_2.name));
 
     gamestate.team_2.red   = p->team_2_red;
     gamestate.team_2.green = p->team_2_green;
@@ -395,31 +394,29 @@ void read_PacketFogColor(void * data, int len) {
 void read_PacketExistingPlayer(void * data, int len) {
     struct PacketExistingPlayer * p = (struct PacketExistingPlayer*) data;
     if (p->player_id < PLAYERS_MAX) {
-        if (!players[p->player_id].connected)
-            printJoinMsg(p->team, p->name);
         player_reset(&players[p->player_id]);
-        players[p->player_id].connected = 1;
-        players[p->player_id].alive = 1;
-        players[p->player_id].team = p->team;
-        players[p->player_id].weapon = p->weapon;
-        players[p->player_id].held_item = p->held_item;
-        players[p->player_id].score = letohs32(p->kills);
-        players[p->player_id].block.r = p->red;
-        players[p->player_id].block.g = p->green;
-        players[p->player_id].block.b = p->blue;
-        players[p->player_id].ammo = weapon_ammo(p->weapon);
+        players[p->player_id].connected     = 1;
+        players[p->player_id].alive         = 1;
+        players[p->player_id].team          = p->team;
+        players[p->player_id].weapon        = p->weapon;
+        players[p->player_id].held_item     = p->held_item;
+        players[p->player_id].score         = letohs32(p->kills);
+        players[p->player_id].block.r       = p->red;
+        players[p->player_id].block.g       = p->green;
+        players[p->player_id].block.b       = p->blue;
+        players[p->player_id].ammo          = weapon_ammo(p->weapon);
         players[p->player_id].ammo_reserved = weapon_ammo_reserved(p->weapon);
 
-        strncpy(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
-        players[p->player_id].name[sizeof(players[p->player_id].name) - 1] = 0;
+        decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
+
+        if (!players[p->player_id].connected)
+            printJoinMsg(p->team, players[p->player_id].name);
     }
 }
 
 void read_PacketCreatePlayer(void * data, int len) {
     struct PacketCreatePlayer * p = (struct PacketCreatePlayer*) data;
     if (p->player_id < PLAYERS_MAX) {
-        if (!players[p->player_id].connected)
-            printJoinMsg(p->team, p->name);
         player_reset(&players[p->player_id]);
         players[p->player_id].connected = 1;
         players[p->player_id].alive = 1;
@@ -430,19 +427,19 @@ void read_PacketCreatePlayer(void * data, int len) {
         players[p->player_id].pos.y = 63.0F - letohf(p->z);
         players[p->player_id].pos.z = letohf(p->y);
 
-        strncpy(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
-        players[p->player_id].name[sizeof(players[p->player_id].name) - 1] = 0;
+        decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
 
-        players[p->player_id].orientation.x = players[p->player_id].orientation_smooth.x
-            = (p->team == TEAM_1) ? 1.0F : -1.0F;
+        players[p->player_id].orientation.x = players[p->player_id].orientation_smooth.x = (p->team == TEAM_1) ? 1.0F : -1.0F;
         players[p->player_id].orientation.y = players[p->player_id].orientation_smooth.y = 0.0F;
         players[p->player_id].orientation.z = players[p->player_id].orientation_smooth.z = 0.0F;
 
         players[p->player_id].block.r = 111;
         players[p->player_id].block.g = 111;
         players[p->player_id].block.b = 111;
-        players[p->player_id].ammo = weapon_ammo(p->weapon);
+
+        players[p->player_id].ammo          = weapon_ammo(p->weapon);
         players[p->player_id].ammo_reserved = weapon_ammo_reserved(p->weapon);
+
         if (p->player_id == local_player_id) {
             if (p->team == TEAM_SPECTATOR) {
                 camera_x = letohf(p->x);
@@ -459,6 +456,9 @@ void read_PacketCreatePlayer(void * data, int len) {
             local_player_lasttool = TOOL_GUN;
             weapon_set(false);
         }
+
+        if (!players[p->player_id].connected)
+            printJoinMsg(p->team, players[p->player_id].name);
     }
 }
 

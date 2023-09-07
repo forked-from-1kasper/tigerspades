@@ -1,3 +1,6 @@
+#include <stdbool.h>
+#include <string.h>
+
 #include <BetterSpades/unicode.h>
 
 uint32_t cp437[] = {
@@ -147,4 +150,27 @@ void reencode(uint8_t * dest, const uint8_t * src, Codepage inpage, Codepage out
     }
 
     *dest = 0;
+}
+
+void encodeMagic(uint8_t * dest, const uint8_t * src, size_t insize, size_t outsize) {
+    bool ascii = true;
+
+    for (size_t i = 0; i < insize; i++) {
+        if (!OCT1(src[i])) {
+            ascii = false; break;
+        }
+    }
+
+    if (ascii) strncpy(dest, src, outsize);
+    else {
+        dest[0] = 0xFF;
+        strncpy(dest, src, outsize - 1);
+    }
+}
+
+void decodeMagic(uint8_t * dest, const uint8_t * src, size_t size) {
+    if (src[0] == 0xFF) {
+        strncpy(dest, src + 1, size);
+        dest[size - 1] = 0;
+    } else reencode(dest, src, CP437, UTF8);
 }

@@ -13,4 +13,7 @@ uint8_t encode(uint8_t *, uint32_t, Codepage);
 uint8_t decode(uint8_t *, uint32_t *, Codepage);
 void reencode(uint8_t *, const uint8_t *, Codepage inpage, Codepage outpage);
 
+void encodeMagic(uint8_t * dest, const uint8_t * src, size_t insize, size_t outsize);
+void decodeMagic(uint8_t * dest, const uint8_t * src, size_t size);
+
 #endif

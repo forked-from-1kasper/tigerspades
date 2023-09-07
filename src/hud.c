@@ -1435,20 +1435,7 @@ void broadcast_chat(unsigned char chat_type, const char * message, size_t size) 
     contained.player_id = local_player_id;
     contained.chat_type = chat_type;
 
-    bool unicode = false;
-
-    for (size_t i = 0; i < size; i++) {
-        if (!OCT1(message[i])) {
-            unicode = true; break;
-        }
-    }
-
-    if (unicode) {
-        contained.message[0] = 0xFF;
-        strcpy(contained.message + 1, message);
-        size++;
-    } else strcpy(contained.message, message);
-
+    encodeMagic(contained.message, message, size, sizeof(contained.message));
     network_send(PACKET_CHATMESSAGE_ID, &contained, sizeof(contained) - sizeof(contained.message) + size + 1);
 }
 
@@ -1730,16 +1717,16 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                         if (new_team == TEAM_SPECTATOR) {
                             struct PacketExistingPlayer login;
                             login.player_id = local_player_id;
-                            login.team = local_player_newteam;
-                            login.weapon = WEAPON_RIFLE;
+                            login.team      = local_player_newteam;
+                            login.weapon    = WEAPON_RIFLE;
                             login.held_item = TOOL_GUN;
-                            login.kills = 0;
-                            login.blue = players[local_player_id].block.b;
-                            login.green = players[local_player_id].block.g;
-                            login.red = players[local_player_id].block.r;
-                            strcpy(login.name, settings.name);
-                            network_send(PACKET_EXISTINGPLAYER_ID, &login,
-                                         sizeof(login) - sizeof(login.name) + strlen(settings.name) + 1);
+                            login.kills     = 0;
+                            login.blue      = players[local_player_id].block.b;
+                            login.green     = players[local_player_id].block.g;
+                            login.red       = players[local_player_id].block.r;
+
+                            encodeMagic(login.name, settings.name, strlen(settings.name), sizeof(login.name));
+                            network_send(PACKET_EXISTINGPLAYER_ID, &login, sizeof(login) - sizeof(login.name) + strlen(login.name) + 1);
                             screen_current = SCREEN_NONE;
                         } else {
                             screen_current = SCREEN_GUN_SELECT;

@@ -37,7 +37,7 @@
 struct channel ping_queue;
 ENetSocket sock, lan;
 pthread_t ping_thread;
-void (*ping_result)(void*, float time_delta, char* aos);
+void (*ping_result)(void *, float time_delta, char * aos);
 
 void ping_init() {
     channel_create(&ping_queue, sizeof(struct ping_entry), 64);
@@ -69,8 +69,8 @@ static void ping_lan() {
         enet_socket_send(lan, &addr, &buffer, 1);
 }
 
-static bool pings_retry(void* key, void* value, void* user) {
-    struct ping_entry* entry = (struct ping_entry*)value;
+static bool pings_retry(void * key, void * value, void * user) {
+    struct ping_entry * entry = (struct ping_entry*) value;
 
     if (window_time() - entry->time_start > 2.0F) { // timeout
         // try up to 3 times after first failed attempt
@@ -87,9 +87,9 @@ static bool pings_retry(void* key, void* value, void* user) {
     return false;
 }
 
-#define IP_KEY(addr) (((uint64_t)addr.host << 16) | (addr.port));
+#define IP_KEY(addr) (((uint64_t) addr.host << 16) | (addr.port));
 
-void* ping_update(void* data) {
+void * ping_update(void * data) {
     pthread_detach(pthread_self());
 
     ping_lan();
@@ -121,7 +121,7 @@ void* ping_update(void* data) {
             uint64_t ID = IP_KEY(from);
 
             if (recvLength != 0) {
-                struct ping_entry* entry = ht_lookup(&pings, &ID);
+                struct ping_entry * entry = ht_lookup(&pings, &ID);
 
                 if (entry) {
                     if (recvLength > 0) { // received something!
@@ -144,9 +144,9 @@ void* ping_update(void* data) {
 
         int length = enet_socket_receive(lan, &from, &buf, 1);
         if (length) {
-            JSON_Value* js = json_parse_string(buf.data);
+            JSON_Value * js = json_parse_string(buf.data);
             if (js) {
-                JSON_Object* root = json_value_get_object(js);
+                JSON_Object * root = json_value_get_object(js);
 
                 struct serverlist_entry e;
 
@@ -172,7 +172,7 @@ void* ping_update(void* data) {
     }
 }
 
-void ping_check(char* addr, int port, char* aos) {
+void ping_check(char * addr, int port, char * aos) {
     struct ping_entry entry = {
         .trycount = 0,
         .addr.port = port,
@@ -189,7 +189,7 @@ void ping_check(char* addr, int port, char* aos) {
     enet_socket_send(sock, &entry.addr, &(ENetBuffer) {.data = "HELLO", .dataLength = 5}, 1);
 }
 
-void ping_start(void (*result)(void*, float, char*)) {
+void ping_start(void (*result)(void *, float, char *)) {
     ping_stop();
 
     ping_result = result;
