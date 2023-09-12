@@ -20,7 +20,7 @@ ODEPS   := $(CDEPS:$(DEPSDIR)/%.c=$(BUILDDIR)/%.o)
 CFILES  := $(shell find $(SRCDIR) -type f -name '*.c')
 OFILES  := $(CFILES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 
-CFLAGS  = -std=gnu99 -Werror=incompatible-pointer-types
+CFLAGS  = -std=gnu99
 CFLAGS += -DBETTERSPADES_MAJOR=\"$(MAJOR)\"
 CFLAGS += -DBETTERSPADES_MINOR=\"$(MINOR)\"
 CFLAGS += -DBETTERSPADES_PATCH=\"$(PATCH)\"
