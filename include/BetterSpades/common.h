@@ -20,6 +20,23 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifdef _WIN32
+    #define OS_WINDOWS
+#endif
+
+#ifdef __linux__
+    #define OS_LINUX
+    #include <sys/sysinfo.h>
+#endif
+
+#ifdef __APPLE__
+    #define OS_APPLE
+#endif
+
+#ifdef __HAIKU__
+    #define OS_HAIKU
+#endif
+
 #if defined(OS_WINDOWS)
     #define OS "Windows"
 #elif defined(OS_LINUX)
@@ -81,23 +98,6 @@
 
 #ifdef USE_RPC
     #include <discord_rpc.h>
-#endif
-
-#ifdef _WIN32
-    #define OS_WINDOWS
-#endif
-
-#ifdef __linux__
-    #define OS_LINUX
-    #include <sys/sysinfo.h>
-#endif
-
-#ifdef __APPLE__
-    #define OS_APPLE
-#endif
-
-#ifdef __HAIKU__
-    #define OS_HAIKU
 #endif
 
 #ifndef min
