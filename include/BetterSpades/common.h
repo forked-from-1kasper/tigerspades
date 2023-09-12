@@ -50,9 +50,9 @@
     #define ARCH "m68k"
 #elif defined(__mips__)
     #define ARCH "MIPS"
-#elif defined(__powerpc64__) || defined(__ppc_64)
+#elif defined(_ARCH_PPC64) || defined(__ppc64__) || defined(__PPC64__) || defined(__powerpc64__) || defined(__ppc_64)
     #define ARCH "PPC64"
-#elif defined(__powerpc__)
+#elif defined(_ARCH_PPC) || defined(__ppc) || defined(__ppc__) || defined(__PPC__) || defined(__powerpc) || defined(__powerpc__) || defined(__POWERPC__)
     #define ARCH "PowerPC"
 #elif defined(__riscv)
     #define ARCH "RISC-V"
