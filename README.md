@@ -11,7 +11,7 @@
 * Free of any Jagex code, they can’t shut it down.
 * Open for future expansion.
 * Easy to use.
-* No hidden bugs.
+* A lot of hidden bugs.
 
 ## Differences in this fork
 

@@ -1972,7 +1972,7 @@ static http_t * request_serverlist = NULL;
 static http_t * request_news = NULL;
 static int server_count = 0;
 static int player_count = 0;
-static struct serverlist_entry* serverlist;
+static struct serverlist_entry * serverlist;
 
 static int serverlist_con_established;
 static pthread_mutex_t serverlist_lock;
@@ -1988,6 +1988,11 @@ static struct serverlist_news_entry {
 
 static int serverlist_news_exists = 0;
 static char serverlist_input[128];
+
+typedef int (*serverlist_sort)(const struct serverlist_entry *, const struct serverlist_entry *);
+
+static serverlist_sort hud_serverlist_sort_chosen = NULL;
+bool serverlist_descending = true;
 
 static void hud_serverlist_init() {
     ping_stop();
@@ -2008,12 +2013,10 @@ static void hud_serverlist_init() {
 
     pthread_mutex_init(&serverlist_lock, NULL);
     window_textinput(1);
+
+    hud_serverlist_sort_chosen = NULL;
+    serverlist_descending = true;
 }
-
-typedef int (*serverlist_sort)(const struct serverlist_entry *, const struct serverlist_entry *);
-
-static serverlist_sort hud_serverlist_sort_chosen = NULL;
-bool serverlist_descending = true;
 
 static int hud_serverlist_cmp(const void * a, const void * b) {
     const struct serverlist_entry * A = (const struct serverlist_entry*) a;
@@ -2144,7 +2147,17 @@ static Texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     }
 }
 
-static void hud_serverlist_render(mu_Context * ctx, float scale) {
+static void hud_render_tab_button(mu_Context * ctx, float scale, const char * tabname, struct hud * tabptr) {
+    if (hud_active == tabptr)
+        mu_text_color(ctx, 255, 255, 0);
+
+    if (mu_button_ex(ctx, tabname, 0, MU_OPT_ALIGNCENTER | (hud_active == tabptr ? MU_OPT_NOINTERACT : 0)))
+        hud_change(tabptr);
+
+    mu_text_color_default(ctx);
+}
+
+static int hud_header_render(mu_Context * ctx, float scale, const char * text) {
     glColor3f(0.5F, 0.5F, 0.5F);
     float t = window_time() * 0.03125F;
     texture_draw_sector(&texture_ui_bg, 0.0F, settings.window_height, settings.window_width, settings.window_height, t,
@@ -2152,26 +2165,41 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
 
     mu_Rect frame = mu_rect(settings.window_width * 0.125F, 0, settings.window_width * 0.75F, settings.window_height);
 
-    if (mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE)) {
-        mu_Container * cnt = mu_get_current_container(ctx);
-        cnt->rect = frame;
+    int retval = 0;
 
-        int A = ctx->text_width(ctx->style->font, "Servers", 0) * 1.5F;
-        int B = ctx->text_width(ctx->style->font, "Settings", 0) * 1.5F;
-        int C = ctx->text_width(ctx->style->font, "Controls", 0) * 1.5F;
-        mu_layout_row(ctx, 4, (int[]) {A, B, C, -1}, 0);
+    if (retval = mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE)) {
+        mu_Container * cnt = mu_get_current_container(ctx); cnt->rect = frame;
+
+        int width = cnt->body.w;
+        mu_layout_row(ctx, 4, (int[]) {0.166F * width, 0.166F * width, 0.166F * width, -1}, 0);
+
+        hud_render_tab_button(ctx, scale, "Servers",  &hud_serverlist);
+        hud_render_tab_button(ctx, scale, "Settings", &hud_settings);
+        hud_render_tab_button(ctx, scale, "Controls", &hud_controls);
+
+        mu_text_color_default(ctx); mu_button_ex(ctx, text, 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
+    }
+
+    return retval;
+}
+
+static void hud_sort_button_render(mu_Context * ctx, float scale, const char * name, serverlist_sort cmp) {
+    if (hud_serverlist_sort_chosen == cmp)
         mu_text_color(ctx, 255, 255, 0);
-        mu_button_ex(ctx, "Servers", 0, MU_OPT_NOINTERACT | MU_OPT_ALIGNCENTER);
-        mu_text_color_default(ctx);
-        if (mu_button(ctx, "Settings"))
-            hud_change(&hud_settings);
-        if (mu_button(ctx, "Controls"))
-            hud_change(&hud_controls);
 
-        char total_str[128];
-        sprintf(total_str, (server_count > 0) ? "%i players on %i servers" : "No servers", player_count, server_count);
-        mu_button_ex(ctx, total_str, 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
+    if (mu_button_ex(ctx, name, 0, MU_OPT_ALIGNCENTER)) {
+        pthread_mutex_lock(&serverlist_lock);
+        hud_serverlist_sort(cmp);
+        pthread_mutex_unlock(&serverlist_lock);
+    }
 
+    mu_text_color_default(ctx);
+}
+
+static void hud_serverlist_render(mu_Context * ctx, float scale) {
+    char total_str[128]; sprintf(total_str, server_count > 0 ? "%i players on %i servers" : "No servers", player_count, server_count);
+
+    if (hud_header_render(ctx, scale, total_str)) {
         mu_layout_row(ctx, 1, (int[]) {-1}, settings.window_height * 0.3F);
 
         if (serverlist_news_exists && settings.show_news) {
@@ -2205,8 +2233,10 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
         int a = ctx->text_width(ctx->style->font, "Refresh", 0) * 1.6F;
         int b = ctx->text_width(ctx->style->font, "Join", 0) * 2.0F;
         mu_layout_row(ctx, 3, (int[]) {-a - b, -a, -1}, 0);
+
         if (mu_textbox(ctx, serverlist_input, sizeof(serverlist_input)) & MU_RES_SUBMIT)
             server_c(serverlist_input, NULL);
+
         if (mu_button_ex(ctx, "Join", 16, MU_OPT_ALIGNRIGHT))
             server_c(serverlist_input, NULL);
 
@@ -2221,35 +2251,11 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
         int flag_width = ctx->style->size.y + ctx->style->padding * 2;
         mu_layout_row(ctx, 5, (int[]) {0.12F * width, 0.415F * width, 0.22F * width, 0.12F * width, -1}, 0);
 
-        if (mu_button(ctx, "Players")) {
-            pthread_mutex_lock(&serverlist_lock);
-            hud_serverlist_sort(hud_serverlist_sort_players);
-            pthread_mutex_unlock(&serverlist_lock);
-        }
-
-        if (mu_button(ctx, "Name")) {
-            pthread_mutex_lock(&serverlist_lock);
-            hud_serverlist_sort(hud_serverlist_sort_name);
-            pthread_mutex_unlock(&serverlist_lock);
-        }
-
-        if (mu_button(ctx, "Map")) {
-            pthread_mutex_lock(&serverlist_lock);
-            hud_serverlist_sort(hud_serverlist_sort_map);
-            pthread_mutex_unlock(&serverlist_lock);
-        }
-
-        if (mu_button(ctx, "Mode")) {
-            pthread_mutex_lock(&serverlist_lock);
-            hud_serverlist_sort(hud_serverlist_sort_mode);
-            pthread_mutex_unlock(&serverlist_lock);
-        }
-
-        if (mu_button(ctx, "Ping")) {
-            pthread_mutex_lock(&serverlist_lock);
-            hud_serverlist_sort(hud_serverlist_sort_ping);
-            pthread_mutex_unlock(&serverlist_lock);
-        }
+        hud_sort_button_render(ctx, scale, "Players", hud_serverlist_sort_players);
+        hud_sort_button_render(ctx, scale, "Name",    hud_serverlist_sort_name);
+        hud_sort_button_render(ctx, scale, "Map",     hud_serverlist_sort_map);
+        hud_sort_button_render(ctx, scale, "Mode",    hud_serverlist_sort_mode);
+        hud_sort_button_render(ctx, scale, "Ping",    hud_serverlist_sort_ping);
 
         mu_layout_row(ctx, 6,
                       (int[]) {0.12F * width, flag_width, 0.415F * width - flag_width - ctx->style->spacing * 2,
@@ -2467,7 +2473,7 @@ static void hud_settings_init() {
     memcpy(&settings_tmp, &settings, sizeof(struct RENDER_OPTIONS));
 }
 
-static int int_slider_defaults(mu_Context* ctx, struct config_setting * setting) {
+static int int_slider_defaults(mu_Context * ctx, struct config_setting * setting) {
     int k = setting->defaults_length - 1;
     while (k > 0 && setting->defaults[k] > *(int*)setting->value)
         k--;
@@ -2478,7 +2484,7 @@ static int int_slider_defaults(mu_Context* ctx, struct config_setting * setting)
     int res = mu_slider_ex(ctx, &tmp, 0, setting->defaults_length - 1, 0, "", MU_OPT_ALIGNCENTER);
 
     if (res & MU_RES_CHANGE)
-        *(int*)setting->value = setting->defaults[(int)round(tmp)];
+        *(int*) setting->value = setting->defaults[(int) round(tmp)];
 
     if (setting->label_callback) {
         char buf[64];
@@ -2490,7 +2496,7 @@ static int int_slider_defaults(mu_Context* ctx, struct config_setting * setting)
     return res;
 }
 
-static int int_slider(mu_Context* ctx, int* value, int low, int high) {
+static int int_slider(mu_Context * ctx, int * value, int low, int high) {
     float tmp = *value;
     mu_push_id(ctx, &value, sizeof(value));
     int res = mu_slider_ex(ctx, &tmp, low, high, 0, "%.0f", MU_OPT_ALIGNCENTER);
@@ -2499,7 +2505,7 @@ static int int_slider(mu_Context* ctx, int* value, int low, int high) {
     return res;
 }
 
-static int int_number(mu_Context* ctx, int* value) {
+static int int_number(mu_Context * ctx, int * value) {
     float tmp = *value;
     mu_push_id(ctx, &value, sizeof(value));
     int res = mu_number_ex(ctx, &tmp, 1, "%.0f", MU_OPT_ALIGNCENTER);
@@ -2508,7 +2514,16 @@ static int int_number(mu_Context* ctx, int* value) {
     return res;
 }
 
-static Texture * hud_settings_ui_images(int icon_id, bool* resize) {
+static void hud_bool(mu_Context * ctx, bool * value) {
+    mu_push_id(ctx, &value, sizeof(value));
+
+    if (mu_button(ctx, *value ? "Yes" : "No"))
+        *value = !(*value);
+
+    mu_pop_id(ctx);
+}
+
+static Texture * hud_settings_ui_images(int icon_id, bool * resize) {
     switch (icon_id) {
         case MU_ICON_CHECK:     return &texture_ui_box_check;
         case MU_ICON_EXPANDED:  return &texture_ui_expanded;
@@ -2518,33 +2533,8 @@ static Texture * hud_settings_ui_images(int icon_id, bool* resize) {
 }
 
 static void hud_settings_render(mu_Context * ctx, float scale) {
-    glColor3f(0.5F, 0.5F, 0.5F);
-    float t = window_time() * 0.03125F;
-    texture_draw_sector(&texture_ui_bg, 0.0F, settings.window_height, settings.window_width, settings.window_height, t,
-                        t, settings.window_width / 512.0F, settings.window_height / 512.0F);
-
-    mu_Rect frame = mu_rect(settings.window_width * 0.125F, 0, settings.window_width * 0.75F, settings.window_height);
-
-    if (mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE)) {
-        mu_Container * cnt = mu_get_current_container(ctx);
-        cnt->rect = frame;
-
-        int A = ctx->text_width(ctx->style->font, "Servers", 0) * 1.5F;
-        int B = ctx->text_width(ctx->style->font, "Settings", 0) * 1.5F;
-        int C = ctx->text_width(ctx->style->font, "Controls", 0) * 1.5F;
-        mu_layout_row(ctx, 4, (int[]) {A, B, C, -1}, 0);
-        if (mu_button(ctx, "Servers"))
-            hud_change(&hud_serverlist);
-        mu_text_color(ctx, 255, 255, 0);
-        mu_button_ex(ctx, "Settings", 0, MU_OPT_NOINTERACT | MU_OPT_ALIGNCENTER);
-        mu_text_color_default(ctx);
-        if (mu_button(ctx, "Controls"))
-            hud_change(&hud_controls);
-
-        mu_button_ex(ctx, BETTERSPADES_VERSION_SUMMARY, 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
-
+    if (hud_header_render(ctx, scale, BETTERSPADES_VERSION_SUMMARY)) {
         mu_layout_row(ctx, 1, (int[]) {-1}, -1);
-
         mu_begin_panel(ctx, "Content");
 
         if (mu_header_ex(ctx, "All settings", MU_OPT_EXPANDED)) {
@@ -2553,7 +2543,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
             for (int k = 0; k < list_size(&config_settings); k++) {
                 struct config_setting * a = list_get(&config_settings, k);
 
-                mu_layout_row(ctx, 3, (int[]) {0.65F * width, -0.05F * width, -1}, 0);
+                mu_layout_row(ctx, 3, (int[]) {0.50F * width, -0.05F * width, -1}, 0);
 
                 switch (a->type) {
                     case CONFIG_TYPE_STRING:
@@ -2563,7 +2553,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
                     case CONFIG_TYPE_INT:
                         if (a->max == 1 && a->min == 0) {
                             mu_text(ctx, a->name);
-                            mu_checkbox(ctx, "", a->value);
+                            hud_bool(ctx, a->value);
                         } else if (a->defaults_length > 0) {
                             mu_text(ctx, a->name);
                             int_slider_defaults(ctx, a);
@@ -2604,7 +2594,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
                 }
             }
 
-            mu_layout_row(ctx, 2, (int[]) {0.65F * width, -1}, 0);
+            mu_layout_row(ctx, 3, (int[]) {0.25F * width, 0.50F * width, -1}, 0);
             mu_layout_next(ctx);
 
             if (mu_button(ctx, "Apply changes")) {
@@ -2656,36 +2646,9 @@ static void hud_controls_init() {
     hud_controls_edit = NULL;
 }
 
-static void hud_controls_render(mu_Context* ctx, float scale) {
-    glColor3f(0.5F, 0.5F, 0.5F);
-    float t = window_time() * 0.03125F;
-    texture_draw_sector(&texture_ui_bg, 0.0F, settings.window_height, settings.window_width, settings.window_height, t,
-                        t, settings.window_width / 512.0F, settings.window_height / 512.0F);
-
-    mu_Rect frame = mu_rect(settings.window_width * 0.125F, 0, settings.window_width * 0.75F, settings.window_height);
-
-    if (mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE)) {
-        mu_Container * cnt = mu_get_current_container(ctx);
-        cnt->rect = frame;
-
-        int A = ctx->text_width(ctx->style->font, "Servers", 0) * 1.5F;
-        int B = ctx->text_width(ctx->style->font, "Settings", 0) * 1.5F;
-        int C = ctx->text_width(ctx->style->font, "Controls", 0) * 1.5F;
-        mu_layout_row(ctx, 4, (int[]) {A, B, C, -1}, 0);
-
-        if (mu_button(ctx, "Servers"))
-            hud_change(&hud_serverlist);
-
-        if (mu_button(ctx, "Settings"))
-            hud_change(&hud_settings);
-
-        mu_text_color(ctx, 255, 255, 0);
-        mu_button_ex(ctx, "Controls", 0, MU_OPT_NOINTERACT | MU_OPT_ALIGNCENTER);
-        mu_text_color_default(ctx);
-        mu_button_ex(ctx, BETTERSPADES_VERSION_SUMMARY, 0, MU_OPT_ALIGNRIGHT | MU_OPT_NOINTERACT);
-
+static void hud_controls_render(mu_Context * ctx, float scale) {
+    if (hud_header_render(ctx, scale, BETTERSPADES_VERSION_SUMMARY)) {
         mu_layout_row(ctx, 1, (int[]) {-1}, -1);
-
         mu_begin_panel(ctx, "Content");
 
         char * category = NULL;
@@ -2708,7 +2671,7 @@ static void hud_controls_render(mu_Context* ctx, float scale) {
                                                -0.05F * width, -1},
                                       0);
                     } else {
-                        mu_layout_row(ctx, 3, (int[]) {0.65F * width, -0.05F * width, -1}, 0);
+                        mu_layout_row(ctx, 3, (int[]) {0.50F * width, -0.05F * width, -1}, 0);
                     }
 
                     mu_push_id(ctx, a->display, sizeof(a->display));
@@ -2748,7 +2711,7 @@ static void hud_controls_render(mu_Context* ctx, float scale) {
 
         if (mu_header_ex(ctx, "Key bindings", MU_OPT_EXPANDED)) {
             int width = mu_get_current_container(ctx)->body.w;
-            mu_layout_row(ctx, 3, (int[]) {0.65F * width, -0.05F * width, -1}, 0);
+            mu_layout_row(ctx, 3, (int[]) {0.50F * width, -0.05F * width, -1}, 0);
 
             int idel = -1;
 
@@ -2774,12 +2737,17 @@ static void hud_controls_render(mu_Context* ctx, float scale) {
                 mu_pop_id(ctx);
             }
 
-            mu_layout_row(ctx, 2, (int[]) {0.65F * width, -1}, 0);
+            char buf[] = "\0"; mu_textbox_ex(ctx, buf, 0, MU_OPT_NOINTERACT);
+            mu_button_ex(ctx, NULL, 0, MU_OPT_NOINTERACT);
 
-            if (mu_button(ctx, "Add")) {
+            if (mu_button(ctx, "+")) {
                 Keybind * keybind = list_add(&config_keybind, NULL);
                 keybind->key = 0; memset(keybind->value, 0, sizeof(keybind->value));
             }
+
+            mu_layout_row(ctx, 3, (int[]) {0.25F * width, 0.50F * width, -1}, 0);
+
+            mu_layout_next(ctx);
 
             if (mu_button(ctx, "Save"))
                 config_save();
