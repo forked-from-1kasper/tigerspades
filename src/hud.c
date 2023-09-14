@@ -2138,12 +2138,11 @@ static Texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     }
 
     switch (icon_id) {
-        case MU_ICON_CHECK:      return &texture_ui_box_check;
         case MU_ICON_EXPANDED:   return &texture_ui_expanded;
         case MU_ICON_COLLAPSED:  return &texture_ui_collapsed;
         case 16: *resize = true; return &texture_ui_join;
         case 17: *resize = true; return &texture_ui_wait;
-        default: return NULL;
+        default:                 return NULL;
     }
 }
 
@@ -2525,10 +2524,9 @@ static void hud_bool(mu_Context * ctx, bool * value) {
 
 static Texture * hud_settings_ui_images(int icon_id, bool * resize) {
     switch (icon_id) {
-        case MU_ICON_CHECK:     return &texture_ui_box_check;
         case MU_ICON_EXPANDED:  return &texture_ui_expanded;
         case MU_ICON_COLLAPSED: return &texture_ui_collapsed;
-        default: return NULL;
+        default:                return NULL;
     }
 }
 

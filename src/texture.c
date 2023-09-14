@@ -53,8 +53,6 @@ Texture texture_ui_join;
 Texture texture_ui_reload;
 Texture texture_ui_bg;
 Texture texture_ui_input;
-Texture texture_ui_box_empty;
-Texture texture_ui_box_check;
 Texture texture_ui_expanded;
 Texture texture_ui_collapsed;
 Texture texture_ui_flags;
@@ -341,8 +339,6 @@ void texture_init() {
     texture_create(&texture_ui_reload, "png/ui/reload.png", TEXTURE_FILTER_NEAREST);
     texture_create(&texture_ui_bg, "png/ui/bg.png", TEXTURE_FILTER_NEAREST);
     texture_create(&texture_ui_input, "png/ui/input.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_box_empty, "png/ui/box_empty.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_box_check, "png/ui/box_check.png", TEXTURE_FILTER_NEAREST);
     texture_create(&texture_ui_collapsed, "png/ui/collapsed.png", TEXTURE_FILTER_NEAREST);
     texture_create(&texture_ui_expanded, "png/ui/expanded.png", TEXTURE_FILTER_NEAREST);
     texture_create(&texture_ui_flags, "png/ui/flags.png", TEXTURE_FILTER_NEAREST);

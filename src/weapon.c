@@ -146,7 +146,7 @@ void weapon_recoil(int gun, double * horiz_recoil, double * vert_recoil) {
     switch (gun) {
         case WEAPON_RIFLE:
             *horiz_recoil = 0.0001;
-            *vert_recoil  = 0.050000001;
+            *vert_recoil  = 0.05;
             break;
         case WEAPON_SMG:
             *horiz_recoil = 0.00005;

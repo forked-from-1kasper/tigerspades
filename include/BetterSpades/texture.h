@@ -61,8 +61,6 @@ extern Texture texture_ui_join;
 extern Texture texture_ui_reload;
 extern Texture texture_ui_bg;
 extern Texture texture_ui_input;
-extern Texture texture_ui_box_empty;
-extern Texture texture_ui_box_check;
 extern Texture texture_ui_expanded;
 extern Texture texture_ui_collapsed;
 extern Texture texture_ui_flags;
