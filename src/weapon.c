@@ -62,8 +62,9 @@ void weapon_update() {
                 weapon_reload_inprogress = 0;
             }
         }
+
         if (players[local_player_id].held_item == TOOL_GUN) {
-            players[local_player_id].item_disabled = window_time();
+            players[local_player_id].item_disabled = weapon_reload_inprogress ? window_time() : 0;
             players[local_player_id].items_show_start = window_time();
             players[local_player_id].items_show = 1;
         }
