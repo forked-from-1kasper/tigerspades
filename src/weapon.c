@@ -42,17 +42,19 @@ void weapon_update() {
     if (weapon_reload_inprogress) {
         if (players[local_player_id].weapon == WEAPON_SHOTGUN) {
             if (window_time() - weapon_reload_start >= 0.5F) {
-                local_player_ammo++;
-                local_player_ammo_reserved--;
 
-                struct Sound_wav* snd;
-                if (local_player_ammo < 6) {
+                struct Sound_wav * snd;
+                if (local_player_ammo < 6 && local_player_ammo_reserved > 0) {
+                    local_player_ammo++;
+                    local_player_ammo_reserved--;
+
                     weapon_reload_start = window_time();
                     snd = &sound_shotgun_reload;
                 } else {
                     weapon_reload_inprogress = 0;
                     snd = &sound_shotgun_cock;
                 }
+
                 sound_create(SOUND_LOCAL, snd, 0.0F, 0.0F, 0.0F);
             }
         } else {
@@ -209,8 +211,8 @@ void weapon_reload() {
 
     struct PacketWeaponReload reloadp;
     reloadp.player_id = local_player_id;
-    reloadp.ammo = local_player_ammo;
-    reloadp.reserved = local_player_ammo_reserved;
+    reloadp.ammo      = local_player_ammo;
+    reloadp.reserved  = local_player_ammo_reserved;
     network_send(PACKET_WEAPONRELOAD_ID, &reloadp, sizeof(reloadp));
 }
 
