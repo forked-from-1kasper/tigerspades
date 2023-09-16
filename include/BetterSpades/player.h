@@ -25,10 +25,22 @@
 #include <BetterSpades/aabb.h>
 #include <BetterSpades/network.h>
 
-#define PLAYERS_MAX 256 // just because 32 players are not enough
-#define TEAM_1 0
-#define TEAM_2 1
+#define PLAYERS_MAX    256 // just because 32 players are not enough
+#define TEAM_1         0
+#define TEAM_2         1
 #define TEAM_SPECTATOR 255
+
+typedef struct {
+    float x, y, z;
+} Position;
+
+typedef struct {
+    float x, y, z;
+} Orientation;
+
+typedef struct {
+    float x, y, z;
+} Velocity;
 
 typedef struct {
     char name[11];
@@ -58,8 +70,9 @@ extern unsigned char local_player_ammo, local_player_ammo_reserved;
 extern unsigned char local_player_respawn_time;
 extern float local_player_death_time;
 extern unsigned char local_player_respawn_cnt_last;
-extern unsigned char local_player_newteam;
 extern unsigned char local_player_lasttool;
+
+extern int default_team, default_gun;
 
 extern float local_player_last_damage_timer;
 extern float local_player_last_damage_x;
@@ -93,18 +106,6 @@ typedef struct {
 
 bool player_intersection_exists(Hit * s);
 int player_intersection_choose(Hit * s, float * distance);
-
-typedef struct {
-    float x, y, z;
-} Position;
-
-typedef struct {
-    float x, y, z;
-} Orientation;
-
-typedef struct {
-    float x, y, z;
-} Velocity;
 
 typedef struct {
     char name[17];

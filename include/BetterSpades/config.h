@@ -106,6 +106,8 @@ struct config_setting {
     void (*label_callback)(char* buffer, size_t length, int value, size_t index);
 };
 
+extern char * config_filepath;
+
 extern List config_settings;
 
 void config_register_key(int internal, int def, const char* name, int toggle, const char* display,

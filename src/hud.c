@@ -258,8 +258,6 @@ static void hud_ingame_render3D() {
         }
 
         if (screen_current == SCREEN_GUN_SELECT) {
-            int team = network_logged_in ? players[local_player_id].team : local_player_newteam;
-
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, -1.5F, -1.25F, -3.25F);
             matrix_rotate(matrix_model, window_time() * 90.0F, 0.0F, 1.0F, 0.0F);
@@ -267,7 +265,7 @@ static void hud_ingame_render3D() {
                              (model_semi.zpiv - model_semi.zsiz / 2.0F) * model_semi.scale,
                              (model_semi.ypiv - model_semi.ysiz / 2.0F) * model_semi.scale);
             matrix_upload();
-            kv6_render(&model_semi, team);
+            kv6_render(&model_semi, TEAM_SPECTATOR);
 
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, 0.0F, -1.25F, -3.25F);
@@ -276,7 +274,7 @@ static void hud_ingame_render3D() {
                              (model_smg.zpiv - model_smg.zsiz / 2.0F) * model_smg.scale,
                              (model_smg.ypiv - model_smg.ysiz / 2.0F) * model_smg.scale);
             matrix_upload();
-            kv6_render(&model_smg, team);
+            kv6_render(&model_smg, TEAM_SPECTATOR);
 
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, 1.5F, -1.25F, -3.25F);
@@ -285,7 +283,7 @@ static void hud_ingame_render3D() {
                              (model_shotgun.zpiv - model_shotgun.zsiz / 2.0F) * model_shotgun.scale,
                              (model_shotgun.ypiv - model_shotgun.ysiz / 2.0F) * model_shotgun.scale);
             matrix_upload();
-            kv6_render(&model_shotgun, team);
+            kv6_render(&model_shotgun, TEAM_SPECTATOR);
         }
 
         struct kv6_t * rotating_model = NULL;
@@ -1697,36 +1695,31 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 }
             }
 
+            static int new_team = -1;
+
             if (screen_current == SCREEN_TEAM_SELECT) {
-                int new_team = 256;
                 switch (key) {
-                    case WINDOW_KEY_SELECT1: new_team = TEAM_1; break;
-                    case WINDOW_KEY_SELECT2: new_team = TEAM_2; break;
+                    case WINDOW_KEY_SELECT1: new_team = TEAM_1;         break;
+                    case WINDOW_KEY_SELECT2: new_team = TEAM_2;         break;
                     case WINDOW_KEY_SELECT3: new_team = TEAM_SPECTATOR; break;
+                    default:                 new_team = -1;             break;
                 }
-                if (new_team <= 255) {
+
+                if (new_team >= 0) {
                     if (network_logged_in) {
                         struct PacketChangeTeam p;
                         p.player_id = local_player_id;
-                        p.team = new_team;
+                        p.team      = new_team;
+
                         network_send(PACKET_CHANGETEAM_ID, &p, sizeof(p));
                         screen_current = SCREEN_NONE;
                         return;
                     } else {
-                        local_player_newteam = new_team;
                         if (new_team == TEAM_SPECTATOR) {
-                            struct PacketExistingPlayer login;
-                            login.player_id = local_player_id;
-                            login.team      = local_player_newteam;
-                            login.weapon    = WEAPON_RIFLE;
-                            login.held_item = TOOL_GUN;
-                            login.kills     = 0;
-                            login.blue      = players[local_player_id].block.b;
-                            login.green     = players[local_player_id].block.g;
-                            login.red       = players[local_player_id].block.r;
-
-                            encodeMagic(login.name, settings.name, strlen(settings.name), sizeof(login.name));
-                            network_send(PACKET_EXISTINGPLAYER_ID, &login, sizeof(login) - sizeof(login.name) + strlen(login.name) + 1);
+                            network_join_game(new_team, WEAPON_RIFLE);
+                            screen_current = SCREEN_NONE;
+                        } else if (default_gun >= 0) {
+                            network_join_game(new_team, default_gun);
                             screen_current = SCREEN_NONE;
                         } else {
                             screen_current = SCREEN_GUN_SELECT;
@@ -1734,6 +1727,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                         return;
                     }
                 }
+
                 if ((key == WINDOW_KEY_CHANGETEAM || key == WINDOW_KEY_ESCAPE)
                    && (!network_connected || (network_connected && network_logged_in))) {
                     screen_current = SCREEN_NONE;
@@ -1742,35 +1736,27 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
             }
 
             if (screen_current == SCREEN_GUN_SELECT) {
-                int new_gun = 255;
+                int new_gun = -1;
                 switch (key) {
-                    case WINDOW_KEY_SELECT1: new_gun = WEAPON_RIFLE; break;
-                    case WINDOW_KEY_SELECT2: new_gun = WEAPON_SMG; break;
+                    case WINDOW_KEY_SELECT1: new_gun = WEAPON_RIFLE;   break;
+                    case WINDOW_KEY_SELECT2: new_gun = WEAPON_SMG;     break;
                     case WINDOW_KEY_SELECT3: new_gun = WEAPON_SHOTGUN; break;
+                    default:                 new_gun = -1;             break;
                 }
-                if (new_gun < 255) {
+
+                if (new_gun >= 0) {
                     if (network_logged_in) {
                         struct PacketChangeWeapon p;
                         p.player_id = local_player_id;
-                        p.weapon = new_gun;
+                        p.weapon    = new_gun;
+
                         network_send(PACKET_CHANGEWEAPON_ID, &p, sizeof(p));
-                    } else {
-                        struct PacketExistingPlayer login;
-                        login.player_id = local_player_id;
-                        login.team = local_player_newteam;
-                        login.weapon = new_gun;
-                        login.held_item = TOOL_GUN;
-                        login.kills = 0;
-                        login.blue = players[local_player_id].block.b;
-                        login.green = players[local_player_id].block.g;
-                        login.red = players[local_player_id].block.r;
-                        strcpy(login.name, settings.name);
-                        network_send(PACKET_EXISTINGPLAYER_ID, &login,
-                                     sizeof(login) - sizeof(login.name) + strlen(settings.name) + 1);
-                    }
+                    } else network_join_game(new_team >= 0 ? new_team : default_team, new_gun);
+
                     screen_current = SCREEN_NONE;
                     return;
                 }
+
                 if ((key == WINDOW_KEY_CHANGEWEAPON || key == WINDOW_KEY_ESCAPE)
                    && (!network_connected || (network_connected && network_logged_in))) {
                     screen_current = SCREEN_NONE;

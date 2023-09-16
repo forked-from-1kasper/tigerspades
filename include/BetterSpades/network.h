@@ -40,6 +40,8 @@ int network_update(void);
 int network_status(void);
 void network_init(void);
 
+void network_join_game(unsigned char team, unsigned char weapon);
+
 void read_PacketMapChunk(void * data, int len);
 void read_PacketChatMessage(void * data, int len);
 void read_PacketBlockAction(void * data, int len);

@@ -34,6 +34,8 @@
 
 #include <ini.h>
 
+char * config_filepath = "config.ini";
+
 struct RENDER_OPTIONS settings, settings_tmp;
 
 List config_keys, config_settings, config_file, config_keybind;
@@ -96,7 +98,7 @@ void config_save() {
             config_seti("controls", e->name, e->def);
     }
 
-    void * f = file_open("config.ini", "w");
+    void * f = file_open(config_filepath, "w");
     if (f) {
         char last_section[32] = {0};
         for (int k = 0; k < list_size(&config_file); k++) {
@@ -368,7 +370,8 @@ void config_reload() {
 
     list_sort(&config_keys, config_key_cmp);
 
-    char * s = file_load("config.ini");
+    char * s = file_load(config_filepath);
+
     if (s) {
         ini_parse_string(s, config_read_key, NULL);
         free(s);

@@ -46,6 +46,7 @@
 #include <BetterSpades/matrix.h>
 #include <BetterSpades/texture.h>
 #include <BetterSpades/chunk.h>
+#include <BetterSpades/unicode.h>
 #include <BetterSpades/main.h>
 
 int fps = 0;
@@ -735,6 +736,8 @@ void idle(double dt) {
     rpc_update();
 }
 
+#define MATCH(x, y) if (!strcmp((x), (y)))
+
 int main(int argc, char ** argv) {
     settings.opengl14          = 1;
     settings.color_correction  = 0;
@@ -783,6 +786,32 @@ int main(int argc, char ** argv) {
 
     log_info("TigerSpades " BETTERSPADES_VERSION);
 
+    char * default_server = NULL;
+
+    for (size_t i = 1; i < argc; i++) {
+        MATCH(argv[i], "--help") {
+            log_info("Usage: %s --server aos://<ip>:<port> --team <team> --weapon <weapon> --config <file>", argv[0]);
+        } else MATCH(argv[i], "--server") {
+            if (argc <= ++i) log_error("The “--server” option requires an argument.");
+            else default_server = argv[i];
+        } else MATCH(argv[i], "--team") {
+            if (argc <= ++i) log_error("The “--team” option requires an argument.");
+            else MATCH(argv[i], "1") default_team = TEAM_1;
+            else MATCH(argv[i], "2") default_team = TEAM_2;
+            else MATCH(argv[i], "3") default_team = TEAM_SPECTATOR;
+            else log_error("Unknown team (expected 1, 2, or 3).");
+        } else MATCH(argv[i], "--weapon") {
+            if (argc <= ++i) log_error("The “--weapon” option requires an argument.");
+            else MATCH(argv[i], "rifle")   default_gun = WEAPON_RIFLE;
+            else MATCH(argv[i], "smg")     default_gun = WEAPON_SMG;
+            else MATCH(argv[i], "shotgun") default_gun = WEAPON_SHOTGUN;
+            else log_error("Unknown weapon name (expected rifle, smg, or shotgun).");
+        } else MATCH(argv[i], "--config") {
+            if (argc <= ++i) log_error("The “--config” option requires an argument.");
+            else config_filepath = argv[i];
+        }
+    }
+
     config_reload();
 
     window_init(&argc, argv);
@@ -792,9 +821,9 @@ int main(int argc, char ** argv) {
         log_error("Could not load extended OpenGL functions!");
 #endif
 
-    log_info("Vendor: %s", glGetString(GL_VENDOR));
+    log_info("Vendor: %s",   glGetString(GL_VENDOR));
     log_info("Renderer: %s", glGetString(GL_RENDERER));
-    log_info("Version: %s", glGetString(GL_VERSION));
+    log_info("Version: %s",  glGetString(GL_VERSION));
 
     if (settings.multisamples > 0) {
         glEnable(GL_MULTISAMPLE);
@@ -803,26 +832,20 @@ int main(int argc, char ** argv) {
 
     while (glGetError() != GL_NO_ERROR);
 
-    init();
-    atexit(deinit);
+    init(); atexit(deinit);
 
     if (settings.vsync < 2)
         window_swapping(settings.vsync);
+
     if (settings.vsync > 1)
         window_swapping(0);
 
-    if (argc > 1) {
-        if (!strcmp(argv[1], "--help")) {
-            log_info("Usage: client                     [server browser]");
-            log_info("       client -aos://<ip>:<port>  [custom address]");
-            exit(0);
-        }
-
-        if (!network_connect_string(argv[1] + 1)) {
+    if (default_server != NULL) {
+        if (!network_connect_string(default_server)) {
             log_error("Error: Connection failed (use --help for instructions)");
             exit(1);
         } else {
-            log_info("Connection to %s successful", argv[1] + 1);
+            log_info("Connection to %s successful", default_server);
             hud_change(&hud_ingame);
         }
     }

@@ -38,8 +38,9 @@
 #include <BetterSpades/particle.h>
 #include <BetterSpades/texture.h>
 #include <BetterSpades/chunk.h>
+#include <BetterSpades/config.h>
 
-void (*packets[256])(void* data, int len) = {NULL};
+void (*packets[256])(void * data, int len) = {NULL};
 
 int network_connected = 0;
 int network_logged_in = 0;
@@ -95,6 +96,21 @@ static void printJoinMsg(int team, char * name) {
 
     char s[64]; sprintf(s, "%s joined the %s team", name, t);
     chat_add(0, Red, s, UTF8);
+}
+
+void network_join_game(unsigned char team, unsigned char weapon) {
+    struct PacketExistingPlayer contained;
+    contained.player_id = local_player_id;
+    contained.team      = team;
+    contained.weapon    = weapon;
+    contained.held_item = TOOL_GUN;
+    contained.kills     = 0;
+    contained.blue      = players[local_player_id].block.b;
+    contained.green     = players[local_player_id].block.g;
+    contained.red       = players[local_player_id].block.r;
+
+    encodeMagic(contained.name, settings.name, strlen(settings.name), sizeof(contained.name));
+    network_send(PACKET_EXISTINGPLAYER_ID, &contained, sizeof(contained) - sizeof(contained.name) + strlen(contained.name) + 1);
 }
 
 void read_PacketMapChunk(void * data, int len) {
@@ -331,7 +347,7 @@ void read_PacketStateData(void * data, int len) {
     fog_color[1] = p->fog_green / 255.0F;
     fog_color[2] = p->fog_blue  / 255.0F;
 
-    local_player_id = p->player_id;
+    local_player_id       = p->player_id;
     local_player_health   = 100;
     local_player_blocks   = 50;
     local_player_grenades = 3;
@@ -341,10 +357,21 @@ void read_PacketStateData(void * data, int len) {
     players[local_player_id].block.g = 111;
     players[local_player_id].block.b = 111;
 
-    camera_mode = CAMERAMODE_SELECTION;
-    screen_current = SCREEN_TEAM_SELECT;
+    if (default_team >= 0 && default_gun >= 0) {
+        network_join_game(default_team, default_gun);
+        screen_current = SCREEN_NONE;
+    } else if (default_team == TEAM_SPECTATOR) {
+        network_join_game(default_team, WEAPON_RIFLE);
+        screen_current = SCREEN_NONE;
+    } else if (default_team >= 0) {
+        screen_current = SCREEN_GUN_SELECT;
+    } else {
+        screen_current = SCREEN_TEAM_SELECT;
+    }
+
+    camera_mode          = CAMERAMODE_SELECTION;
     network_map_transfer = 0;
-    chat_popup_duration = 0;
+    chat_popup_duration  = 0;
 
     log_info("map data was %i bytes", compressed_chunk_data_offset);
     if (!network_map_cached) {
@@ -419,13 +446,13 @@ void read_PacketCreatePlayer(void * data, int len) {
     if (p->player_id < PLAYERS_MAX) {
         player_reset(&players[p->player_id]);
         players[p->player_id].connected = 1;
-        players[p->player_id].alive = 1;
-        players[p->player_id].team = p->team;
+        players[p->player_id].alive     = 1;
+        players[p->player_id].team      = p->team;
         players[p->player_id].held_item = TOOL_GUN;
-        players[p->player_id].weapon = p->weapon;
-        players[p->player_id].pos.x = letohf(p->x);
-        players[p->player_id].pos.y = 63.0F - letohf(p->z);
-        players[p->player_id].pos.z = letohf(p->y);
+        players[p->player_id].weapon    = p->weapon;
+        players[p->player_id].pos.x     = letohf(p->x);
+        players[p->player_id].pos.y     = 63.0F - letohf(p->z);
+        players[p->player_id].pos.z     = letohf(p->y);
 
         decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
 
@@ -446,14 +473,16 @@ void read_PacketCreatePlayer(void * data, int len) {
                 camera_y = 63.0F - letohf(p->z);
                 camera_z = letohf(p->y);
             }
-            camera_mode = (p->team == TEAM_SPECTATOR) ? CAMERAMODE_SPECTATOR : CAMERAMODE_FPS;
-            camera_rot_x = (p->team == TEAM_1) ? 0.5F * PI : 1.5F * PI;
-            camera_rot_y = 0.5F * PI;
-            network_logged_in = 1;
+
+            camera_mode           = (p->team == TEAM_SPECTATOR) ? CAMERAMODE_SPECTATOR : CAMERAMODE_FPS;
+            camera_rot_x          = (p->team == TEAM_1) ? 0.5F * PI : 1.5F * PI;
+            camera_rot_y          = 0.5F * PI;
+            network_logged_in     = 1;
             local_player_health   = 100;
             local_player_blocks   = 50;
             local_player_grenades = 3;
             local_player_lasttool = TOOL_GUN;
+
             weapon_set(false);
         }
 
@@ -1084,10 +1113,11 @@ int network_identifier_split(char * addr, char * ip_out, int * port_out) {
 }
 
 int network_connect_string(char * addr) {
-    char ip[32];
-    int port;
+    char ip[32]; int port;
+
     if (!network_identifier_split(addr, ip, &port))
         return 0;
+
     return network_connect(ip, port);
 }
 
@@ -1096,10 +1126,11 @@ int network_update() {
         if (window_time() - network_stats_last >= 1.0F) {
             for (int k = 39; k > 0; k--)
                 network_stats[k] = network_stats[k - 1];
-            network_stats[0].ingoing = 0;
+
+            network_stats[0].ingoing  = 0;
             network_stats[0].outgoing = 0;
             network_stats[0].avg_ping = network_ping();
-            network_stats_last = window_time();
+            network_stats_last        = window_time();
         }
 
         ENetEvent event;

@@ -78,7 +78,7 @@ Start the client e.g. with the following inside the `dist/` directory:
 ```
 Or connect directly to localhost:
 ```
-./betterspades -aos://16777343:32887
+./betterspades --server aos://16777343:32887
 ```
 
 #### macOS
