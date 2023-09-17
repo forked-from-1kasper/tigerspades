@@ -1094,24 +1094,25 @@ int player_move(Player * p, float fsynctics, int id) {
         f *= SQRT; // if strafe + forward/backwards then limit diagonal velocity
 
     float len = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.y, 2.0F));
-    float sx = -p->orientation.y / len;
-    float sy = p->orientation.x / len;
+
+    float sx = p->orientation.x / len;
+    float sy = p->orientation.y / len;
 
     if (p->input.keys & MASKON(INPUT_UP)) {
-        p->physics.velocity.x += p->orientation.x * f;
-        p->physics.velocity.y += p->orientation.y * f;
+        p->physics.velocity.x += sx * f;
+        p->physics.velocity.y += sy * f;
 
     } else if (p->input.keys & MASKON(INPUT_DOWN)) {
-        p->physics.velocity.x -= p->orientation.x * f;
-        p->physics.velocity.y -= p->orientation.y * f;
+        p->physics.velocity.x -= sx * f;
+        p->physics.velocity.y -= sy * f;
     }
 
     if (p->input.keys & MASKON(INPUT_LEFT)) {
-        p->physics.velocity.x -= sx * f;
-        p->physics.velocity.y -= sy * f;
+        p->physics.velocity.x += sy * f;
+        p->physics.velocity.y -= sx * f;
     } else if (p->input.keys & MASKON(INPUT_RIGHT)) {
-        p->physics.velocity.x += sx * f;
-        p->physics.velocity.y += sy * f;
+        p->physics.velocity.x -= sy * f;
+        p->physics.velocity.y += sx * f;
     }
 
     f = fsynctics + 1;
@@ -1156,9 +1157,9 @@ int player_move(Player * p, float fsynctics, int id) {
            && (!(p->input.keys & MASKON(INPUT_CROUCH)) && !(p->input.keys & MASKON(INPUT_SNEAK)))
            && !p->physics.airborne
            && pow(p->physics.velocity.x, 2.0F) + pow(p->physics.velocity.z, 2.0F) > pow(0.125F, 2.0F)) {
-            struct Sound_wav* footstep = (struct Sound_wav*[]) {
+            struct Sound_wav * footstep = (struct Sound_wav*[]) {
                 &sound_footstep1, &sound_footstep2, &sound_footstep3, &sound_footstep4,
-                &sound_wade1,      &sound_wade2,        &sound_wade3,      &sound_wade4,
+                &sound_wade1,      &sound_wade2,    &sound_wade3,     &sound_wade4,
             }[(rand() % 4) + (p->physics.wade ? 4 : 0)];
 
             if (local) {
