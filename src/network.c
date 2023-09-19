@@ -144,7 +144,7 @@ void read_PacketChatMessage(void * data, int len) {
         case CHAT_SYSTEM:
             if (p->player_id == 255) {
                 strncpy(network_custom_reason, msg, 16);
-                return; // dont add message to chat
+                return; // don’t add message to chat
             }
             m[0] = 0;
             break;
@@ -168,7 +168,8 @@ void read_PacketChatMessage(void * data, int len) {
     if (body_len > m_remaining) {
         body_len = m_remaining;
     }
-    strncat(m, msg, body_len);
+
+    reencode(m + strlen(m), msg, codepage, UTF8);
 
     TrueColor color = {0, 0, 0, 255};
     switch (p->chat_type) {
@@ -185,7 +186,7 @@ void read_PacketChatMessage(void * data, int len) {
         default: color.r = color.g = color.b = 255; break;
     }
 
-    chat_add(0, color, m, codepage);
+    chat_add(0, color, m, UTF8);
 }
 
 TrueColor white = {0xFF, 0xFF, 0xFF, 0xFF};
@@ -964,23 +965,29 @@ void read_PacketExtInfo(void * data, int len) {
         }
 
         struct PacketExtInfo reply;
-        reply.length = 4;
+        reply.length = 5;
+
         reply.entries[0] = (struct PacketExtInfoEntry) {
-            .id = EXT_PLAYER_PROPERTIES,
+            .id      = EXT_PLAYER_PROPERTIES,
             .version = 1,
         };
         reply.entries[1] = (struct PacketExtInfoEntry) {
-            .id = EXT_256PLAYERS,
+            .id      = EXT_256PLAYERS,
             .version = 1,
         };
         reply.entries[2] = (struct PacketExtInfoEntry) {
-            .id = EXT_MESSAGES,
+            .id      = EXT_MESSAGES,
             .version = 1,
         };
         reply.entries[3] = (struct PacketExtInfoEntry) {
-            .id = EXT_KICKREASON,
+            .id      = EXT_KICKREASON,
             .version = 1,
         };
+        reply.entries[4] = (struct PacketExtInfoEntry) {
+            .id      = EXT_TRACE_BULLETS,
+            .version = 1,
+        };
+
         network_send(PACKET_EXTINFO_ID, &reply, reply.length * sizeof(struct PacketExtInfoEntry) + 1);
     }
 }
@@ -1001,6 +1008,24 @@ void read_PacketPlayerProperties(void * data, int len) {
             local_player_ammo_reserved = p->ammo_reserved;
         }
     }
+}
+
+void read_PacketBulletTrace(void * data, int len) {
+    PacketBulletTrace * p = (PacketBulletTrace*) data;
+    size_t index = p->index % MAX_TRACES;
+
+    Trace * trace = &traces[index];
+
+    if (p->origin) trace->last = 0;
+    else if (trace->last == TRACE_MAX_LENGTH - 1)
+        for (size_t i = 0; i < TRACE_MAX_LENGTH - 1; i++)
+            trace->vertices[i] = trace->vertices[i + 1];
+    else trace->last++;
+
+    trace->vertices[trace->last].x     = letohf(p->x);
+    trace->vertices[trace->last].y     = 64.0F - letohf(p->z);
+    trace->vertices[trace->last].z     = letohf(p->y);
+    trace->vertices[trace->last].value = letohf(p->value);
 }
 
 void network_updateColor() {
@@ -1269,4 +1294,5 @@ void network_init() {
     packets[PACKET_VERSIONGET_ID] = read_PacketVersionGet;
     packets[PACKET_EXTINFO_ID] = read_PacketExtInfo;
     packets[PACKET_EXT_BASE + EXT_PLAYER_PROPERTIES] = read_PacketPlayerProperties;
+    packets[PACKET_EXT_BASE + EXT_TRACE_BULLETS] = read_PacketBulletTrace;
 }

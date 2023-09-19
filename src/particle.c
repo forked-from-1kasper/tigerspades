@@ -36,9 +36,31 @@
 struct entity_system particles;
 struct tesselator particle_tesselator;
 
+Trace traces[];
+
+void bullet_traces_render_all() {
+    for (size_t i = 0; i < MAX_TRACES; i++) {
+        if (traces[i].last > 0) {
+            glBegin(GL_LINE_STRIP);
+
+            for (size_t j = 0; j <= traces[i].last; j++) {
+                Vertex * vertex = &traces[i].vertices[j];
+
+                glColor3f(vertex->value, 1.0f - vertex->value, 0.0f);
+                glVertex3f(vertex->x, vertex->y, vertex->z);
+            }
+
+            glEnd();
+        }
+    }
+}
+
 void particle_init() {
     entitysys_create(&particles, sizeof(struct Particle), 256);
     tesselator_create(&particle_tesselator, VERTEX_FLOAT, 0);
+
+    for (size_t i = 0; i < MAX_TRACES; i++)
+        traces[i].last = -1;
 }
 
 static bool particle_update_single(void * obj, void * user) {

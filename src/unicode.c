@@ -152,7 +152,7 @@ void reencode(uint8_t * dest, const uint8_t * src, Codepage inpage, Codepage out
     *dest = 0;
 }
 
-void encodeMagic(uint8_t * dest, const uint8_t * src, size_t insize, size_t outsize) {
+size_t encodeMagic(uint8_t * dest, const uint8_t * src, size_t insize, size_t outsize) {
     bool ascii = true;
 
     for (size_t i = 0; i < insize; i++) {
@@ -161,10 +161,13 @@ void encodeMagic(uint8_t * dest, const uint8_t * src, size_t insize, size_t outs
         }
     }
 
-    if (ascii) strncpy(dest, src, outsize);
-    else {
+    if (ascii) {
+        strncpy(dest, src, outsize);
+        return insize;
+    } else {
         dest[0] = 0xFF;
         strncpy(dest + 1, src, outsize - 1);
+        return insize + 1;
     }
 }
 

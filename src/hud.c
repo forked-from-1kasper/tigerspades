@@ -1433,8 +1433,8 @@ void broadcast_chat(unsigned char chat_type, const char * message, size_t size) 
     contained.player_id = local_player_id;
     contained.chat_type = chat_type;
 
-    encodeMagic(contained.message, message, size, sizeof(contained.message));
-    network_send(PACKET_CHATMESSAGE_ID, &contained, sizeof(contained) - sizeof(contained.message) + size + 1);
+    size_t written = encodeMagic(contained.message, message, size, sizeof(contained.message));
+    network_send(PACKET_CHATMESSAGE_ID, &contained, sizeof(contained) - sizeof(contained.message) + written + 1);
 }
 
 static const char * hud_ingame_completeword(const char * s) {

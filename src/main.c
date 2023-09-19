@@ -121,6 +121,7 @@ void drawScene() {
     glShadeModel(GL_FLAT);
     kv6_calclight(-1, -1, -1);
     matrix_upload();
+    bullet_traces_render_all();
     particle_render();
     tracer_render();
     grenade_render();

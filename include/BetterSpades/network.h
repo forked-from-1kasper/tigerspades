@@ -285,7 +285,7 @@ struct PacketExistingPlayer {
     unsigned char team;
     unsigned char weapon;
     unsigned char held_item;
-    unsigned int kills;
+    unsigned int  kills;
     unsigned char blue, green, red;
     char name[17];
 };
@@ -451,20 +451,28 @@ struct PacketExtInfo {
 };
 
 struct PacketPlayerProperties {
-    uint8_t subID;
-    uint8_t player_id;
-    uint8_t health;
-    uint8_t blocks;
-    uint8_t grenades;
-    uint8_t ammo_clip;
-    uint8_t ammo_reserved;
+    uint8_t  subID;
+    uint8_t  player_id;
+    uint8_t  health;
+    uint8_t  blocks;
+    uint8_t  grenades;
+    uint8_t  ammo_clip;
+    uint8_t  ammo_reserved;
     uint32_t score;
 };
+
+typedef struct {
+    uint8_t index;
+    float   x, y, z;
+    float   value;
+    uint8_t origin;
+} PacketBulletTrace;
 
 #define PACKET_EXT_BASE 0x40
 
 enum Extension {
     EXT_PLAYER_PROPERTIES = 0x00,
+    EXT_TRACE_BULLETS     = 0x10,
     EXT_256PLAYERS        = 0xC0,
     EXT_MESSAGES          = 0xC1,
     EXT_KICKREASON        = 0xC2,
