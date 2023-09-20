@@ -422,6 +422,9 @@ void read_PacketFogColor(void * data, int len) {
 void read_PacketExistingPlayer(void * data, int len) {
     struct PacketExistingPlayer * p = (struct PacketExistingPlayer*) data;
     if (p->player_id < PLAYERS_MAX) {
+        decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
+        if (!players[p->player_id].connected) printJoinMsg(p->team, players[p->player_id].name);
+
         player_reset(&players[p->player_id]);
         players[p->player_id].connected     = 1;
         players[p->player_id].alive         = 1;
@@ -434,17 +437,15 @@ void read_PacketExistingPlayer(void * data, int len) {
         players[p->player_id].block.b       = p->blue;
         players[p->player_id].ammo          = weapon_ammo(p->weapon);
         players[p->player_id].ammo_reserved = weapon_ammo_reserved(p->weapon);
-
-        decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
-
-        if (!players[p->player_id].connected)
-            printJoinMsg(p->team, players[p->player_id].name);
     }
 }
 
 void read_PacketCreatePlayer(void * data, int len) {
     struct PacketCreatePlayer * p = (struct PacketCreatePlayer*) data;
     if (p->player_id < PLAYERS_MAX) {
+        decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
+        if (!players[p->player_id].connected) printJoinMsg(p->team, players[p->player_id].name);
+
         player_reset(&players[p->player_id]);
         players[p->player_id].connected = 1;
         players[p->player_id].alive     = 1;
@@ -454,8 +455,6 @@ void read_PacketCreatePlayer(void * data, int len) {
         players[p->player_id].pos.x     = letohf(p->x);
         players[p->player_id].pos.y     = 63.0F - letohf(p->z);
         players[p->player_id].pos.z     = letohf(p->y);
-
-        decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
 
         players[p->player_id].orientation.x = players[p->player_id].orientation_smooth.x = (p->team == TEAM_1) ? 1.0F : -1.0F;
         players[p->player_id].orientation.y = players[p->player_id].orientation_smooth.y = 0.0F;
@@ -486,9 +485,6 @@ void read_PacketCreatePlayer(void * data, int len) {
 
             weapon_set(false);
         }
-
-        if (!players[p->player_id].connected)
-            printJoinMsg(p->team, players[p->player_id].name);
     }
 }
 
