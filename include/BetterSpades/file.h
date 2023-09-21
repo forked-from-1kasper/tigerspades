@@ -21,7 +21,7 @@
 #define FILE_H
 
 void * file_open(const char * name, const char * mode);
-void file_printf(void * file, const char* fmt, ...);
+void file_printf(void * file, const char * fmt, ...);
 void file_close(void * file);
 int file_size(const char * name);
 int file_dir_exists(const char * path);

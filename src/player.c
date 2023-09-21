@@ -69,10 +69,10 @@ float player_intersection_dist = 1024.0F;
 Player players[PLAYERS_MAX];
 
 #define FALL_DAMAGE_VELOCITY 0.58F
-#define FALL_SLOW_DOWN 0.24F
-#define SQRT 0.70710678F
-#define WEAPON_PRIMARY 1
-#define FALL_DAMAGE_SCALAR 4096
+#define FALL_SLOW_DOWN       0.24F
+#define SQRT                 0.70710678F
+#define WEAPON_PRIMARY       1
+#define FALL_DAMAGE_SCALAR   4096
 
 void player_init() {
     for (int k = 0; k < PLAYERS_MAX; k++) {
