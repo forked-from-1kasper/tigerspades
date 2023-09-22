@@ -72,8 +72,8 @@ static bool tracer_minimap_single(void * obj, void * user) {
 void tracer_minimap(int large, float scalef, float minimap_x, float minimap_y) {
     entitysys_iterate(&tracers,
                       &(struct tracer_minimap_info) {
-                          .large = large,
-                          .scalef = scalef,
+                          .large     = large,
+                          .scalef    = scalef,
                           .minimap_x = minimap_x,
                           .minimap_y = minimap_y,
                       },
@@ -101,18 +101,14 @@ void tracer_add(int type, float x, float y, float z, float dx, float dy, float d
 static bool tracer_render_single(void * obj, void * user) {
     struct Tracer * t = (struct Tracer*) obj;
 
+    static struct kv6_t * model_tracer[] = {&model_semi_tracer, &model_smg_tracer, &model_shotgun_tracer};
+
     matrix_push(matrix_model);
     matrix_translate(matrix_model, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
     matrix_pointAt(matrix_model, t->r.direction[X], t->r.direction[Y], t->r.direction[Z]);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
     matrix_upload();
-    kv6_render(
-        (struct kv6_t*[]) {
-            &model_semi_tracer,
-            &model_smg_tracer,
-            &model_shotgun_tracer,
-        }[t->type],
-        TEAM_SPECTATOR);
+    kv6_render(model_tracer[t->type], TEAM_SPECTATOR);
     matrix_pop(matrix_model);
 
     return false;
