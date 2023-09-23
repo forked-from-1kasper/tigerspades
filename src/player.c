@@ -62,6 +62,8 @@ int local_player_drag_x;
 int local_player_drag_y;
 int local_player_drag_z;
 
+int local_player_color_x = 3, local_player_color_y = 0;
+
 int player_intersection_type = -1;
 int player_intersection_player = 0;
 float player_intersection_dist = 1024.0F;

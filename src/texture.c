@@ -131,9 +131,8 @@ int texture_create(Texture * t, char * filename, GLuint filter) {
 }
 
 int texture_create_buffer(Texture * t, int width, int height, unsigned char * buff, int new) {
-    if (new)
-        glGenTextures(1, &t->texture_id);
-    t->width = width;
+    if (new) glGenTextures(1, &t->texture_id);
+    t->width  = width;
     t->height = height;
     t->pixels = buff;
     texture_resize_pow2(t, max(width, height));
@@ -318,35 +317,35 @@ void texture_gradient_fog(unsigned int * gradient) {
 }
 
 void texture_init() {
-    texture_create(&texture_splash, "png/splash.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_splash,       "png/splash.png",       TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_zoom_semi, "png/semi.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_zoom_smg, "png/smg.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_zoom_shotgun, "png/shotgun.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_zoom_semi,    "png/semi.png",         TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_zoom_smg,     "png/smg.png",          TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_zoom_shotgun, "png/shotgun.png",      TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_white, "png/white.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_target, "png/target.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_indicator, "png/indicator.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_white,        "png/white.png",        TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_target,       "png/target.png",       TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_indicator,    "png/indicator.png",    TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_player, "png/player.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_medical, "png/medical.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_intel, "png/intel.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_command, "png/command.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_tracer, "png/tracer.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_player,       "png/player.png",       TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_medical,      "png/medical.png",      TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_intel,        "png/intel.png",        TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_command,      "png/command.png",      TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_tracer,       "png/tracer.png",       TEXTURE_FILTER_NEAREST);
 
-    texture_create(&texture_ui_wait, "png/ui/wait.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_join, "png/ui/join.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_reload, "png/ui/reload.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_bg, "png/ui/bg.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_input, "png/ui/input.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_wait,      "png/ui/wait.png",      TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_join,      "png/ui/join.png",      TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_reload,    "png/ui/reload.png",    TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_bg,        "png/ui/bg.png",        TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_input,     "png/ui/input.png",     TEXTURE_FILTER_NEAREST);
     texture_create(&texture_ui_collapsed, "png/ui/collapsed.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_expanded, "png/ui/expanded.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_flags, "png/ui/flags.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_alert, "png/ui/alert.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_expanded,  "png/ui/expanded.png",  TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_flags,     "png/ui/flags.png",     TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_alert,     "png/ui/alert.png",     TEXTURE_FILTER_NEAREST);
 
 #ifdef USE_TOUCH
-    texture_create(&texture_ui_knob, "png/ui/knob.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_joystick, "png/ui/joystick.png", TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_knob,      "png/ui/knob.png",      TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_ui_joystick,  "png/ui/joystick.png",  TEXTURE_FILTER_NEAREST);
 #endif
 
     unsigned int pixels[64 * 64];

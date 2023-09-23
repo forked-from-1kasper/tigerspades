@@ -774,22 +774,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
             glColor3f(1.0F, 1.0F, 1.0F);
             if (players[local_id].held_item == TOOL_BLOCK) {
-                for (int y = 0; y < 8; y++) {
-                    for (int x = 0; x < 8; x++) {
-                        TrueColor color = texture_block_color(x, y);
-
-                        if (color.r == players[local_id].block.r &&
-                            color.g == players[local_id].block.g &&
-                            color.b == players[local_id].block.b) {
-                            unsigned char g = (((int)(window_time() * 4)) & 1) * 0xFF;
-                            glColor3ub(g, g, g);
-                            texture_draw_empty(settings.window_width + (x * 8 - 65) * scale, (65 - y * 8) * scale,
-                                               8 * scale, 8 * scale);
-                            y = 10; // to break outer loop too
-                            break;
-                        }
-                    }
+                if (local_player_color_x >= 0 && local_player_color_y >= 0) {
+                    unsigned char g = (((int) (window_time() * 4)) & 1) * 0xFF; glColor3ub(g, g, g);
+                    texture_draw_empty(
+                        settings.window_width + (local_player_color_x * 8 - 65) * scale,
+                        (65 - local_player_color_y * 8) * scale, 8 * scale, 8 * scale
+                    );
                 }
+
                 glColor3f(1.0F, 1.0F, 1.0F);
 
                 texture_draw(&texture_color_selection, settings.window_width - 64 * scale, 64 * scale, 64 * scale, 64 * scale);
@@ -1577,52 +1569,44 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 }
             }
 
-            if ((key == WINDOW_KEY_CURSOR_UP || key == WINDOW_KEY_CURSOR_DOWN || key == WINDOW_KEY_CURSOR_LEFT
-                || key == WINDOW_KEY_CURSOR_RIGHT)
+            if ((key == WINDOW_KEY_CURSOR_UP || key == WINDOW_KEY_CURSOR_DOWN || key == WINDOW_KEY_CURSOR_LEFT || key == WINDOW_KEY_CURSOR_RIGHT)
                && camera_mode == CAMERAMODE_FPS && players[local_player_id].held_item == TOOL_BLOCK) {
-                int y;
-                for (y = 0; y < 8; y++) {
-                    for (int x = 0; x < 8; x++) {
-                        TrueColor color = texture_block_color(x, y);
+                if (local_player_color_x < 0 || local_player_color_y < 0) {
+                    local_player_color_x = 3; local_player_color_y = 0;
+                } else {
+                    switch (key) {
+                        case WINDOW_KEY_CURSOR_LEFT: {
+                            local_player_color_x--;
+                            if (local_player_color_x < 0)
+                                local_player_color_x = 7;
+                            break;
+                        }
 
-                        if (color.r == players[local_player_id].block.r &&
-                            color.g == players[local_player_id].block.g &&
-                            color.b == players[local_player_id].block.b) {
-                            switch (key) {
-                                case WINDOW_KEY_CURSOR_LEFT:
-                                    x--;
-                                    if (x < 0)
-                                        x = 7;
-                                    break;
-                                case WINDOW_KEY_CURSOR_RIGHT:
-                                    x++;
-                                    if (x > 7)
-                                        x = 0;
-                                    break;
-                                case WINDOW_KEY_CURSOR_UP:
-                                    y--;
-                                    if (y < 0)
-                                        y = 7;
-                                    break;
-                                case WINDOW_KEY_CURSOR_DOWN:
-                                    y++;
-                                    if (y > 7)
-                                        y = 0;
-                                    break;
-                            }
+                        case WINDOW_KEY_CURSOR_RIGHT: {
+                            local_player_color_x++;
+                            if (local_player_color_x > 7)
+                                local_player_color_x = 0;
+                            break;
+                        }
 
-                            players[local_player_id].block = texture_block_color(x, y);
-                            network_updateColor();
-                            y = 10;
+                        case WINDOW_KEY_CURSOR_UP: {
+                            local_player_color_y--;
+                            if (local_player_color_y < 0)
+                                local_player_color_y = 7;
+                            break;
+                        }
+
+                        case WINDOW_KEY_CURSOR_DOWN: {
+                            local_player_color_y++;
+                            if (local_player_color_y > 7)
+                                local_player_color_y = 0;
                             break;
                         }
                     }
                 }
 
-                if (y < 10) {
-                    players[local_player_id].block = texture_block_color(3, 0);
-                    network_updateColor();
-                }
+                players[local_player_id].block = texture_block_color(local_player_color_x, local_player_color_y);
+                network_updateColor();
             }
 
             if (key == WINDOW_KEY_RELOAD && camera_mode == CAMERAMODE_FPS
@@ -1778,6 +1762,8 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 struct Camera_HitType hit;
                 camera_hit_fromplayer(&hit, local_player_id, 128.0F);
 
+                local_player_color_x = local_player_color_y = -1;
+
                 switch (hit.type) {
                     case CAMERA_HITTYPE_BLOCK: {
                         float dmg = (100.0F - map_damage_get(hit.x, hit.y, hit.z)) / 100.0F * 0.75F + 0.25F;
@@ -1797,6 +1783,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                         players[local_player_id].block.b = fog_color[2] * 255;
                         break;
                 }
+
                 network_updateColor();
             }
         }

@@ -84,6 +84,8 @@ extern int local_player_drag_x;
 extern int local_player_drag_y;
 extern int local_player_drag_z;
 
+extern int local_player_color_x, local_player_color_y;
+
 extern int player_intersection_type;
 extern int player_intersection_player;
 extern float player_intersection_dist;
