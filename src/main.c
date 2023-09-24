@@ -564,7 +564,7 @@ static int mu_key_translate(int key) {
     }
 }
 
-void text_input(struct window_instance * window, uint8_t * buff) {
+void text_input(struct window_instance * window, const uint8_t * buff) {
     if (hud_active->ctx)
         mu_input_text(hud_active->ctx, buff);
 

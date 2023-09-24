@@ -23,7 +23,7 @@
 #include <BetterSpades/window.h>
 
 void reshape(struct window_instance * window, int width, int height);
-void text_input(struct window_instance * window, uint8_t *);
+void text_input(struct window_instance * window, const uint8_t *);
 void keys(struct window_instance * window, int key, int action, int mods);
 void mouse_click(struct window_instance * window, int button, int action, int mods);
 void mouse(struct window_instance * window, double x, double y);
