@@ -933,7 +933,11 @@ void read_PacketHandshakeInit(void * data, int len) {
     network_send(PACKET_HANDSHAKERETURN_ID, data, len);
 }
 
-static const char * operatingsystem = OS " " ARCH;
+#if HACKS_ENABLED
+    static const char * operatingsystem = OS " " ARCH " (w/ hacks)";
+#else
+    static const char * operatingsystem = OS " " ARCH;
+#endif
 
 void read_PacketVersionGet(void * data, int len) {
     struct PacketVersionSend ver;

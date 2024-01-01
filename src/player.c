@@ -651,7 +651,11 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 void player_render(Player * p, int id) {
     kv6_calclight(p->pos.x, p->pos.y, p->pos.z);
 
+#if HACK_ESP
+    if (id != local_player_id) {
+#else
     if (camera_mode == CAMERAMODE_SPECTATOR && p->team != TEAM_SPECTATOR && !cameracontroller_bodyview_mode) {
+#endif
         matrix_push(matrix_model);
         matrix_translate(matrix_model, p->pos.x, p->physics.eye.y + player_height(p) + 1.25F, p->pos.z);
         matrix_rotate(matrix_model, camera_rot_x / PI * 180.0F + 180.0F, 0.0F, 1.0F, 0.0F);

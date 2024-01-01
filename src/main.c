@@ -745,7 +745,7 @@ int main(int argc, char ** argv) {
     settings.multisamples      = 0;
     settings.shadow_entities   = 0;
     settings.ambient_occlusion = 0;
-    settings.render_distance   = 128.0F;
+    settings.render_distance   = RENDER_DISTANCE;
     settings.window_width      = 800;
     settings.window_height     = 600;
     settings.player_arms       = 0;

@@ -20,6 +20,18 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define RENDER_DISTANCE 128.0F
+
+// NOTE: These options are intended for testing purposes only.
+// NOTE: Don’t cry if you got banned for using this on a public server.
+#define HACK_NORECOIL 0
+#define HACK_NOSPREAD 0
+#define HACK_NOFOG    0
+#define HACK_MAPHACK  0
+#define HACK_ESP      0
+
+#define HACKS_ENABLED (HACK_NORECOIL || HACK_NOSPREAD || HACK_MAPHACK || HACK_NOFOG || HACK_ESP)
+
 #ifdef _WIN32
     #define OS_WINDOWS
 #endif

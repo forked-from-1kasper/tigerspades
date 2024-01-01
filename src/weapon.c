@@ -136,12 +136,15 @@ void weapon_spread(Player * p, float * d) {
         case WEAPON_SMG:     spread = 0.012F; break;
         case WEAPON_SHOTGUN: spread = 0.024F; break;
     }
-    d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
-        * (((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
-    d[1] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
-        * (((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
-    d[2] += (ms_rand() - ms_rand()) / 16383.0F * spread * ((p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F)
-        * (((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F);
+
+#if !HACK_NOSPREAD
+    float scope  = (p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F;
+    float crouch = ((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F;
+
+    d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * scope * crouch;
+    d[1] += (ms_rand() - ms_rand()) / 16383.0F * spread * scope * crouch;
+    d[2] += (ms_rand() - ms_rand()) / 16383.0F * spread * scope * crouch;
+#endif
 }
 
 void weapon_recoil(int gun, double * horiz_recoil, double * vert_recoil) {
@@ -344,8 +347,10 @@ void weapon_shoot() {
                          - players[local_player_id].orientation.y * players[local_player_id].orientation.y
                              * players[local_player_id].orientation.y * players[local_player_id].orientation.y);
 
+#if !HACK_NORECOIL
     camera_rot_x += horiz_recoil;
     camera_rot_y -= vert_recoil;
+#endif
 
     camera_overflow_adjust();
 

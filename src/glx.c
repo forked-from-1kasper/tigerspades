@@ -220,6 +220,7 @@ void glx_displaylist_draw(struct glx_displaylist* x, int type) {
 }
 
 void glx_enable_sphericalfog() {
+#if !HACK_NOFOG
 #ifndef OPENGL_ES
     if (!settings.smooth_fog) {
         glActiveTexture(GL_TEXTURE1);
@@ -290,6 +291,7 @@ void glx_enable_sphericalfog() {
     glFogf(GL_FOG_START, 0.0F);
     glFogf(GL_FOG_END, settings.render_distance);
     glFogfv(GL_FOG_COLOR, fog_color);
+#endif
 #endif
     glx_fog = 1;
 }
