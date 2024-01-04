@@ -544,6 +544,7 @@ void read_PacketMapStart(void * data, int len) {
     }
 
     player_init();
+    bullet_traces_reset();
     camera_mode = CAMERAMODE_SELECTION;
 }
 
@@ -1012,20 +1013,23 @@ void read_PacketPlayerProperties(void * data, int len) {
 
 void read_PacketBulletTrace(void * data, int len) {
     PacketBulletTrace * p = (PacketBulletTrace*) data;
+
     size_t index = p->index % MAX_TRACES;
 
     Trace * trace = &traces[index];
 
-    if (p->origin) trace->last = 0;
-    else if (trace->last == TRACE_MAX_LENGTH - 1)
-        for (size_t i = 0; i < TRACE_MAX_LENGTH - 1; i++)
-            trace->vertices[i] = trace->vertices[i + 1];
-    else trace->last++;
+    if (p->origin) { trace->index = p->index; trace->begin = trace->end = 0; }
+    if (trace->index != p->index) return;
 
-    trace->vertices[trace->last].x     = letohf(p->x);
-    trace->vertices[trace->last].y     = 64.0F - letohf(p->z);
-    trace->vertices[trace->last].z     = letohf(p->y);
-    trace->vertices[trace->last].value = letohf(p->value);
+    trace->data[trace->end].x     = letohf(p->x);
+    trace->data[trace->end].y     = 64.0F - letohf(p->z);
+    trace->data[trace->end].z     = letohf(p->y);
+    trace->data[trace->end].value = letohf(p->value);
+
+    NEXT(trace->end);
+
+    if (trace->begin == trace->end)
+        NEXT(trace->begin);
 }
 
 void network_updateColor() {

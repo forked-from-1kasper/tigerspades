@@ -39,20 +39,21 @@ void particle_create_casing(Player *);
 void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size);
 
-typedef struct {
-    float x, y, z, value;
-} Vertex;
-
 #define TRACE_MAX_LENGTH 128
 #define MAX_TRACES       64
 
+typedef struct { float x, y, z, value; } Vertex;
+
 typedef struct {
-    int last;
-    Vertex vertices[TRACE_MAX_LENGTH];
+    int index, begin, end;
+    Vertex data[TRACE_MAX_LENGTH];
 } Trace;
 
 extern Trace traces[MAX_TRACES];
 
 void bullet_traces_render_all(void);
+void bullet_traces_reset(void);
+
+#define NEXT(x) ((x) = ((x) + 1) % TRACE_MAX_LENGTH)
 
 #endif

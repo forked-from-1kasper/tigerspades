@@ -40,27 +40,31 @@ Trace traces[];
 
 void bullet_traces_render_all() {
     for (size_t i = 0; i < MAX_TRACES; i++) {
-        if (traces[i].last > 0) {
-            glBegin(GL_LINE_STRIP);
+        if (traces[i].end - traces[i].begin == 0 ||
+            traces[i].end - traces[i].begin == 1) continue;
 
-            for (size_t j = 0; j <= traces[i].last; j++) {
-                Vertex * vertex = &traces[i].vertices[j];
+        glBegin(GL_LINE_STRIP);
 
-                glColor3f(vertex->value, 1.0f - vertex->value, 0.0f);
-                glVertex3f(vertex->x, vertex->y, vertex->z);
-            }
+        for (size_t j = traces[i].begin; j != traces[i].end; NEXT(j)) {
+            Vertex * vertex = &traces[i].data[j];
 
-            glEnd();
-        }
+            glColor3f(vertex->value, 1.0f - vertex->value, 0.0f);
+            glVertex3f(vertex->x, vertex->y, vertex->z);
+        };
+
+        glEnd();
     }
+}
+
+void bullet_traces_reset() {
+    for (size_t i = 0; i < MAX_TRACES; i++)
+        traces[i].index = traces[i].begin = traces[i].end = 0;
 }
 
 void particle_init() {
     entitysys_create(&particles, sizeof(struct Particle), 256);
     tesselator_create(&particle_tesselator, VERTEX_FLOAT, 0);
-
-    for (size_t i = 0; i < MAX_TRACES; i++)
-        traces[i].last = -1;
+    bullet_traces_reset();
 }
 
 static bool particle_update_single(void * obj, void * user) {
