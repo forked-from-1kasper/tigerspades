@@ -1491,6 +1491,19 @@ static const char * hud_ingame_completeword(const char * s) {
 }
 
 static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
+    if (show_exit) {
+        if (action == WINDOW_PRESS) {
+            if (key == WINDOW_KEY_NO) {
+                show_exit = 0;
+                window_mousemode(WINDOW_CURSOR_DISABLED);
+            }
+
+            if (key == WINDOW_KEY_YES) hud_change(&hud_serverlist);
+        }
+
+        return;
+    }
+
     if (chat_input_mode != CHAT_NO_INPUT && action == WINDOW_PRESS && key == WINDOW_KEY_TAB && strlen(chat[0][0]) > 0) {
         // autocomplete word
         char * incomplete = strrchr(chat[0][0], ' ') + 1;
@@ -1561,19 +1574,10 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 chat_add(0, Red, volstr, UTF8);
             }
 
-            if (show_exit && key == WINDOW_KEY_NO) {
-                show_exit = 0;
-                window_mousemode(WINDOW_CURSOR_DISABLED);
-            }
-
             if (key == WINDOW_KEY_YES) {
-                if (show_exit) {
-                    hud_change(&hud_serverlist);
-                } else {
-                    window_textinput(1);
-                    chat_input_mode = CHAT_TEAM_INPUT;
-                    chat[0][0][0] = 0;
-                }
+                window_textinput(1);
+                chat_input_mode = CHAT_TEAM_INPUT;
+                chat[0][0][0] = 0;
             }
 
             if ((key == WINDOW_KEY_CURSOR_UP || key == WINDOW_KEY_CURSOR_DOWN || key == WINDOW_KEY_CURSOR_LEFT || key == WINDOW_KEY_CURSOR_RIGHT)

@@ -922,11 +922,11 @@ void read_PacketTerritoryCapture(void * data, int len) {
 void read_PacketProgressBar(void * data, int len) {
     struct PacketProgressBar * p = (struct PacketProgressBar*) data;
     if (gamestate.gamemode_type == GAMEMODE_TC && p->tent < gamestate.gamemode.tc.territory_count) {
-        gamestate.progressbar.progress = max(min(letohf(p->progress), 1.0F), 0.0F);
-        gamestate.progressbar.rate = p->rate;
-        gamestate.progressbar.tent = p->tent;
+        gamestate.progressbar.progress       = max(min(letohf(p->progress), 1.0F), 0.0F);
+        gamestate.progressbar.rate           = p->rate;
+        gamestate.progressbar.tent           = p->tent;
         gamestate.progressbar.team_capturing = p->team_capturing;
-        gamestate.progressbar.update = window_time();
+        gamestate.progressbar.update         = window_time();
     }
 }
 
