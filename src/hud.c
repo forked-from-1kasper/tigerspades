@@ -104,8 +104,8 @@ void hud_change(struct hud * new) {
 
     if (hud_active->ctx) {
         mu_init(hud_active->ctx);
-        hud_active->ctx->text_width = mu_text_width;
-        hud_active->ctx->text_height = mu_text_height;
+        hud_active->ctx->text_width                          = mu_text_width;
+        hud_active->ctx->text_height                         = mu_text_height;
         hud_active->ctx->style->colors[MU_COLOR_BUTTONHOVER] = mu_color(95, 95, 70, 255);
         hud_active->ctx->style->colors[MU_COLOR_PANELBG]     = mu_color(10, 10, 10, 192);
         hud_active->ctx->style->colors[MU_COLOR_SCROLLTHUMB] = mu_color(128, 128, 128, 255);
@@ -1148,7 +1148,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
            && (players[local_player_id].team == TEAM_SPECTATOR
                || players[player_intersection_player].team == players[local_player_id].team)) {
             font_select(FONT_SMALLFNT);
-            char* th[4] = {"torso", "head", "arms", "legs"};
+            char * th[4] = {"torso", "head", "arms", "legs"};
             char str[32];
             switch (players[player_intersection_player].team) {
                 case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
@@ -1347,8 +1347,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                 cameracontroller_bodyview_mode = 1;
             for (int k = 0; k < PLAYERS_MAX * 2; k++) {
                 cameracontroller_bodyview_player = (cameracontroller_bodyview_player + 1) % PLAYERS_MAX;
-                if (player_can_spectate(&players[cameracontroller_bodyview_player]))
-                    break;
+                if (player_can_spectate(&players[cameracontroller_bodyview_player])) break;
             }
             cameracontroller_bodyview_zoom = 0.0F;
         }
@@ -1359,12 +1358,15 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
             if (players[local_player_id].held_item == TOOL_GRENADE && local_player_grenades > 0) {
                 if (action == WINDOW_RELEASE) {
                     local_player_grenades = max(local_player_grenades - 1, 0);
+
                     struct PacketGrenade g;
-                    g.player_id = local_player_id;
+                    g.player_id   = local_player_id;
                     g.fuse_length = htolef(max(3.0F - (window_time() - players[local_player_id].start.lmb), 0.0F));
+
                     g.x = htolef(players[local_player_id].pos.x);
                     g.y = htolef(players[local_player_id].pos.z);
                     g.z = htolef(63.0F - players[local_player_id].pos.y);
+
                     g.vx = htolef((g.fuse_length == 0.0F) ?
                         0.0F :
                               (players[local_player_id].orientation.x + players[local_player_id].physics.velocity.x));
@@ -1374,8 +1376,9 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                     g.vz = htolef((g.fuse_length == 0.0F) ?
                         0.0F :
                               (-players[local_player_id].orientation.y - players[local_player_id].physics.velocity.y));
+
                     network_send(PACKET_GRENADE_ID, &g, sizeof(g));
-                    read_PacketGrenade(&g, sizeof(g)); // server won't loop packet back
+                    read_PacketGrenade(&g, sizeof(g)); // server won’t loop packet back
                     players[local_player_id].item_showup = window_time();
                 }
 
@@ -2065,7 +2068,7 @@ static int hud_serverlist_sort_ping(const struct serverlist_entry * a, const str
     return a->ping - b->ping;
 }
 
-static void hud_serverlist_pingupdate(void* e, float time_delta, char* aos) {
+static void hud_serverlist_pingupdate(void * e, float time_delta, char * aos) {
     pthread_mutex_lock(&serverlist_lock);
     if (!e) {
         for (int k = 0; k < server_count; k++)
@@ -2082,7 +2085,7 @@ static void hud_serverlist_pingupdate(void* e, float time_delta, char* aos) {
     pthread_mutex_unlock(&serverlist_lock);
 }
 
-static void server_c(char* address, char* name) {
+static void server_c(char * address, char * name) {
     if (file_exists(address)) {
         void * data = file_load(address);
         map_vxl_load(data, file_size(address));
@@ -2103,6 +2106,7 @@ static void server_c(char* address, char* name) {
         } else {
             rpc_seti(RPC_VALUE_SLOTS, 0);
         }
+
         if (network_connect_string(address))
             hud_change(&hud_ingame);
     }
@@ -2182,6 +2186,8 @@ static void hud_sort_button_render(mu_Context * ctx, float scale, const char * n
 static void hud_serverlist_render(mu_Context * ctx, float scale) {
     char total_str[128]; sprintf(total_str, server_count > 0 ? "%i players on %i servers" : "No servers", player_count, server_count);
 
+    char * join_address = NULL, * join_name = NULL;
+
     if (hud_header_render(ctx, scale, total_str)) {
         mu_layout_row(ctx, 1, (int[]) {-1}, settings.window_height * 0.3F);
 
@@ -2196,10 +2202,10 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                 float size = settings.window_height * 0.3F - ctx->text_height(ctx->style->font) * 4.125F;
                 mu_layout_row(ctx, 1, (int[]) {size * current->tile_size}, size);
                 if (mu_button_ex(ctx, NULL, 32 + index, MU_OPT_NOFRAME)) {
-                    if (!strncmp("aos://", current->url, 6))
-                        server_c(current->url, current->caption);
-                    else
-                        file_url(current->url);
+                    if (!strncmp("aos://", current->url, 6)) {
+                        join_address = current->url;
+                        join_name    = current->caption;
+                    } else file_url(current->url);
                 }
                 mu_layout_height(ctx, 0);
                 mu_text_color(ctx, BYTE0(current->color), BYTE1(current->color), BYTE2(current->color));
@@ -2218,10 +2224,10 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
         mu_layout_row(ctx, 3, (int[]) {-a - b, -a, -1}, 0);
 
         if (mu_textbox(ctx, serverlist_input, sizeof(serverlist_input)) & MU_RES_SUBMIT)
-            server_c(serverlist_input, NULL);
+            join_address = serverlist_input;
 
         if (mu_button_ex(ctx, "Join", 16, MU_OPT_ALIGNRIGHT))
-            server_c(serverlist_input, NULL);
+            join_address = serverlist_input;
 
         if (mu_button_ex(ctx, "Refresh", 17, MU_OPT_ALIGNRIGHT) && !request_serverlist)
             hud_serverlist_init();
@@ -2249,20 +2255,19 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
         if (server_count > 0) {
             for (int k = 0; k < server_count; k++) {
                 if (strstr(serverlist[k].name, serverlist_input) || strstr(serverlist[k].identifier, serverlist_input)
-                   || strstr(serverlist[k].map, serverlist_input) || strstr(serverlist[k].gamemode, serverlist_input)) {
+                 || strstr(serverlist[k].map, serverlist_input)  || strstr(serverlist[k].gamemode, serverlist_input)) {
                     if (serverlist[k].current >= 0)
                         sprintf(total_str, "%i/%i", serverlist[k].current, serverlist[k].max);
                     else
                         strcpy(total_str, "-");
 
                     int f = ((serverlist[k].current && serverlist[k].current < serverlist[k].max)
-                             || serverlist[k].current < 0) ?
-                        1 :
-                        2;
+                             || serverlist[k].current < 0) ? 1 : 2;
 
                     mu_push_id(ctx, &serverlist[k].identifier, strlen(serverlist[k].identifier));
 
                     mu_text_color(ctx, 230 / f, 230 / f, 230 / f);
+
                     bool join = false;
                     if (mu_button_ex(ctx, total_str, 0, MU_OPT_NOFRAME | MU_OPT_ALIGNCENTER))
                         join = true;
@@ -2293,8 +2298,8 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                     mu_pop_id(ctx);
 
                     if (join) {
-                        server_c(serverlist[k].identifier, serverlist[k].name);
-                        break;
+                        join_address = serverlist[k].identifier;
+                        join_name    = serverlist[k].name;
                     }
                 }
             }
@@ -2424,6 +2429,8 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                 break;
         }
     }
+
+    if (join_address) server_c(join_address, join_name);
 }
 
 static void hud_serverlist_touch(void* finger, int action, float x, float y, float dx, float dy) {

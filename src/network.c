@@ -876,7 +876,7 @@ void read_PacketIntelPickup(void * data, int len) {
         char pickup_str[128];
         switch (players[p->player_id].team) {
             case TEAM_1:
-                gamestate.gamemode.ctf.intels |= MASKON(TEAM_2_INTEL); // pickup opposing team's intel
+                gamestate.gamemode.ctf.intels |= MASKON(TEAM_2_INTEL); // pickup opposing team’s intel
                 gamestate.gamemode.ctf.team_2_intel_location.held.player_id = p->player_id;
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_2.name);
                 break;
@@ -897,8 +897,9 @@ void read_PacketTerritoryCapture(void * data, int len) {
     if (gamestate.gamemode_type == GAMEMODE_TC && p->tent < gamestate.gamemode.tc.territory_count) {
         gamestate.gamemode.tc.territory[p->tent].team = p->team;
         sound_create(SOUND_LOCAL, p->winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
-        char x = (int)(gamestate.gamemode.tc.territory[p->tent].x / 64.0F) + 'A';
-        char y = (int)(gamestate.gamemode.tc.territory[p->tent].y / 64.0F) + '1';
+        char x = (int) (gamestate.gamemode.tc.territory[p->tent].x / 64.0F) + 'A';
+        char y = (int) (gamestate.gamemode.tc.territory[p->tent].y / 64.0F) + '1';
+
         char capture_str[128];
         char * team_n;
 
@@ -958,12 +959,9 @@ void read_PacketExtInfo(void * data, int len) {
             log_info("Server supports the following extensions:");
             for (int k = 0; k < p->length; k++) {
                 log_info("Extension 0x%02X of version %i", p->entries[k].id, p->entries[k].version);
-                if (p->entries[k].id >= 192)
-                    log_info("(which is packetless)");
+                if (p->entries[k].id >= 192) log_info("(which is packetless)");
             }
-        } else {
-            log_info("Server does not support extensions");
-        }
+        } else log_info("Server does not support extensions");
 
         struct PacketExtInfo reply;
         reply.length = 5;
@@ -997,15 +995,15 @@ void read_PacketPlayerProperties(void * data, int len) {
     struct PacketPlayerProperties * p = (struct PacketPlayerProperties*) data;
 
     if (len >= sizeof(struct PacketPlayerProperties) && p->subID == 0) {
-        players[p->player_id].ammo = p->ammo_clip;
+        players[p->player_id].ammo          = p->ammo_clip;
         players[p->player_id].ammo_reserved = p->ammo_reserved;
-        players[p->player_id].score = letohu32(p->score);
+        players[p->player_id].score         = letohu32(p->score);
 
         if (p->player_id == local_player_id) {
-            local_player_health = p->health;
-            local_player_blocks = p->blocks;
-            local_player_grenades = p->grenades;
-            local_player_ammo = p->ammo_clip;
+            local_player_health        = p->health;
+            local_player_blocks        = p->blocks;
+            local_player_grenades      = p->grenades;
+            local_player_ammo          = p->ammo_clip;
             local_player_ammo_reserved = p->ammo_reserved;
         }
     }
@@ -1083,8 +1081,8 @@ int network_connect_sub(char * ip, int port, int version) {
     network_logged_in = 0;
     *network_custom_reason = 0;
     memset(network_stats, 0, sizeof(struct network_stat) * 40);
-    if (peer == NULL)
-        return 0;
+    if (peer == NULL) return 0;
+
     if (enet_host_service(client, &event, 2500) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
         network_received_packets = 0;
         network_connected = 1;
@@ -1096,6 +1094,7 @@ int network_connect_sub(char * ip, int port, int version) {
                 return 0;
             }
         }
+
         return 1;
     }
 
@@ -1106,23 +1105,19 @@ int network_connect_sub(char * ip, int port, int version) {
 
 int network_connect(char * ip, int port) {
     log_info("Connecting to %s at port %i", ip, port);
-    if (network_connected) {
-        network_disconnect();
-    }
-    if (network_connect_sub(ip, port, VERSION_075)) {
-        return 1;
-    }
-    if (network_connect_sub(ip, port, VERSION_076)) {
-        return 1;
-    }
+    if (network_connected) network_disconnect();
+
+    if (network_connect_sub(ip, port, VERSION_075)) return 1;
+    if (network_connect_sub(ip, port, VERSION_076)) return 1;
+
     network_connected = 0;
     return 0;
 }
 
 int network_identifier_split(char * addr, char * ip_out, int * port_out) {
     char * ip_start = strstr(addr, "aos://") + 6;
-    if ((size_t) ip_start <= 6)
-        return 0;
+    if ((size_t) ip_start <= 6) return 0;
+
     char * port_start = strchr(ip_start, ':');
     *port_out = port_start ? strtoul(port_start + 1, NULL, 10) : 32887;
 
@@ -1168,25 +1163,29 @@ int network_update() {
                 case ENET_EVENT_TYPE_RECEIVE: {
                     network_stats[0].ingoing += event.packet->dataLength;
                     int id = event.packet->data[0];
+
                     if (*packets[id]) {
                         log_debug("Packet id %i", id);
                         (*packets[id])(event.packet->data + 1, event.packet->dataLength - 1);
                     } else {
-                        log_error("Invalid packet id %i, length: %i", id, (int)event.packet->dataLength - 1);
+                        log_error("Invalid packet id %i, length: %i", id, (int) event.packet->dataLength - 1);
                     }
+
                     network_received_packets++;
                     enet_packet_destroy(event.packet);
                     break;
                 }
 
-                case ENET_EVENT_TYPE_DISCONNECT:
+                case ENET_EVENT_TYPE_DISCONNECT: {
                     hud_change(&hud_serverlist);
                     chat_showpopup(network_reason_disconnect(event.data), 10.0F, Red, UTF8);
                     log_error("server disconnected! reason: %s", network_reason_disconnect(event.data));
                     event.peer->data = NULL;
                     network_connected = 0;
                     network_logged_in = 0;
+
                     return 0;
+                }
 
                 default: break;
             }
@@ -1196,24 +1195,26 @@ int network_update() {
             if (players[local_player_id].input.keys != network_keys_last) {
                 struct PacketInputData in;
                 in.player_id = local_player_id;
-                in.keys = players[local_player_id].input.keys;
+                in.keys      = players[local_player_id].input.keys;
                 network_send(PACKET_INPUTDATA_ID, &in, sizeof(in));
 
                 network_keys_last = players[local_player_id].input.keys;
             }
+
             if ((players[local_player_id].input.buttons != network_buttons_last) &&
                !(players[local_player_id].input.keys & MASKON(INPUT_SPRINT))) {
                 struct PacketWeaponInput in;
                 in.player_id = local_player_id;
-                in.input = players[local_player_id].input.buttons;
+                in.input     = players[local_player_id].input.buttons;
                 network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
 
                 network_buttons_last = players[local_player_id].input.buttons;
             }
+
             if (players[local_player_id].held_item != network_tool_last) {
                 struct PacketSetTool t;
                 t.player_id = local_player_id;
-                t.tool = players[local_player_id].held_item;
+                t.tool      = players[local_player_id].held_item;
                 network_send(PACKET_SETTOOL_ID, &t, sizeof(t));
 
                 network_tool_last = players[local_player_id].held_item;
@@ -1224,7 +1225,7 @@ int network_update() {
                              players[local_player_id].pos.y, players[local_player_id].pos.z)
                    > 0.01F) {
                 network_pos_update = window_time();
-                network_pos_last = players[local_player_id].pos;
+                network_pos_last   = players[local_player_id].pos;
 
                 struct PacketPositionData pos;
                 pos.x = htolef(players[local_player_id].pos.x);
@@ -1232,13 +1233,14 @@ int network_update() {
                 pos.z = htolef(63.0F - players[local_player_id].pos.y);
                 network_send(PACKET_POSITIONDATA_ID, &pos, sizeof(pos));
             }
+
             if (window_time() - network_orient_update > (1.0F / 120.0F)
                && angle3D(network_orient_last.x, network_orient_last.y, network_orient_last.z,
                           players[local_player_id].orientation.x, players[local_player_id].orientation.y,
                           players[local_player_id].orientation.z)
                    > 0.5F / 180.0F * PI) {
                 network_orient_update = window_time();
-                network_orient_last = players[local_player_id].orientation;
+                network_orient_last   = players[local_player_id].orientation;
 
                 struct PacketOrientationData orient;
                 orient.x = htolef(players[local_player_id].orientation.x);

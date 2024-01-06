@@ -92,9 +92,9 @@ float chat_popup_duration = 0.0F;
 
 void chat_showpopup(const uint8_t * msg, float duration, TrueColor color, Codepage codepage) {
     reencode(chat_popup, msg, codepage, UTF8);
-    chat_popup_timer = window_time();
+    chat_popup_timer    = window_time();
     chat_popup_duration = duration;
-    chat_popup_color = color;
+    chat_popup_color    = color;
 }
 
 void drawScene() {
