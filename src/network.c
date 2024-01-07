@@ -269,7 +269,7 @@ void read_PacketBlockLine(void * data, int len) {
     if (sx == ex && sy == ey && sz == ez) {
         map_set(sx, 63 - sz, sy, color);
     } else {
-        struct Point blocks[64];
+        Point blocks[64];
         int len = map_cube_line(sx, sy, sz, ex, ey, ez, blocks);
         while (len > 0) {
             if (map_isair(blocks[len - 1].x, 63 - blocks[len - 1].z, blocks[len - 1].y)) {

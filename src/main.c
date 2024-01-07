@@ -301,7 +301,7 @@ void display() {
                 glLineWidth(1.0F);
                 glDisable(GL_DEPTH_TEST);
                 glDepthMask(GL_FALSE);
-                struct Point cubes[64];
+                Point cubes[64];
                 int amount = 0;
                 if (is_local && local_player_drag_active && (players[local_player_id].input.buttons & MASKON(BUTTON_SECONDARY))
                    && players[local_player_id].held_item == TOOL_BLOCK) {

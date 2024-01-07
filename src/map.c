@@ -585,8 +585,8 @@ void map_set(int x, int y, int z, TrueColor color) {
 }
 
 // Copyright (c) Mathias Kaerlev 2011-2012 (but might be original code by Ben himself)
-int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, struct Point* cube_array) {
-    struct Point c, d;
+int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, Point * cube_array) {
+    Point c, d;
     long ixi, iyi, izi, dx, dy, dz, dxi, dyi, dzi;
     int count = 0;
 

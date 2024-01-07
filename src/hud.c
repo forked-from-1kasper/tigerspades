@@ -52,7 +52,7 @@
 #include <parson.h>
 #include <http.h>
 
-struct hud * hud_active;
+HUD * hud_active;
 struct window_instance * hud_window;
 
 static int is_inside_centered(double mx, double my, int x, int y, int w, int h) {
@@ -98,7 +98,7 @@ static void mu_text_color_default(mu_Context * ctx) {
     ctx->style->colors[MU_COLOR_TEXT] = mu_color(230, 230, 230, 255);
 }
 
-void hud_change(struct hud * new) {
+void hud_change(HUD * new) {
     config_key_reset_togglestates();
     hud_active = new;
 
@@ -1938,7 +1938,7 @@ static void hud_ingame_touch(void * finger, int action, float x, float y, float 
     }
 }
 
-struct hud hud_ingame = {
+HUD hud_ingame = {
     hud_ingame_init,
     hud_ingame_render3D,
     hud_ingame_render,
@@ -1959,7 +1959,7 @@ static http_t * request_serverlist = NULL;
 static http_t * request_news = NULL;
 static int server_count = 0;
 static int player_count = 0;
-static struct serverlist_entry * serverlist;
+static Server * serverlist;
 
 static int serverlist_con_established;
 static pthread_mutex_t serverlist_lock;
@@ -1976,7 +1976,7 @@ static struct serverlist_news_entry {
 static int serverlist_news_exists = 0;
 static char serverlist_input[128];
 
-typedef int (*serverlist_sort)(const struct serverlist_entry *, const struct serverlist_entry *);
+typedef int (*serverlist_sort)(const Server *, const Server *);
 
 static serverlist_sort hud_serverlist_sort_chosen = NULL;
 bool serverlist_descending = true;
@@ -2006,8 +2006,8 @@ static void hud_serverlist_init() {
 }
 
 static int hud_serverlist_cmp(const void * a, const void * b) {
-    const struct serverlist_entry * A = (const struct serverlist_entry*) a;
-    const struct serverlist_entry * B = (const struct serverlist_entry*) b;
+    const Server * A = (const Server*) a;
+    const Server * B = (const Server*) b;
 
     return serverlist_descending ? hud_serverlist_sort_chosen(A, B) : -hud_serverlist_sort_chosen(A, B);
 }
@@ -2018,12 +2018,12 @@ static void hud_serverlist_sort(serverlist_sort cmp) {
         serverlist_descending      = true;
     } else serverlist_descending = !serverlist_descending;
 
-    qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_cmp);
+    qsort(serverlist, server_count, sizeof(Server), hud_serverlist_cmp);
 }
 
 static int hud_serverlist_sort_default(const void * a, const void * b) {
-    const struct serverlist_entry * A = (const struct serverlist_entry*) a;
-    const struct serverlist_entry * B = (const struct serverlist_entry*) b;
+    const Server * A = (const Server*) a;
+    const Server * B = (const Server*) b;
 
     if (strcmp(A->country, "LAN") == 0)
         return -1;
@@ -2045,23 +2045,23 @@ static int hud_serverlist_sort_default(const void * a, const void * b) {
     return B->current - A->current;
 }
 
-static int hud_serverlist_sort_players(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+static int hud_serverlist_sort_players(const Server * a, const Server * b) {
     return b->current - a->current;
 }
 
-static int hud_serverlist_sort_name(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+static int hud_serverlist_sort_name(const Server * a, const Server * b) {
     return strcmp(a->name, b->name);
 }
 
-static int hud_serverlist_sort_map(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+static int hud_serverlist_sort_map(const Server * a, const Server * b) {
     return strcmp(a->map, b->map);
 }
 
-static int hud_serverlist_sort_mode(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+static int hud_serverlist_sort_mode(const Server * a, const Server * b) {
     return strcmp(a->gamemode, b->gamemode);
 }
 
-static int hud_serverlist_sort_ping(const struct serverlist_entry * a, const struct serverlist_entry * b) {
+static int hud_serverlist_sort_ping(const Server * a, const Server * b) {
     if (a->ping < 0) return +1;
     if (b->ping < 0) return -1;
 
@@ -2077,11 +2077,11 @@ static void hud_serverlist_pingupdate(void * e, float time_delta, char * aos) {
                 break;
             }
     } else {
-        serverlist = realloc(serverlist, (++server_count) * sizeof(struct serverlist_entry));
-        memcpy(serverlist + server_count - 1, e, sizeof(struct serverlist_entry));
+        serverlist = realloc(serverlist, (++server_count) * sizeof(Server));
+        memcpy(serverlist + server_count - 1, e, sizeof(Server));
     }
 
-    qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_default);
+    qsort(serverlist, server_count, sizeof(Server), hud_serverlist_sort_default);
     pthread_mutex_unlock(&serverlist_lock);
 }
 
@@ -2134,7 +2134,7 @@ static Texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     }
 }
 
-static void hud_render_tab_button(mu_Context * ctx, float scale, const char * tabname, struct hud * tabptr) {
+static void hud_render_tab_button(mu_Context * ctx, float scale, const char * tabname, HUD * tabptr) {
     if (hud_active == tabptr)
         mu_text_color(ctx, 255, 255, 0);
 
@@ -2384,7 +2384,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                 server_count = json_array_get_count(servers);
 
                 pthread_mutex_lock(&serverlist_lock);
-                serverlist = realloc(serverlist, server_count * sizeof(struct serverlist_entry));
+                serverlist = realloc(serverlist, server_count * sizeof(Server));
                 CHECK_ALLOCATION_ERROR(serverlist)
 
                 ping_start(hud_serverlist_pingupdate);
@@ -2392,7 +2392,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                 player_count = 0;
                 for (int k = 0; k < server_count; k++) {
                     JSON_Object* s = json_array_get_object(servers, k);
-                    memset(&serverlist[k], 0, sizeof(struct serverlist_entry));
+                    memset(&serverlist[k], 0, sizeof(Server));
 
                     serverlist[k].current = (int)json_object_get_number(s, "players_current");
                     serverlist[k].max = (int)json_object_get_number(s, "players_max");
@@ -2415,7 +2415,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                     player_count += serverlist[k].current;
                 }
 
-                qsort(serverlist, server_count, sizeof(struct serverlist_entry), hud_serverlist_sort_default);
+                qsort(serverlist, server_count, sizeof(Server), hud_serverlist_sort_default);
                 pthread_mutex_unlock(&serverlist_lock);
 
                 http_release(request_serverlist);
@@ -2442,7 +2442,7 @@ static void hud_serverlist_touch(void* finger, int action, float x, float y, flo
     }*/
 }
 
-struct hud hud_serverlist = {
+HUD hud_serverlist = {
     hud_serverlist_init,
     NULL,
     hud_serverlist_render,
@@ -2612,7 +2612,7 @@ static void hud_settings_touch(void* finger, int action, float x, float y, float
     window_setmouseloc(x, y);
 }
 
-struct hud hud_settings = {
+HUD hud_settings = {
     hud_settings_init,
     NULL,
     hud_settings_render,
@@ -2762,7 +2762,7 @@ static void hud_controls_keyboard(int key, int action, int mods, int internal) {
     }
 }
 
-struct hud hud_controls = {
+HUD hud_controls = {
     hud_controls_init,
     NULL,
     hud_controls_render,

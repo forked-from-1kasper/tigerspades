@@ -256,7 +256,7 @@ void weapon_shoot() {
         if (players[local_player_id].input.buttons != network_buttons_last) {
             struct PacketWeaponInput in;
             in.player_id = local_player_id;
-            in.input = players[local_player_id].input.buttons;
+            in.input     = players[local_player_id].input.buttons;
             network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
 
             network_buttons_last = players[local_player_id].input.buttons;
@@ -270,6 +270,7 @@ void weapon_shoot() {
 
         if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
             hit.type = CAMERA_HITTYPE_NONE;
+
         switch (hit.type) {
             case CAMERA_HITTYPE_PLAYER: {
                 sound_create_sticky((hit.player_section == HITTYPE_HEAD) ? &sound_spade_whack : &sound_hitplayer,
@@ -284,7 +285,7 @@ void weapon_shoot() {
 
                 struct PacketHit h;
                 h.player_id = hit.player_id;
-                h.hit_type = hit.player_section;
+                h.hit_type  = hit.player_section;
                 network_send(PACKET_HIT_ID, &h, sizeof(h));
                 // printf("hit on %s (%i)\n", players[hit.player_id].name, h.hit_type);
                 break;
@@ -294,10 +295,10 @@ void weapon_shoot() {
                 if (map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
                     struct PacketBlockAction blk;
                     blk.action_type = ACTION_DESTROY;
-                    blk.player_id = local_player_id;
-                    blk.x = htoles32(hit.x);
-                    blk.y = htoles32(hit.z);
-                    blk.z = htoles32(63 - hit.y);
+                    blk.player_id   = local_player_id;
+                    blk.x           = htoles32(hit.x);
+                    blk.y           = htoles32(hit.z);
+                    blk.z           = htoles32(63 - hit.y);
                     network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
                     // read_PacketBlockAction(&blk,sizeof(blk));
                 } else {

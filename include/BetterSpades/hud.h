@@ -26,7 +26,7 @@
 #include <BetterSpades/texture.h>
 #include <BetterSpades/window.h>
 
-struct hud {
+typedef struct {
     void (*init)();
     void (*render_3D)();
     void (*render_2D)(mu_Context * ctx, float);
@@ -39,9 +39,9 @@ struct hud {
     char render_world;
     char render_localplayer;
     mu_Context * ctx;
-};
+} HUD;
 
-struct serverlist_entry {
+typedef struct {
     int current, max;
     char name[32];
     char map[21];
@@ -49,22 +49,22 @@ struct serverlist_entry {
     int ping;
     char identifier[32];
     char country[4];
-};
+} Server;
 
 extern int screen_current;
 
-extern struct hud hud_ingame;
-extern struct hud hud_mapload;
-extern struct hud hud_serverlist;
-extern struct hud hud_settings;
-extern struct hud hud_controls;
+extern HUD hud_ingame;
+extern HUD hud_mapload;
+extern HUD hud_serverlist;
+extern HUD hud_settings;
+extern HUD hud_controls;
 
-extern struct hud * hud_active;
+extern HUD * hud_active;
 extern struct window_instance * hud_window;
 
 #define HUD_FLAG_INDEX_START 64
 
-void hud_change(struct hud *);
+void hud_change(HUD *);
 void hud_init();
 void hud_mousemode(int mode);
 

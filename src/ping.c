@@ -148,7 +148,7 @@ void * ping_update(void * data) {
             if (js) {
                 JSON_Object * root = json_value_get_object(js);
 
-                struct serverlist_entry e;
+                Server e;
 
                 strcpy(e.country, "LAN");
                 e.ping = ceil((window_time() - ping_start) * 1000.0F);

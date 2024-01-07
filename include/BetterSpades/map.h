@@ -31,9 +31,9 @@ extern int map_size_z;
 
 extern float fog_color[4];
 
-struct Point {
+typedef struct {
     int x, y, z;
-};
+} Point;
 
 void map_init();
 int map_object_visible(float x, float y, float z);
@@ -46,7 +46,7 @@ float map_sunblock(int x, int y, int z);
 bool map_isair(int x, int y, int z);
 TrueColor map_get(int x, int y, int z);
 void map_set(int x, int y, int z, TrueColor);
-int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, struct Point * cube_array);
+int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, Point * cube_array);
 void map_vxl_setgeom(int x, int y, int z, unsigned int t, unsigned int * map);
 void map_vxl_setcolor(int x, int y, int z, unsigned int t, unsigned int * map);
 int map_placedblock_color(int color);
