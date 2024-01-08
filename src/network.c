@@ -1103,46 +1103,64 @@ int network_connect_sub(char * ip, int port, int version) {
     return 0;
 }
 
-int network_connect(char * ip, int port) {
-    log_info("Connecting to %s at port %i", ip, port);
+int network_connect(Address * addr) {
+    log_info("Connecting to %s at port %i", addr->ip, addr->port);
     if (network_connected) network_disconnect();
 
-    if (network_connect_sub(ip, port, VERSION_075)) return 1;
-    if (network_connect_sub(ip, port, VERSION_076)) return 1;
+    switch (addr->version) {
+        case VER075: {
+            if (network_connect_sub(addr->ip, addr->port, VERSION_075)) return 1;
+            network_connected = 0; return 0;
+        }
 
-    network_connected = 0;
-    return 0;
+        case VER076: {
+            if (network_connect_sub(addr->ip, addr->port, VERSION_076)) return 1;
+            network_connected = 0; return 0;
+        }
+
+        default: {
+            if (network_connect_sub(addr->ip, addr->port, VERSION_075)) return 1;
+            if (network_connect_sub(addr->ip, addr->port, VERSION_076)) return 1;
+            network_connected = 0; return 0;
+        }
+    }
 }
 
-int network_identifier_split(char * addr, char * ip_out, int * port_out) {
-    char * ip_start = strstr(addr, "aos://") + 6;
-    if ((size_t) ip_start <= 6) return 0;
+int network_identifier_split(char * str, Address * addr) {
+    while (*str && isspace(*str)) str++; // skip trailing whitespace
 
-    char * port_start = strchr(ip_start, ':');
-    *port_out = port_start ? strtoul(port_start + 1, NULL, 10) : 32887;
+    if (strstr(str, "aos://") != str) return 0;
+    str += 6; // skip that “aos://” prefix
 
-    if (strchr(ip_start, '.')) {
-        if (port_start) {
-            strncpy(ip_out, ip_start, port_start - ip_start);
-            ip_out[port_start - ip_start] = 0;
-        } else {
-            strcpy(ip_out, ip_start);
-        }
+    char * colon = strchr(str, ':');
+    addr->port = colon ? strtoul(colon + 1, NULL, 10) : 32887;
+
+    size_t len = strlen(str), iplen = colon ? colon - str : len;
+
+    if (memchr(str, '.', iplen)) {
+        strncpy(addr->ip, str, iplen);
+        addr->ip[iplen] = 0;
     } else {
-        unsigned int ip = strtoul(ip_start, NULL, 10);
-        sprintf(ip_out, "%i.%i.%i.%i", ip & 255, (ip >> 8) & 255, (ip >> 16) & 255, (ip >> 24) & 255);
+        unsigned int ip = strtoul(str, NULL, 10);
+        sprintf(addr->ip, "%i.%i.%i.%i", ip & 255, (ip >> 8) & 255, (ip >> 16) & 255, (ip >> 24) & 255);
     }
+
+    if (strcmp(str + len - 5, ":0.75") == 0)
+        addr->version = VER075;
+    else if (strcmp(str + len - 5, ":0.76") == 0)
+        addr->version = VER076;
+    else addr->version = UNKNOWN;
 
     return 1;
 }
 
-int network_connect_string(char * addr) {
-    char ip[32]; int port;
+int network_connect_string(char * str) {
+    Address addr;
 
-    if (!network_identifier_split(addr, ip, &port))
+    if (!network_identifier_split(str, &addr))
         return 0;
 
-    return network_connect(ip, port);
+    return network_connect(&addr);
 }
 
 int network_update() {

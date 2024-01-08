@@ -2407,10 +2407,10 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                     strncpy(serverlist[k].country, json_object_get_string(s, "country"),
                             sizeof(serverlist[k].country) - 1);
 
-                    int port;
-                    char ip[32];
-                    if (network_identifier_split(serverlist[k].identifier, ip, &port))
-                        ping_check(ip, port, serverlist[k].identifier);
+                    Address addr;
+
+                    if (network_identifier_split(serverlist[k].identifier, &addr))
+                        ping_check(addr.ip, addr.port, serverlist[k].identifier);
 
                     player_count += serverlist[k].current;
                 }
