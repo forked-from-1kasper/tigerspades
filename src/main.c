@@ -795,6 +795,12 @@ int main(int argc, char ** argv) {
         } else MATCH(argv[i], "--server") {
             if (argc <= ++i) log_error("The “--server” option requires an argument.");
             else default_server = argv[i];
+        } else MATCH(argv[i], "--serverlist") {
+            if (argc <= ++i) log_error("The “--serverlist” option requires an argument.");
+            else strnzcpy(serverlist_url, argv[i], sizeof(serverlist_url));
+        } else MATCH(argv[i], "--newslist") {
+            if (argc <= ++i) log_error("The “--newslist” option requires an argument.");
+            else strnzcpy(newslist_url, argv[i], sizeof(newslist_url));
         } else MATCH(argv[i], "--team") {
             if (argc <= ++i) log_error("The “--team” option requires an argument.");
             else MATCH(argv[i], "1") default_team = TEAM_1;
