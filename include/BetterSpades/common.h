@@ -144,6 +144,10 @@
 #define CHAT_ALL_INPUT  1
 #define CHAT_TEAM_INPUT 2
 
+typedef enum {
+    VER075, VER076, UNKNOWN
+} Version;
+
 typedef struct {
     uint8_t r, g, b, a;
 } TrueColor;
@@ -215,5 +219,7 @@ void writeBGR(uint32_t *, TrueColor);
 
 TrueColor readBGR(uint32_t *);
 TrueColor readBGRA(uint32_t *);
+
+void strnzcpy(char * dest, const char * src, size_t);
 
 #endif

@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include <hashtable.h>
-#include <parson.h>
 
 #include <BetterSpades/window.h>
 #include <BetterSpades/ping.h>
@@ -89,8 +88,17 @@ static bool pings_retry(void * key, void * value, void * user) {
 
 #define IP_KEY(addr) (((uint64_t) addr.host << 16) | (addr.port));
 
-void strnzcpy(char * dest, const char * src, size_t size) {
-    strncpy(dest, src, size - 1); dest[size - 1] = 0;
+Version json_get_game_version(const JSON_Object * obj) {
+    char * game_version = json_object_get_string(obj, "game_version");
+    if (game_version != NULL) {
+        if (strcmp(game_version, "0.75") == 0)
+            return VER075;
+
+        if (strcmp(game_version, "0.76") == 0)
+            return VER076;
+    }
+
+    return UNKNOWN;
 }
 
 void * ping_update(void * data) {
@@ -157,6 +165,7 @@ void * ping_update(void * data) {
 
                 e.current = json_object_get_number(root, "players_current");
                 e.max     = json_object_get_number(root, "players_max");
+                e.version = json_get_game_version(root);
 
                 if (ping_result) ping_result(&e, ping, NULL);
                 json_value_free(js);

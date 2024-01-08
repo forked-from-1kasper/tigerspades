@@ -73,3 +73,7 @@ TrueColor readBGRA(uint32_t * src) {
 
     return retval;
 }
+
+void strnzcpy(char * dest, const char * src, size_t size) {
+    strncpy(dest, src, size - 1); dest[size - 1] = 0;
+}

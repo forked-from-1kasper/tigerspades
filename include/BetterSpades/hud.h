@@ -25,6 +25,7 @@
 #include <microui.h>
 #include <BetterSpades/texture.h>
 #include <BetterSpades/window.h>
+#include <BetterSpades/common.h>
 
 typedef struct {
     void (*init)();
@@ -42,13 +43,14 @@ typedef struct {
 } HUD;
 
 typedef struct {
-    int current, max;
-    char name[32];
-    char map[21];
-    char gamemode[8];
-    int ping;
-    char identifier[32];
-    char country[4];
+    int     current, max;
+    char    name[32];
+    char    map[21];
+    char    gamemode[8];
+    int     ping;
+    char    identifier[32];
+    char    country[4];
+    Version version;
 } Server;
 
 extern int screen_current;

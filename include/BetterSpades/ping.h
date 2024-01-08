@@ -21,6 +21,7 @@
 #define PING_H
 
 #include <enet/enet.h>
+#include <parson.h>
 
 struct ping_entry {
     ENetAddress addr;
@@ -35,5 +36,7 @@ void ping_check(char * addr, int port, char * aos);
 void * ping_update(void * data);
 void ping_start(void (*result)(void *, float, char *));
 void ping_stop();
+
+Version json_get_game_version(const JSON_Object *);
 
 #endif

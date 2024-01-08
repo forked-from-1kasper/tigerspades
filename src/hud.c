@@ -2092,7 +2092,7 @@ static void hud_serverlist_init() {
     ping_start(hud_serverlist_pingupdate);
 }
 
-static void server_c(char * address, char * name) {
+static void server_c(char * address, char * name, Version version) {
     if (file_exists(address)) {
         void * data = file_load(address);
         map_vxl_load(data, file_size(address));
@@ -2114,7 +2114,7 @@ static void server_c(char * address, char * name) {
             rpc_seti(RPC_VALUE_SLOTS, 0);
         }
 
-        if (network_connect_string(address))
+        if (network_connect_string(address, version))
             hud_change(&hud_ingame);
     }
 }
@@ -2193,7 +2193,7 @@ static void hud_sort_button_render(mu_Context * ctx, float scale, const char * n
 static void hud_serverlist_render(mu_Context * ctx, float scale) {
     char total_str[128]; sprintf(total_str, server_count > 0 ? "%i players on %i servers" : "No servers", player_count, server_count);
 
-    char * join_address = NULL, * join_name = NULL;
+    char * join_address = NULL, * join_name = NULL; Version join_version = UNKNOWN;
 
     if (hud_header_render(ctx, scale, total_str)) {
         mu_layout_row(ctx, 1, (int[]) {-1}, settings.window_height * 0.3F);
@@ -2307,6 +2307,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                     if (join) {
                         join_address = serverlist[k].identifier;
                         join_name    = serverlist[k].name;
+                        join_version = serverlist[k].version;
                     }
                 }
             }
@@ -2404,14 +2405,13 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                     serverlist[k].max     = (int) json_object_get_number(s, "players_max");
                     serverlist[k].ping    = -1;
 
-                    strncpy(serverlist[k].name, json_object_get_string(s, "name"), sizeof(serverlist[k].name) - 1);
-                    strncpy(serverlist[k].map, json_object_get_string(s, "map"), sizeof(serverlist[k].map) - 1);
-                    strncpy(serverlist[k].gamemode, json_object_get_string(s, "game_mode"),
-                            sizeof(serverlist[k].gamemode) - 1);
-                    strncpy(serverlist[k].identifier, json_object_get_string(s, "identifier"),
-                            sizeof(serverlist[k].identifier) - 1);
-                    strncpy(serverlist[k].country, json_object_get_string(s, "country"),
-                            sizeof(serverlist[k].country) - 1);
+                    strnzcpy(serverlist[k].name,       json_object_get_string(s, "name"),       sizeof(serverlist[k].name));
+                    strnzcpy(serverlist[k].map,        json_object_get_string(s, "map"),        sizeof(serverlist[k].map));
+                    strnzcpy(serverlist[k].gamemode,   json_object_get_string(s, "game_mode"),  sizeof(serverlist[k].gamemode));
+                    strnzcpy(serverlist[k].identifier, json_object_get_string(s, "identifier"), sizeof(serverlist[k].identifier));
+                    strnzcpy(serverlist[k].country,    json_object_get_string(s, "country"),    sizeof(serverlist[k].country));
+
+                    serverlist[k].version = json_get_game_version(s);
 
                     Address addr;
 
@@ -2438,7 +2438,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
         }
     }
 
-    if (join_address) server_c(join_address, join_name);
+    if (join_address) server_c(join_address, join_name, join_version);
 }
 
 static void hud_serverlist_touch(void * finger, int action, float x, float y, float dx, float dy) {

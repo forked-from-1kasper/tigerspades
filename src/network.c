@@ -17,11 +17,12 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <enet/enet.h>
-#include <math.h>
 #include <string.h>
+#include <ctype.h>
+#include <math.h>
 
 #include <libdeflate.h>
+#include <enet/enet.h>
 
 #include <BetterSpades/texture.h>
 #include <BetterSpades/common.h>
@@ -1103,8 +1104,16 @@ int network_connect_sub(char * ip, int port, int version) {
     return 0;
 }
 
+const char * get_version_name(Version version) {
+    switch (version) {
+        case VER075: return "0.75";
+        case VER076: return "0.76";
+        default:     return "0.7X";
+    }
+}
+
 int network_connect(Address * addr) {
-    log_info("Connecting to %s at port %i", addr->ip, addr->port);
+    log_info("Connecting to %s at port %i (protocol version %s)", addr->ip, addr->port, get_version_name(addr->version));
     if (network_connected) network_disconnect();
 
     switch (addr->version) {
@@ -1154,11 +1163,13 @@ int network_identifier_split(char * str, Address * addr) {
     return 1;
 }
 
-int network_connect_string(char * str) {
+int network_connect_string(char * str, Version version) {
     Address addr;
 
     if (!network_identifier_split(str, &addr))
         return 0;
+
+    if (version != UNKNOWN) addr.version = version;
 
     return network_connect(&addr);
 }
