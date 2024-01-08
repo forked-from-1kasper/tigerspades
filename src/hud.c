@@ -55,6 +55,8 @@
 HUD * hud_active;
 struct window_instance * hud_window;
 
+static pthread_mutex_t serverlist_lock;
+
 static int is_inside_centered(double mx, double my, int x, int y, int w, int h) {
     return mx >= x - w / 2 && mx < x + w / 2 && my >= y - h / 2 && my < y + h / 2;
 }
@@ -67,6 +69,8 @@ void hud_init() {
     hud_serverlist.ctx = malloc(sizeof(mu_Context));
     hud_settings.ctx   = malloc(sizeof(mu_Context));
     hud_controls.ctx   = malloc(sizeof(mu_Context));
+
+    pthread_mutex_init(&serverlist_lock, NULL);
 
     hud_change(&hud_serverlist);
 }
@@ -1962,7 +1966,6 @@ static int player_count = 0;
 static Server * serverlist;
 
 static int serverlist_con_established;
-static pthread_mutex_t serverlist_lock;
 
 static struct serverlist_news_entry {
     Texture image;
@@ -1970,7 +1973,7 @@ static struct serverlist_news_entry {
     char url[129];
     float tile_size;
     int color;
-    struct serverlist_news_entry* next;
+    struct serverlist_news_entry * next;
 } serverlist_news;
 
 static int serverlist_news_exists = 0;
@@ -1980,30 +1983,6 @@ typedef int (*serverlist_sort)(const Server *, const Server *);
 
 static serverlist_sort hud_serverlist_sort_chosen = NULL;
 bool serverlist_descending = true;
-
-static void hud_serverlist_init() {
-    ping_stop();
-    network_disconnect();
-    window_title(NULL);
-    rpc_seti(RPC_VALUE_SLOTS, 0);
-
-    window_mousemode(WINDOW_CURSOR_ENABLED);
-
-    player_count = server_count = 0;
-    request_serverlist = http_get("http://services.buildandshoot.com/serverlist.json", NULL);
-
-    if (!serverlist_news_exists)
-        request_news = http_get("http://aos.party/bs/news/", NULL);
-
-    serverlist_con_established = request_serverlist != NULL;
-    *serverlist_input = 0;
-
-    pthread_mutex_init(&serverlist_lock, NULL);
-    window_textinput(1);
-
-    hud_serverlist_sort_chosen = NULL;
-    serverlist_descending = true;
-}
 
 static int hud_serverlist_cmp(const void * a, const void * b) {
     const Server * A = (const Server*) a;
@@ -2068,9 +2047,9 @@ static int hud_serverlist_sort_ping(const Server * a, const Server * b) {
     return a->ping - b->ping;
 }
 
-static void hud_serverlist_pingupdate(void * e, float time_delta, char * aos) {
+static void hud_serverlist_pingupdate(void * entry, float time_delta, char * aos) {
     pthread_mutex_lock(&serverlist_lock);
-    if (!e) {
+    if (!entry) {
         for (int k = 0; k < server_count; k++)
             if (!strcmp(serverlist[k].identifier, aos)) {
                 serverlist[k].ping = ceil(time_delta * 1000.0F);
@@ -2078,11 +2057,39 @@ static void hud_serverlist_pingupdate(void * e, float time_delta, char * aos) {
             }
     } else {
         serverlist = realloc(serverlist, (++server_count) * sizeof(Server));
-        memcpy(serverlist + server_count - 1, e, sizeof(Server));
+        memcpy(serverlist + server_count - 1, entry, sizeof(Server));
     }
 
     qsort(serverlist, server_count, sizeof(Server), hud_serverlist_sort_default);
     pthread_mutex_unlock(&serverlist_lock);
+}
+
+static void hud_serverlist_init() {
+    ping_stop();
+    network_disconnect();
+    window_title(NULL);
+    rpc_seti(RPC_VALUE_SLOTS, 0);
+
+    window_mousemode(WINDOW_CURSOR_ENABLED);
+
+    pthread_mutex_lock(&serverlist_lock);
+    player_count = server_count = 0;
+    pthread_mutex_unlock(&serverlist_lock);
+
+    request_serverlist = http_get("http://services.buildandshoot.com/serverlist.json", NULL);
+
+    if (!serverlist_news_exists)
+        request_news = http_get("http://aos.party/bs/news/", NULL);
+
+    serverlist_con_established = request_serverlist != NULL;
+    *serverlist_input = 0;
+
+    window_textinput(1);
+
+    hud_serverlist_sort_chosen = NULL;
+    serverlist_descending = true;
+
+    ping_start(hud_serverlist_pingupdate);
 }
 
 static void server_c(char * address, char * name) {
@@ -2374,29 +2381,28 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
         }
     }
 
-    int render_status_icon = !serverlist_con_established;
     if (request_serverlist) {
         switch (http_process(request_serverlist)) {
-            case HTTP_STATUS_PENDING: render_status_icon = 1; break;
+            case HTTP_STATUS_PENDING: break;
+
             case HTTP_STATUS_COMPLETED: {
                 JSON_Value * js = json_parse_string(request_serverlist->response_data);
                 JSON_Array * servers = json_value_get_array(js);
-                server_count = json_array_get_count(servers);
 
                 pthread_mutex_lock(&serverlist_lock);
+
+                int begin = server_count; server_count += json_array_get_count(servers);
                 serverlist = realloc(serverlist, server_count * sizeof(Server));
                 CHECK_ALLOCATION_ERROR(serverlist)
 
-                ping_start(hud_serverlist_pingupdate);
-
                 player_count = 0;
-                for (int k = 0; k < server_count; k++) {
-                    JSON_Object* s = json_array_get_object(servers, k);
+                for (int k = begin; k < server_count; k++) {
+                    JSON_Object * s = json_array_get_object(servers, k - begin);
                     memset(&serverlist[k], 0, sizeof(Server));
 
-                    serverlist[k].current = (int)json_object_get_number(s, "players_current");
-                    serverlist[k].max = (int)json_object_get_number(s, "players_max");
-                    serverlist[k].ping = -1;
+                    serverlist[k].current = (int) json_object_get_number(s, "players_current");
+                    serverlist[k].max     = (int) json_object_get_number(s, "players_max");
+                    serverlist[k].ping    = -1;
 
                     strncpy(serverlist[k].name, json_object_get_string(s, "name"), sizeof(serverlist[k].name) - 1);
                     strncpy(serverlist[k].map, json_object_get_string(s, "map"), sizeof(serverlist[k].map) - 1);
@@ -2423,17 +2429,19 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                 request_serverlist = NULL;
                 break;
             }
-            case HTTP_STATUS_FAILED:
+
+            case HTTP_STATUS_FAILED: {
                 http_release(request_serverlist);
                 hud_serverlist_init();
                 break;
+            }
         }
     }
 
     if (join_address) server_c(join_address, join_name);
 }
 
-static void hud_serverlist_touch(void* finger, int action, float x, float y, float dx, float dy) {
+static void hud_serverlist_touch(void * finger, int action, float x, float y, float dx, float dy) {
     window_setmouseloc(x, y);
     /*switch (action) {
         case TOUCH_DOWN: hud_serverlist_mouseclick(x, y, WINDOW_MOUSE_LMB, WINDOW_PRESS, 0); break;
@@ -2465,7 +2473,7 @@ static void hud_settings_init() {
 
 static int int_slider_defaults(mu_Context * ctx, struct config_setting * setting) {
     int k = setting->defaults_length - 1;
-    while (k > 0 && setting->defaults[k] > *(int*)setting->value)
+    while (k > 0 && setting->defaults[k] > *(int*) setting->value)
         k--;
 
     float tmp = k;
@@ -2478,7 +2486,7 @@ static int int_slider_defaults(mu_Context * ctx, struct config_setting * setting
 
     if (setting->label_callback) {
         char buf[64];
-        setting->label_callback(buf, sizeof(buf), setting->defaults[(int)round(tmp)], (int)round(tmp));
+        setting->label_callback(buf, sizeof(buf), setting->defaults[(int) round(tmp)], (int) round(tmp));
         mu_draw_control_text(ctx, buf, ctx->last_rect, MU_COLOR_TEXT, MU_OPT_ALIGNCENTER);
     }
 
@@ -2608,7 +2616,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
     }
 }
 
-static void hud_settings_touch(void* finger, int action, float x, float y, float dx, float dy) {
+static void hud_settings_touch(void * finger, int action, float x, float y, float dx, float dy) {
     window_setmouseloc(x, y);
 }
 

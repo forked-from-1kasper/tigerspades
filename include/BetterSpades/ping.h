@@ -31,9 +31,9 @@ struct ping_entry {
 
 void ping_init();
 void ping_deinit();
-void ping_check(char* addr, int port, char* aos);
-void* ping_update(void* data);
-void ping_start(void (*result)(void*, float, char*));
+void ping_check(char * addr, int port, char * aos);
+void * ping_update(void * data);
+void ping_start(void (*result)(void *, float, char *));
 void ping_stop();
 
 #endif

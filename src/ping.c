@@ -57,13 +57,13 @@ void ping_deinit() {
     enet_socket_destroy(lan);
 }
 
-static void ping_lan() {
-    ENetAddress addr = {.host = 0xFFFFFFFF}; // 255.255.255.255
+float lan_ping_start = 0.0F;
 
-    ENetBuffer buffer = {
-        .data = "HELLOLAN",
-        .dataLength = 8,
-    };
+static void ping_lan() {
+    ENetAddress addr  = {.host = 0xFFFFFFFF}; // 255.255.255.255
+    ENetBuffer buffer = {.data = "HELLOLAN", .dataLength = 8};
+
+    lan_ping_start = window_time();
 
     for (addr.port = 32882; addr.port < 32892; addr.port++)
         enet_socket_send(lan, &addr, &buffer, 1);
@@ -80,7 +80,7 @@ static bool pings_retry(void * key, void * value, void * user) {
             enet_socket_send(sock, &entry->addr, &(ENetBuffer) {.data = "HELLO", .dataLength = 5}, 1);
             entry->time_start = window_time();
             entry->trycount++;
-            log_warn("Ping timeout on %s, retrying", entry->aos);
+            log_warn("Ping timeout on %s, retrying (attempt %i)", entry->aos, entry->trycount);
         }
     }
 
@@ -89,10 +89,13 @@ static bool pings_retry(void * key, void * value, void * user) {
 
 #define IP_KEY(addr) (((uint64_t) addr.host << 16) | (addr.port));
 
+void strnzcpy(char * dest, const char * src, size_t size) {
+    strncpy(dest, src, size - 1); dest[size - 1] = 0;
+}
+
 void * ping_update(void * data) {
     pthread_detach(pthread_self());
 
-    ping_lan();
     float ping_start = window_time();
 
     HashTable pings;
@@ -111,10 +114,7 @@ void * ping_update(void * data) {
         char tmp[512];
         ENetAddress from;
 
-        ENetBuffer buf = {
-            .data = tmp,
-            .dataLength = sizeof(tmp),
-        };
+        ENetBuffer buf = {.data = tmp, .dataLength = sizeof(tmp)};
 
         while (1) {
             int recvLength = enet_socket_receive(sock, &from, &buf, 1);
@@ -128,22 +128,19 @@ void * ping_update(void * data) {
                         if (!strncmp(buf.data, "HI", recvLength)) {
                             ping_result(NULL, window_time() - entry->time_start, entry->aos);
                             ht_erase(&pings, &ID);
-                        } else {
-                            entry->trycount++;
-                        }
-                    } else { // connection was closed
-                        ht_erase(&pings, &ID);
-                    }
+                        } else entry->trycount++;
+                    } else ht_erase(&pings, &ID); // connection was closed
                 }
-            } else { // would block
-                break;
-            }
+            } else break; // would block
         }
 
         ht_iterate_remove(&pings, NULL, pings_retry);
 
         int length = enet_socket_receive(lan, &from, &buf, 1);
         if (length) {
+            // “ping_result” before can block, so sometimes this value is very inaccurate
+            float ping = window_time() - lan_ping_start;
+
             JSON_Value * js = json_parse_string(buf.data);
             if (js) {
                 JSON_Object * root = json_value_get_object(js);
@@ -151,19 +148,17 @@ void * ping_update(void * data) {
                 Server e;
 
                 strcpy(e.country, "LAN");
-                e.ping = ceil((window_time() - ping_start) * 1000.0F);
+                e.ping = ceil(ping * 1000.0F);
                 snprintf(e.identifier, sizeof(e.identifier) - 1, "aos://%u:%u", from.host, from.port);
 
-                strncpy(e.name, json_object_get_string(root, "name"), sizeof(e.name) - 1);
-                e.name[sizeof(e.name) - 1] = 0;
-                strncpy(e.gamemode, json_object_get_string(root, "game_mode"), sizeof(e.gamemode) - 1);
-                e.gamemode[sizeof(e.gamemode) - 1] = 0;
-                strncpy(e.map, json_object_get_string(root, "map"), sizeof(e.map) - 1);
-                e.map[sizeof(e.map) - 1] = 0;
-                e.current = json_object_get_number(root, "players_current");
-                e.max = json_object_get_number(root, "players_max");
-                ping_result(&e, window_time() - ping_start, NULL);
+                strnzcpy(e.name,     json_object_get_string(root, "name"),      sizeof(e.name));
+                strnzcpy(e.gamemode, json_object_get_string(root, "game_mode"), sizeof(e.gamemode));
+                strnzcpy(e.map,      json_object_get_string(root, "map"),       sizeof(e.map));
 
+                e.current = json_object_get_number(root, "players_current");
+                e.max     = json_object_get_number(root, "players_max");
+
+                if (ping_result) ping_result(&e, ping, NULL);
                 json_value_free(js);
             }
         }
@@ -174,8 +169,8 @@ void * ping_update(void * data) {
 
 void ping_check(char * addr, int port, char * aos) {
     struct ping_entry entry = {
-        .trycount = 0,
-        .addr.port = port,
+        .trycount   = 0,
+        .addr.port  = port,
         .time_start = window_time(),
     };
 
@@ -191,8 +186,8 @@ void ping_check(char * addr, int port, char * aos) {
 
 void ping_start(void (*result)(void *, float, char *)) {
     ping_stop();
-
     ping_result = result;
+    ping_lan();
 }
 
 void ping_stop() {

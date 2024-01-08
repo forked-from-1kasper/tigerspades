@@ -80,10 +80,10 @@ static char * texture_flags[] = {
 };
 
 static int texture_flag_cmp(const void * a, const void * b) {
-    return strcmp(a, *(const void* const*) b);
+    return strcmp(a, *(const void * const *) b);
 }
 
-int texture_flag_index(const char* country) {
+int texture_flag_index(const char * country) {
     char ** res = bsearch(country, texture_flags, sizeof(texture_flags) / sizeof(texture_flags[0]), sizeof(char*), texture_flag_cmp);
     return res ? (res - texture_flags) : -1;
 }
@@ -93,7 +93,7 @@ void texture_flag_offset(int index, float * u, float * v) {
         *u = (index % 16) * (16.0F / 256.0F);
         *v = (index / 16) * (16.0F / 256.0F);
     } else {
-        *u = 0.0F;
+        *u = 0.0625F;
         *v = 0.9375F;
     }
 }
