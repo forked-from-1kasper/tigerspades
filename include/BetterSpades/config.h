@@ -45,6 +45,8 @@ struct config_file_entry {
 
 extern struct RENDER_OPTIONS {
     char name[16];
+    int min_lan_port;
+    int max_lan_port;
     int opengl14;
     int color_correction;
     int shadow_entities;
@@ -90,30 +92,31 @@ typedef struct {
 
 enum {
     CONFIG_TYPE_STRING,
-    CONFIG_TYPE_INT,
     CONFIG_TYPE_FLOAT,
+    CONFIG_TYPE_INT
 };
 
 struct config_setting {
-    void* value;
+    void * value;
     int type;
     int min;
     int max;
     char name[32];
     char help[32];
+    char category[32];
     int defaults[8];
     int defaults_length;
-    void (*label_callback)(char* buffer, size_t length, int value, size_t index);
+    void (*label_callback)(char * buffer, size_t length, int value, size_t index);
 };
 
 extern char * config_filepath;
 
 extern List config_settings;
 
-void config_register_key(int internal, int def, const char* name, int toggle, const char* display,
-                         const char* category);
-int config_key_translate(int key, int dir, int* results);
-struct config_key_pair* config_key(int key);
+void config_register_key(int internal, int def, const char * name, int toggle, const char * display,
+                         const char * category);
+int config_key_translate(int key, int dir, int * results);
+struct config_key_pair * config_key(int key);
 void config_key_reset_togglestates();
 void config_reload(void);
 void config_save(void);

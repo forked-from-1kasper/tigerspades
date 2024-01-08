@@ -71,6 +71,8 @@ void config_save() {
     kv6_rebuild_complete();
 
     config_sets("client", "name",              settings.name);
+    config_seti("client", "min_lan_port",      settings.min_lan_port);
+    config_seti("client", "max_lan_port",      settings.max_lan_port);
     config_seti("client", "xres",              settings.window_width);
     config_seti("client", "yres",              settings.window_height);
     config_seti("client", "windowed",          !settings.fullscreen);
@@ -144,6 +146,10 @@ static int config_read_key(void * user, const char * section, const char * name,
     if (!strcmp(section, "client")) {
         if (!strcmp(name, "name")) {
             strcpy(settings.name, value);
+        } else if (!strcmp(name, "min_lan_port")) {
+            settings.min_lan_port = atoi(value);
+        } else if (!strcmp(name, "max_lan_port")) {
+            settings.max_lan_port = atoi(value);
         } else if (!strcmp(name, "xres")) {
             settings.window_width = atoi(value);
         } else if (!strcmp(name, "yres")) {
@@ -384,192 +390,230 @@ void config_reload() {
 
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = settings_tmp.name,
-                 .type = CONFIG_TYPE_STRING,
-                 .max = sizeof(settings.name) - 1,
-                 .name = "Name",
-                 .help = "Ingame player name",
+                 .value    = settings_tmp.name,
+                 .type     = CONFIG_TYPE_STRING,
+                 .max      = sizeof(settings.name) - 1,
+                 .name     = "Name",
+                 .help     = "Ingame player name",
+                 .category = "Network"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.mouse_sensitivity,
-                 .type = CONFIG_TYPE_FLOAT,
-                 .min = 0,
-                 .max = INT_MAX,
-                 .name = "Mouse sensitivity",
+                 .value    = &settings_tmp.min_lan_port,
+                 .type     = CONFIG_TYPE_INT,
+                 .max      = INT_MAX,
+                 .name     = "Minimum LAN port",
+                 .help     = "First port to scan for local game servers",
+                 .category = "Network"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.camera_fov,
-                 .type = CONFIG_TYPE_FLOAT,
-                 .min = CAMERA_DEFAULT_FOV,
-                 .max = CAMERA_MAX_FOV,
-                 .name = "Camera FOV",
-                 .help = "Field of View in degrees",
+                 .value    = &settings_tmp.max_lan_port,
+                 .type     = CONFIG_TYPE_INT,
+                 .max      = INT_MAX,
+                 .name     = "Maximum LAN port",
+                 .help     = "Last port to scan for local game servers",
+                 .category = "Network"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.volume,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 10,
-                 .name = "Volume",
+                 .value    = &settings_tmp.mouse_sensitivity,
+                 .type     = CONFIG_TYPE_FLOAT,
+                 .min      = 0,
+                 .max      = INT_MAX,
+                 .name     = "Mouse sensitivity",
+                 .category = "Control"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.window_width,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = INT_MAX,
-                 .name = "Game width",
-                 .defaults = {640, 800, 854, 1024, 1280, 1920, 3840},
-                 .defaults_length = 7,
-                 .help = "Default: 800",
-                 .label_callback = config_label_pixels,
+                 .value    = &settings_tmp.invert_y,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .name     = "Invert y",
+                 .help     = "Invert vertical mouse movement",
+                 .category = "Control"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.window_height,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = INT_MAX,
-                 .name = "Game height",
-                 .defaults = {480, 600, 720, 768, 1024, 1080, 2160},
-                 .defaults_length = 7,
-                 .help = "Default: 600",
-                 .label_callback = config_label_pixels,
+                 .value    = &settings_tmp.hold_down_sights,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Only aim while pressing RMB",
+                 .name     = "Hold down sights",
+                 .category = "Control"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.scale,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = INT_MAX,
-                 .name = "GUI scale",
-                 .defaults = {0, 1, 2, 4, 8, 16, 32, 64},
+                 .value    = &settings_tmp.volume,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 10,
+                 .name     = "Volume",
+                 .category = "Interface"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value           = &settings_tmp.scale,
+                 .type            = CONFIG_TYPE_INT,
+                 .min             = 0,
+                 .max             = INT_MAX,
+                 .name            = "GUI scale",
+                 .category        = "Interface",
+                 .defaults        = {0, 1, 2, 4, 8, 16, 32, 64},
                  .defaults_length = 8,
-                 .label_callback = config_label_scale,
+                 .label_callback  = config_label_scale
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.vsync,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = INT_MAX,
-                 .name = "V-Sync",
-                 .help = "Limits your game's fps",
-                 .defaults = {0, 1, 20, 30, 60, 120, 144, 240},
+                 .value    = &settings_tmp.chat_shadow,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Dark chat background",
+                 .name     = "Chat shadow",
+                 .category = "Interface"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.show_fps,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .name     = "Show fps",
+                 .help     = "Show current fps and ping ingame",
+                 .category = "Interface"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.show_news,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .name     = "Show news",
+                 .help     = "Show news on server list",
+                 .category = "Interface"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.camera_fov,
+                 .type     = CONFIG_TYPE_FLOAT,
+                 .min      = CAMERA_DEFAULT_FOV,
+                 .max      = CAMERA_MAX_FOV,
+                 .name     = "Camera FOV",
+                 .help     = "Field of View in degrees",
+                 .category = "Graphics"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value           = &settings_tmp.window_width,
+                 .type            = CONFIG_TYPE_INT,
+                 .min             = 0,
+                 .max             = INT_MAX,
+                 .name            = "Game width",
+                 .defaults        = {640, 800, 854, 1024, 1280, 1920, 3840},
+                 .defaults_length = 7,
+                 .help            = "Default: 800",
+                 .category        = "Graphics",
+                 .label_callback  = config_label_pixels
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value           = &settings_tmp.window_height,
+                 .type            = CONFIG_TYPE_INT,
+                 .min             = 0,
+                 .max             = INT_MAX,
+                 .name            = "Game height",
+                 .defaults        = {480, 600, 720, 768, 1024, 1080, 2160},
+                 .defaults_length = 7,
+                 .help            = "Default: 600",
+                 .category        = "Graphics",
+                 .label_callback  = config_label_pixels
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value           = &settings_tmp.vsync,
+                 .type            = CONFIG_TYPE_INT,
+                 .min             = 0,
+                 .max             = INT_MAX,
+                 .name            = "V-Sync",
+                 .help            = "Limits your game's fps",
+                 .category        = "Graphics",
+                 .defaults        = {0, 1, 20, 30, 60, 120, 144, 240},
                  .defaults_length = 8,
-                 .label_callback = config_label_vsync,
+                 .label_callback  = config_label_vsync
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.fullscreen,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .name = "Fullscreen",
+                 .value    = &settings_tmp.fullscreen,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .name     = "Fullscreen",
+                 .category = "Graphics"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.multisamples,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 16,
-                 .name = "Multisamples",
-                 .help = "Smooth out block edges",
-                 .defaults = {0, 2, 4, 8, 16},
+                 .value           = &settings_tmp.multisamples,
+                 .type            = CONFIG_TYPE_INT,
+                 .min             = 0,
+                 .max             = 16,
+                 .name            = "Multisamples",
+                 .help            = "Smooth out block edges",
+                 .category        = "Graphics",
+                 .defaults        = {0, 2, 4, 8, 16},
                  .defaults_length = 5,
-                 .label_callback = config_label_msaa,
+                 .label_callback  = config_label_msaa
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.chat_shadow,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .help = "Dark chat background",
-                 .name = "Chat shadow",
+                 .value    = &settings_tmp.voxlap_models,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Render models like in voxlap",
+                 .name     = "Voxlap models",
+                 .category = "Graphics"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.voxlap_models,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .help = "Render models like in voxlap",
-                 .name = "Voxlap models",
+                 .value    = &settings_tmp.greedy_meshing,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Join similar mesh faces",
+                 .name     = "Greedy meshing",
+                 .category = "Graphics"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.hold_down_sights,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .help = "Only aim while pressing RMB",
-                 .name = "Hold down sights",
+                 .value    = &settings_tmp.force_displaylist,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Enable this on buggy drivers",
+                 .name     = "Force Displaylist",
+                 .category = "Graphics"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.greedy_meshing,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .help = "Join similar mesh faces",
-                 .name = "Greedy meshing",
+                 .value    = &settings_tmp.smooth_fog,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Enable this on buggy drivers",
+                 .name     = "Smooth fog",
+                 .category = "Graphics"
              });
     list_add(&config_settings,
              &(struct config_setting) {
-                 .value = &settings_tmp.force_displaylist,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .help = "Enable this on buggy drivers",
-                 .name = "Force Displaylist",
-             });
-    list_add(&config_settings,
-             &(struct config_setting) {
-                 .value = &settings_tmp.smooth_fog,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .help = "Enable this on buggy drivers",
-                 .name = "Smooth fog",
-             });
-    list_add(&config_settings,
-             &(struct config_setting) {
-                 .value = &settings_tmp.ambient_occlusion,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .help = "(won't work with greedy mesh)",
-                 .name = "Ambient occlusion",
-             });
-    list_add(&config_settings,
-             &(struct config_setting) {
-                 .value = &settings_tmp.show_fps,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .name = "Show fps",
-                 .help = "Show current fps and ping ingame",
-             });
-    list_add(&config_settings,
-             &(struct config_setting) {
-                 .value = &settings_tmp.invert_y,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .name = "Invert y",
-                 .help = "Invert vertical mouse movement",
-             });
-    list_add(&config_settings,
-             &(struct config_setting) {
-                 .value = &settings_tmp.show_news,
-                 .type = CONFIG_TYPE_INT,
-                 .min = 0,
-                 .max = 1,
-                 .name = "Show news",
-                 .help = "Show news on server list",
+                 .value    = &settings_tmp.ambient_occlusion,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "(won't work with greedy mesh)",
+                 .name     = "Ambient occlusion",
+                 .category = "Graphics"
              });
 }

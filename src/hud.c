@@ -2534,20 +2534,28 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
         mu_layout_row(ctx, 1, (int[]) {-1}, -1);
         mu_begin_panel(ctx, "Content");
 
-        if (mu_header_ex(ctx, "All settings", MU_OPT_EXPANDED)) {
-            int width = mu_get_current_container(ctx)->body.w;
+        int width = mu_get_current_container(ctx)->body.w;
 
-            for (int k = 0; k < list_size(&config_settings); k++) {
-                struct config_setting * a = list_get(&config_settings, k);
+        char * category = NULL; int open = 0;
 
+        for (int k = 0; k < list_size(&config_settings); k++) {
+            struct config_setting * a = list_get(&config_settings, k);
+
+            if (!category || strcmp(category, a->category)) {
+                category = a->category;
+                open = mu_header_ex(ctx, a->category, MU_OPT_EXPANDED);
+            }
+
+            if (open) {
                 mu_layout_row(ctx, 3, (int[]) {0.50F * width, -0.05F * width, -1}, 0);
 
                 switch (a->type) {
-                    case CONFIG_TYPE_STRING:
+                    case CONFIG_TYPE_STRING: {
                         mu_text(ctx, a->name);
                         mu_textbox(ctx, a->value, a->max + 1);
                         break;
-                    case CONFIG_TYPE_INT:
+                    }
+                    case CONFIG_TYPE_INT: {
                         if (a->max == 1 && a->min == 0) {
                             mu_text(ctx, a->name);
                             hud_bool(ctx, a->value);
@@ -2562,7 +2570,8 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
                             int_slider(ctx, a->value, a->min, a->max);
                         }
                         break;
-                    case CONFIG_TYPE_FLOAT:
+                    }
+                    case CONFIG_TYPE_FLOAT: {
                         mu_text(ctx, a->name);
                         if (a->max == INT_MAX) {
                             mu_number(ctx, a->value, 0.1F);
@@ -2571,6 +2580,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
                             mu_slider(ctx, a->value, a->min, a->max);
                         }
                         break;
+                    }
                 }
 
                 if (*a->help) {
@@ -2590,16 +2600,16 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
                     mu_layout_next(ctx);
                 }
             }
+        }
 
-            mu_layout_row(ctx, 3, (int[]) {0.25F * width, 0.50F * width, -1}, 0);
-            mu_layout_next(ctx);
+        mu_layout_row(ctx, 3, (int[]) {0.25F * width, 0.50F * width, -1}, 0);
+        mu_layout_next(ctx);
 
-            if (mu_button(ctx, "Apply changes")) {
-                memcpy(&settings, &settings_tmp, sizeof(struct RENDER_OPTIONS));
-                window_fromsettings();
-                sound_volume(settings.volume / 10.0F);
-                config_save();
-            }
+        if (mu_button(ctx, "Apply changes")) {
+            memcpy(&settings, &settings_tmp, sizeof(struct RENDER_OPTIONS));
+            window_fromsettings();
+            sound_volume(settings.volume / 10.0F);
+            config_save();
         }
 
         if (mu_header_ex(ctx, "Help", MU_OPT_EXPANDED)) {

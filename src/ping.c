@@ -25,6 +25,7 @@
 
 #include <hashtable.h>
 
+#include <BetterSpades/config.h>
 #include <BetterSpades/window.h>
 #include <BetterSpades/ping.h>
 #include <BetterSpades/common.h>
@@ -64,7 +65,9 @@ static void ping_lan() {
 
     lan_ping_start = window_time();
 
-    for (addr.port = 32882; addr.port < 32892; addr.port++)
+    int begin = max(0, settings.min_lan_port), end = min(65535, settings.max_lan_port);
+
+    for (addr.port = begin; addr.port <= end; addr.port++)
         enet_socket_send(lan, &addr, &buffer, 1);
 }
 
