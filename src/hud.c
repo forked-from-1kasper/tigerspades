@@ -2676,7 +2676,7 @@ static void hud_controls_render(mu_Context * ctx, float scale) {
                     int width = mu_get_current_container(ctx)->body.w;
                     if (a->def != a->original) {
                         mu_layout_row(ctx, 4,
-                                      (int[]) {0.65F * width, ctx->text_width(ctx->style->font, "Reset", 0) * 1.5F,
+                                      (int[]) {0.50F * width, ctx->text_width(ctx->style->font, "Reset", 0) * 1.5F,
                                                -0.05F * width, -1},
                                       0);
                     } else {
