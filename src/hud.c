@@ -1149,11 +1149,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         }
 
         if (player_intersection_type >= 0
-           && (players[local_player_id].team == TEAM_SPECTATOR
-               || players[player_intersection_player].team == players[local_player_id].team)) {
+           && (players[local_player_id].team == TEAM_SPECTATOR ||
+               players[player_intersection_player].team == players[local_player_id].team)) {
             font_select(FONT_SMALLFNT);
-            char * th[4] = {"torso", "head", "arms", "legs"};
-            char str[32];
+
+            char * th[4] = {"torso", "head", "arms", "legs"}; char str[32];
             switch (players[player_intersection_player].team) {
                 case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
                 case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
@@ -1170,15 +1170,17 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         settings.window_height / 2.0F + 48.0F * scale, 3.0F * scale, "EXIT GAME? Y/N", UTF8);
 
             char play_time[128];
-            sprintf(play_time, "Playing for %im%is", (int)window_time() / 60, (int)window_time() % 60);
+            sprintf(play_time, "Playing for %i min. %02i sec.", (int) window_time() / 60, (int) window_time() % 60);
             font_render(settings.window_width / 2.0F - font_length(2.0F * scale, play_time, UTF8) / 2.0F,
                         settings.window_height, 2.0F * scale, play_time, UTF8);
         }
+
         if (window_time() - chat_popup_timer < chat_popup_duration) {
             glColor3ub(chat_popup_color.r, chat_popup_color.g, chat_popup_color.b);
             font_render((settings.window_width - font_length(3.0F * scale, chat_popup, UTF8)) / 2.0F,
                         settings.window_height / 2.0F, 3.0F * scale, chat_popup, UTF8);
         }
+
         glColor3f(1.0F, 1.0F, 1.0F);
     }
 
