@@ -20,19 +20,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define RENDER_DISTANCE 128.0F
-
-// NOTE: These options are intended for testing purposes only.
-// NOTE: Don’t cry if you got banned for using this on a public server.
-#define HACK_NORECOIL 0
-#define HACK_NOSPREAD 0
-#define HACK_WALLHACK 0
-#define HACK_NOFOG    0
-#define HACK_MAPHACK  0
-#define HACK_ESP      0
-
-#define HACKS_ENABLED (HACK_NORECOIL || HACK_NOSPREAD || HACK_WALLHACK || HACK_MAPHACK || HACK_NOFOG || HACK_ESP)
-
 #ifdef _WIN32
     #define OS_WINDOWS
 #endif
@@ -221,5 +208,23 @@ TrueColor readBGR(uint32_t *);
 TrueColor readBGRA(uint32_t *);
 
 void strnzcpy(char * dest, const char * src, size_t);
+
+// QUESTION: should we allow players to change this?
+#define RENDER_DISTANCE 128.0F
+
+                        // NOTE: These options are intended for testing purposes only.
+                        // NOTE: Don’t cry if you got banned for using this on a public server.
+                        // ┌───────────────┬──────────────┬─────────────────────────────────────────────────────────────────────┐
+                        // │ Easy to spot? │ Easy to fix? │ Reason                                                              │
+                        // ├───────────────┼──────────────┼─────────────────────────────────────────────────────────────────────┤
+#define HACK_NORELOAD 0 // │ Yes           │ Kinda        │ Hit packets are not checked for shooting without PacketWeaponInput. │
+#define HACK_NORECOIL 0 // │ For spectator │ No           │ Recoil is client-side.                                              │
+#define HACK_NOSPREAD 0 // │ For spectator │ No           │ Spread is client-side.                                              │
+#define HACK_WALLHACK 0 // │ Yes           │ Yes          │ Hit packets are not checked for shooting through walls.             │
+#define HACK_NOFOG    0 // │ No            │ Impossible?  │ Fog is (totally) client-side.                                       │
+#define HACK_MAPHACK  0 // │ No            │ Strongly no  │ Player’s position data is always sent to everyone in full.          │
+#define HACK_ESP      0 // │ Kinda         │ Strongly no  │ Same as previous.                                                   │
+                        // └───────────────┴──────────────┴─────────────────────────────────────────────────────────────────────┘
+#define HACKS_ENABLED (HACK_NORELOAD || HACK_NORECOIL || HACK_NOSPREAD || HACK_WALLHACK || HACK_MAPHACK || HACK_NOFOG || HACK_ESP)
 
 #endif

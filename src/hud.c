@@ -996,7 +996,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 }
 
                 for (int k = 0; k < PLAYERS_MAX; k++) {
-                #if HACK_MAPHACK
+                #if HACKS_ENABLED && HACK_MAPHACK
                     if (players[k].connected && players[k].alive && k != local_player_id) {
                 #else
                     if (players[k].connected && players[k].alive && k != local_player_id && players[k].team != TEAM_SPECTATOR
@@ -1113,7 +1113,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 }
 
                 for (int k = 0; k < PLAYERS_MAX; k++) {
-                #if HACK_MAPHACK
+                #if HACKS_ENABLED && HACK_MAPHACK
                     if (players[k].connected && players[k].alive) {
                 #else
                     if (players[k].connected && players[k].alive

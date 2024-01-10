@@ -77,7 +77,9 @@ void weapon_update() {
                 (local_player_ammo > 0) &&
                 (window_time() - weapon_last_shot >= delay)) {
                 weapon_shoot();
+                #if !(HACKS_ENABLED && HACK_NORELOAD)
                 local_player_ammo = max(local_player_ammo - 1, 0);
+                #endif
                 weapon_last_shot = window_time();
             }
         }
@@ -137,7 +139,7 @@ void weapon_spread(Player * p, float * d) {
         case WEAPON_SHOTGUN: spread = 0.024F; break;
     }
 
-#if !HACK_NOSPREAD
+#if !(HACKS_ENABLED && HACK_NOSPREAD)
     float scope  = (p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F;
     float crouch = ((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F;
 
@@ -253,6 +255,7 @@ void weapon_shoot() {
                    players[local_player_id].physics.eye.y + player_height(&players[local_player_id]),
                    players[local_player_id].physics.eye.z, o[0], o[1], o[2], 128.0F);
 
+        #if !(HACKS_ENABLED && HACK_NORELOAD)
         if (players[local_player_id].input.buttons != network_buttons_last) {
             struct PacketWeaponInput in;
             in.player_id = local_player_id;
@@ -261,6 +264,7 @@ void weapon_shoot() {
 
             network_buttons_last = players[local_player_id].input.buttons;
         }
+        #endif
 
         struct PacketOrientationData orient;
         orient.x = htolef(players[local_player_id].orientation.x);
@@ -348,7 +352,7 @@ void weapon_shoot() {
                          - players[local_player_id].orientation.y * players[local_player_id].orientation.y
                              * players[local_player_id].orientation.y * players[local_player_id].orientation.y);
 
-#if !HACK_NORECOIL
+#if !(HACKS_ENABLED && HACK_NORECOIL)
     camera_rot_x += horiz_recoil;
     camera_rot_y -= vert_recoil;
 #endif

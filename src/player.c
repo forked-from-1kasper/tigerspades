@@ -651,7 +651,7 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 void player_render(Player * p, int id) {
     kv6_calclight(p->pos.x, p->pos.y, p->pos.z);
 
-#if HACK_ESP
+#if HACKS_ENABLED && HACK_ESP
     if (id != local_player_id) {
 #else
     if (camera_mode == CAMERAMODE_SPECTATOR && p->team != TEAM_SPECTATOR && !cameracontroller_bodyview_mode) {

@@ -1,4 +1,5 @@
 #include <BetterSpades/common.h>
+#include <string.h>
 
 const TrueColor White   = {0xFF, 0xFF, 0xFF, 0xFF};
 const TrueColor Black   = {0x00, 0x00, 0x00, 0xFF};
