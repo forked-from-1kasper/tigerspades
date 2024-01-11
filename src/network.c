@@ -758,6 +758,7 @@ void read_PacketChangeWeapon(void * data, int len) {
             log_warn("Unexpected ChangeWeaponPacket");
             return;
         }
+
         players[p->player_id].weapon = p->weapon;
     }
 }

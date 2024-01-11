@@ -39,7 +39,8 @@ Texture texture_zoom_smg;
 Texture texture_zoom_shotgun;
 
 Texture texture_white;
-Texture texture_target;
+Texture texture_crosshair1;
+Texture texture_crosshair2;
 Texture texture_indicator;
 
 Texture texture_player;
@@ -324,7 +325,8 @@ void texture_init() {
     texture_create(&texture_zoom_shotgun, "png/shotgun.png",      TEXTURE_FILTER_NEAREST);
 
     texture_create(&texture_white,        "png/white.png",        TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_target,       "png/target.png",       TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_crosshair1,   "png/crosshair1.png",   TEXTURE_FILTER_NEAREST);
+    texture_create(&texture_crosshair2,   "png/crosshair2.png",   TEXTURE_FILTER_NEAREST);
     texture_create(&texture_indicator,    "png/indicator.png",    TEXTURE_FILTER_NEAREST);
 
     texture_create(&texture_player,       "png/player.png",       TEXTURE_FILTER_NEAREST);

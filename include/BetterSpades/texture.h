@@ -47,7 +47,8 @@ extern Texture texture_zoom_smg;
 extern Texture texture_zoom_shotgun;
 
 extern Texture texture_white;
-extern Texture texture_target;
+extern Texture texture_crosshair1;
+extern Texture texture_crosshair2;
 extern Texture texture_indicator;
 
 extern Texture texture_player;

@@ -48,18 +48,18 @@ pthread_mutex_t chunk_block_queue_lock;
 struct chunk_work_packet {
     size_t chunk_x;
     size_t chunk_y;
-    struct chunk* chunk;
+    struct chunk * chunk;
 };
 
 struct chunk_result_packet {
-    struct chunk* chunk;
+    struct chunk * chunk;
     int max_height;
     struct tesselator tesselator;
-    uint32_t* minimap_data;
+    uint32_t * minimap_data;
 };
 
 struct chunk_render_call {
-    struct chunk* chunk;
+    struct chunk * chunk;
     int mirror_x;
     int mirror_y;
 };
@@ -210,9 +210,9 @@ void * chunk_generate(void * data) {
                 int x = key_getx(blk->position), z = key_gety(blk->position);
                 uint32_t * out = result.minimap_data + (x - chunk_x + (z - chunk_y) * CHUNK_SIZE);
 
-                if ((x % 64) > 0 && (z % 64) > 0)
-                    writeRGBA(out, readBGR(&blk->color));
-                else *out = 0xFFFFFFFF;
+                if (x % 64 == 0 || z % 64 == 0 || x == 511 || z == 511)
+                    *out = 0xFFFFFFFF;
+                else writeRGBA(out, readBGR(&blk->color));
             }
         }
 

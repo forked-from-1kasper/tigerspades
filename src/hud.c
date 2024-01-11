@@ -732,8 +732,10 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     1.0F / (float) zoom->width, 1.0F
                 );
             } else {
-                texture_draw(&texture_target, (settings.window_width - 16) / 2.0F, (settings.window_height + 16) / 2.0F,
-                             16, 16);
+                texture_draw(
+                    players[local_player_id].input.buttons & MASKON(BUTTON_PRIMARY) ? &texture_crosshair2 : &texture_crosshair1,
+                    (settings.window_width - 32) / 2.0F, (settings.window_height + 32) / 2.0F, 32, 32
+                );
             }
 
             if (window_time() - local_player_last_damage_timer <= 0.5F && is_local) {
