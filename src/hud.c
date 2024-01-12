@@ -1180,7 +1180,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         if (window_time() - chat_popup_timer < chat_popup_duration) {
             glColor3ub(chat_popup_color.r, chat_popup_color.g, chat_popup_color.b);
             font_render((settings.window_width - font_length(3.0F * scale, chat_popup, UTF8)) / 2.0F,
-                        settings.window_height / 2.0F, 3.0F * scale, chat_popup, UTF8);
+                        settings.window_height * 0.65F, 3.0F * scale, chat_popup, UTF8);
         }
 
         glColor3f(1.0F, 1.0F, 1.0F);
@@ -1402,9 +1402,8 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
 
         if (camera_mode == CAMERAMODE_FPS) {
             if (players[local_player_id].held_item == TOOL_GUN) {
-                if (weapon_reloading()) {
-                    weapon_reload_abort();
-                }
+                if (weapon_reloading()) weapon_reload_abort();
+
                 if (local_player_ammo == 0 && window_time() - players[local_player_id].item_showup >= 0.5F) {
                     sound_create(SOUND_LOCAL, &sound_empty, 0.0F, 0.0F, 0.0F);
                     chat_showpopup("RELOAD", 0.4F, Red, UTF8);
