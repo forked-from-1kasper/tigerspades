@@ -737,6 +737,7 @@ void read_PacketSetHP(void * data, int len) {
         local_player_last_damage_timer = window_time();
         sound_create(SOUND_LOCAL, &sound_hitplayer, 0.0F, 0.0F, 0.0F);
     }
+
     local_player_last_damage_x = letohf(p->x);
     local_player_last_damage_y = 63.0F - letohf(p->z);
     local_player_last_damage_z = letohf(p->y);
@@ -1295,40 +1296,40 @@ void network_init() {
     client = enet_host_create(NULL, 1, 1, 0, 0); // limit bandwidth here if you want to
     enet_host_compress_with_range_coder(client);
 
-    packets[PACKET_POSITIONDATA_ID] = read_PacketPositionData;
-    packets[PACKET_ORIENTATIONDATA_ID] = read_PacketOrientationData;
-    packets[PACKET_WORLDUPDATE_ID] = read_PacketWorldUpdate;
-    packets[PACKET_INPUTDATA_ID] = read_PacketInputData;
-    packets[PACKET_WEAPONINPUT_ID] = read_PacketWeaponInput;
-    packets[PACKET_SETHP_ID] = read_PacketSetHP;
-    packets[PACKET_GRENADE_ID] = read_PacketGrenade;
-    packets[PACKET_SETTOOL_ID] = read_PacketSetTool;
-    packets[PACKET_SETCOLOR_ID] = read_PacketSetColor;
-    packets[PACKET_EXISTINGPLAYER_ID] = read_PacketExistingPlayer;
-    packets[PACKET_SHORTPLAYERDATA_ID] = read_PacketShortPlayerData;
-    packets[PACKET_MOVEOBJECT_ID] = read_PacketMoveObject;
-    packets[PACKET_CREATEPLAYER_ID] = read_PacketCreatePlayer;
-    packets[PACKET_BLOCKACTION_ID] = read_PacketBlockAction;
-    packets[PACKET_BLOCKLINE_ID] = read_PacketBlockLine;
-    packets[PACKET_STATEDATA_ID] = read_PacketStateData;
-    packets[PACKET_KILLACTION_ID] = read_PacketKillAction;
-    packets[PACKET_CHATMESSAGE_ID] = read_PacketChatMessage;
-    packets[PACKET_MAPSTART_ID] = read_PacketMapStart;
-    packets[PACKET_MAPCHUNK_ID] = read_PacketMapChunk;
-    packets[PACKET_PLAYERLEFT_ID] = read_PacketPlayerLeft;
-    packets[PACKET_TERRITORYCAPTURE_ID] = read_PacketTerritoryCapture;
-    packets[PACKET_PROGRESSBAR_ID] = read_PacketProgressBar;
-    packets[PACKET_INTELCAPTURE_ID] = read_PacketIntelCapture;
-    packets[PACKET_INTELPICKUP_ID] = read_PacketIntelPickup;
-    packets[PACKET_INTELDROP_ID] = read_PacketIntelDrop;
-    packets[PACKET_RESTOCK_ID] = read_PacketRestock;
-    packets[PACKET_FOGCOLOR_ID] = read_PacketFogColor;
-    packets[PACKET_WEAPONRELOAD_ID] = read_PacketWeaponReload;
+    packets[PACKET_POSITIONDATA_ID]                  = read_PacketPositionData;
+    packets[PACKET_ORIENTATIONDATA_ID]               = read_PacketOrientationData;
+    packets[PACKET_WORLDUPDATE_ID]                   = read_PacketWorldUpdate;
+    packets[PACKET_INPUTDATA_ID]                     = read_PacketInputData;
+    packets[PACKET_WEAPONINPUT_ID]                   = read_PacketWeaponInput;
+    packets[PACKET_SETHP_ID]                         = read_PacketSetHP;
+    packets[PACKET_GRENADE_ID]                       = read_PacketGrenade;
+    packets[PACKET_SETTOOL_ID]                       = read_PacketSetTool;
+    packets[PACKET_SETCOLOR_ID]                      = read_PacketSetColor;
+    packets[PACKET_EXISTINGPLAYER_ID]                = read_PacketExistingPlayer;
+    packets[PACKET_SHORTPLAYERDATA_ID]               = read_PacketShortPlayerData;
+    packets[PACKET_MOVEOBJECT_ID]                    = read_PacketMoveObject;
+    packets[PACKET_CREATEPLAYER_ID]                  = read_PacketCreatePlayer;
+    packets[PACKET_BLOCKACTION_ID]                   = read_PacketBlockAction;
+    packets[PACKET_BLOCKLINE_ID]                     = read_PacketBlockLine;
+    packets[PACKET_STATEDATA_ID]                     = read_PacketStateData;
+    packets[PACKET_KILLACTION_ID]                    = read_PacketKillAction;
+    packets[PACKET_CHATMESSAGE_ID]                   = read_PacketChatMessage;
+    packets[PACKET_MAPSTART_ID]                      = read_PacketMapStart;
+    packets[PACKET_MAPCHUNK_ID]                      = read_PacketMapChunk;
+    packets[PACKET_PLAYERLEFT_ID]                    = read_PacketPlayerLeft;
+    packets[PACKET_TERRITORYCAPTURE_ID]              = read_PacketTerritoryCapture;
+    packets[PACKET_PROGRESSBAR_ID]                   = read_PacketProgressBar;
+    packets[PACKET_INTELCAPTURE_ID]                  = read_PacketIntelCapture;
+    packets[PACKET_INTELPICKUP_ID]                   = read_PacketIntelPickup;
+    packets[PACKET_INTELDROP_ID]                     = read_PacketIntelDrop;
+    packets[PACKET_RESTOCK_ID]                       = read_PacketRestock;
+    packets[PACKET_FOGCOLOR_ID]                      = read_PacketFogColor;
+    packets[PACKET_WEAPONRELOAD_ID]                  = read_PacketWeaponReload;
     // 29
-    packets[PACKET_CHANGEWEAPON_ID] = read_PacketChangeWeapon;
-    packets[PACKET_HANDSHAKEINIT_ID] = read_PacketHandshakeInit;
-    packets[PACKET_VERSIONGET_ID] = read_PacketVersionGet;
-    packets[PACKET_EXTINFO_ID] = read_PacketExtInfo;
+    packets[PACKET_CHANGEWEAPON_ID]                  = read_PacketChangeWeapon;
+    packets[PACKET_HANDSHAKEINIT_ID]                 = read_PacketHandshakeInit;
+    packets[PACKET_VERSIONGET_ID]                    = read_PacketVersionGet;
+    packets[PACKET_EXTINFO_ID]                       = read_PacketExtInfo;
     packets[PACKET_EXT_BASE + EXT_PLAYER_PROPERTIES] = read_PacketPlayerProperties;
-    packets[PACKET_EXT_BASE + EXT_TRACE_BULLETS] = read_PacketBulletTrace;
+    packets[PACKET_EXT_BASE + EXT_TRACE_BULLETS]     = read_PacketBulletTrace;
 }

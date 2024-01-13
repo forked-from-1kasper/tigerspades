@@ -67,7 +67,7 @@ struct chunk_render_call {
 void chunk_init() {
     for (size_t x = 0; x < CHUNKS_PER_DIM; x++) {
         for (size_t y = 0; y < CHUNKS_PER_DIM; y++) {
-            struct chunk* c = chunks + x + y * CHUNKS_PER_DIM;
+            struct chunk * c = chunks + x + y * CHUNKS_PER_DIM;
             c->created = false;
             c->max_height = 1;
             c->x = x;
@@ -790,7 +790,7 @@ void chunk_rebuild_all() {
 
     for (int k = CHUNKS_PER_DIM / 2; k >= 0; k--) {
         for (int i = k; i < CHUNKS_PER_DIM - k; i++) {
-            struct chunk* build[] = {
+            struct chunk * build[] = {
                 chunks + i + k * CHUNKS_PER_DIM,
                 chunks + i + (CHUNKS_PER_DIM - k - 1) * CHUNKS_PER_DIM,
                 chunks + k + i * CHUNKS_PER_DIM,
@@ -810,19 +810,19 @@ void chunk_rebuild_all() {
 }
 
 void chunk_block_update(int x, int y, int z) {
-    struct chunk* c = chunks + (x / CHUNK_SIZE) + (z / CHUNK_SIZE) * CHUNKS_PER_DIM;
+    struct chunk * c = chunks + (x / CHUNK_SIZE) + (z / CHUNK_SIZE) * CHUNKS_PER_DIM;
 
     pthread_mutex_lock(&chunk_block_queue_lock);
     ht_insert(&chunk_block_queue, &c,
               &(struct chunk_work_packet) {
-                  .chunk = c,
+                  .chunk   = c,
                   .chunk_x = c->x,
                   .chunk_y = c->y,
               });
     pthread_mutex_unlock(&chunk_block_queue_lock);
 }
 
-static bool iterate_chunk_updates(void* key, void* value, void* user) {
+static bool iterate_chunk_updates(void * key, void * value, void * user) {
     channel_put(&chunk_work_queue, value);
 
     return true;
