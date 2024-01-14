@@ -71,6 +71,9 @@ extern struct RENDER_OPTIONS {
     int hold_down_sights;
     int chat_shadow;
     int scale;
+    int tracing_enabled;
+    int trajectory_length;
+    int projectile_count;
 } settings, settings_tmp;
 
 extern List config_keys;
