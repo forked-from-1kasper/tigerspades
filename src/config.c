@@ -93,6 +93,9 @@ void config_save() {
     config_seti("client", "chat_shadow",       settings.chat_shadow);
     config_seti("client", "show_player_arms",  settings.player_arms);
     config_seti("client", "scale",             settings.scale);
+    config_seti("client", "tracing_enabled",   settings.tracing_enabled);
+    config_seti("client", "trajectory_length", settings.trajectory_length);
+    config_seti("client", "projectile_count",  settings.projectile_count);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair * e = list_get(&config_keys, k);
@@ -191,6 +194,12 @@ static int config_read_key(void * user, const char * section, const char * name,
             settings.player_arms = atoi(value);
         } else if (!strcmp(name, "scale")) {
             settings.scale = atoi(value);
+        } else if (!strcmp(name, "tracing_enabled")) {
+            settings.tracing_enabled = atoi(value);
+        } else if (!strcmp(name, "trajectory_length")) {
+            settings.trajectory_length = atoi(value);
+        } else if (!strcmp(name, "projectile_count")) {
+            settings.projectile_count = atoi(value);
         }
     }
 
@@ -403,7 +412,7 @@ void config_reload() {
                  .type     = CONFIG_TYPE_INT,
                  .max      = INT_MAX,
                  .name     = "Minimum LAN port",
-                 .help     = "First port to scan for local game servers",
+                 .help     = "First port to scan for LAN games",
                  .category = "Network"
              });
     list_add(&config_settings,
@@ -412,7 +421,7 @@ void config_reload() {
                  .type     = CONFIG_TYPE_INT,
                  .max      = INT_MAX,
                  .name     = "Maximum LAN port",
-                 .help     = "Last port to scan for local game servers",
+                 .help     = "Last port to scan for LAN games",
                  .category = "Network"
              });
     list_add(&config_settings,
@@ -615,5 +624,33 @@ void config_reload() {
                  .help     = "(won't work with greedy mesh)",
                  .name     = "Ambient occlusion",
                  .category = "Graphics"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.tracing_enabled,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Requires server support",
+                 .name     = "Bullet tracing",
+                 .category = "Debug"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.trajectory_length,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 16,
+                 .max      = 2048,
+                 .name     = "Trajectory length",
+                 .category = "Debug"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.projectile_count,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 8,
+                 .max      = 256,
+                 .name     = "Projectile count",
+                 .category = "Debug"
              });
 }

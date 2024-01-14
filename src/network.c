@@ -544,9 +544,9 @@ void read_PacketMapStart(void * data, int len) {
         network_send(PACKET_MAPCACHED_ID, &c, sizeof(c));
     }
 
-    player_init();
-    bullet_traces_reset();
-    camera_mode = CAMERAMODE_SELECTION;
+    trajectories_reset();
+
+    player_init(); camera_mode = CAMERAMODE_SELECTION;
 }
 
 void read_PacketWorldUpdate(void * data, int len) {
@@ -1015,22 +1015,23 @@ void read_PacketPlayerProperties(void * data, int len) {
 void read_PacketBulletTrace(void * data, int len) {
     PacketBulletTrace * p = (PacketBulletTrace*) data;
 
-    size_t index = p->index % MAX_TRACES;
+    if (projectiles.head == NULL || projectiles.size == 0 || projectiles.length == 0) return;
 
-    Trace * trace = &traces[index];
+    size_t index = p->index % projectiles.size;
 
-    if (p->origin) { trace->index = p->index; trace->begin = trace->end = 0; }
-    if (trace->index != p->index) return;
+    Trajectory * t = projectiles.head + index * WIDTH(projectiles);
 
-    trace->data[trace->end].x     = letohf(p->x);
-    trace->data[trace->end].y     = 64.0F - letohf(p->z);
-    trace->data[trace->end].z     = letohf(p->y);
-    trace->data[trace->end].value = letohf(p->value);
+    if (p->origin) { t->index = p->index; t->begin = t->end = 0; }
+    if (t->index != p->index) return;
 
-    NEXT(trace->end);
+    t->data[t->end].x     = letohf(p->x);
+    t->data[t->end].y     = 64.0F - letohf(p->z);
+    t->data[t->end].z     = letohf(p->y);
+    t->data[t->end].value = letohf(p->value);
 
-    if (trace->begin == trace->end)
-        NEXT(trace->begin);
+    NEXT(t->end, projectiles);
+
+    if (t->begin == t->end) NEXT(t->begin, projectiles);
 }
 
 void network_updateColor() {

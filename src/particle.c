@@ -36,17 +36,20 @@
 struct entity_system particles;
 struct tesselator particle_tesselator;
 
-Trace traces[];
+Projectiles projectiles = { .size = 0, .length = 0, .head = NULL };
 
-void bullet_traces_render_all() {
-    for (size_t i = 0; i < MAX_TRACES; i++) {
-        if (traces[i].end - traces[i].begin == 0 ||
-            traces[i].end - traces[i].begin == 1) continue;
+void trajectories_render_all() {
+    if (projectiles.head == NULL || projectiles.size == 0 || projectiles.length == 0) return;
+
+    for (size_t i = 0; i < projectiles.size; i++) {
+        Trajectory * t = projectiles.head + i * WIDTH(projectiles);
+
+        if (t->end - t->begin == 0 || t->end - t->begin == 1) continue;
 
         glBegin(GL_LINE_STRIP);
 
-        for (size_t j = traces[i].begin; j != traces[i].end; NEXT(j)) {
-            Vertex * vertex = &traces[i].data[j];
+        for (size_t j = t->begin; j != t->end; NEXT(j, projectiles)) {
+            Vertex * vertex = &t->data[j];
 
             glColor3f(vertex->value, 1.0f - vertex->value, 0.0f);
             glVertex3f(vertex->x, vertex->y, vertex->z);
@@ -56,21 +59,27 @@ void bullet_traces_render_all() {
     }
 }
 
-void bullet_traces_reset() {
-    for (size_t i = 0; i < MAX_TRACES; i++)
-        traces[i].index = traces[i].begin = traces[i].end = 0;
+void trajectories_reset() {
+    if (projectiles.head) free(projectiles.head);
+
+    projectiles.length = settings.tracing_enabled ? max(0, settings.trajectory_length) : 0;
+    projectiles.size   = settings.tracing_enabled ? max(0, settings.projectile_count)  : 0;
+
+    if (projectiles.length > 0 && projectiles.size > 0) {
+        projectiles.head = calloc(projectiles.size, WIDTH(projectiles));
+        CHECK_ALLOCATION_ERROR(projectiles.head);
+    }
 }
 
 void particle_init() {
     entitysys_create(&particles, sizeof(struct Particle), 256);
     tesselator_create(&particle_tesselator, VERTEX_FLOAT, 0);
-    bullet_traces_reset();
 }
 
 static bool particle_update_single(void * obj, void * user) {
     struct Particle * p = (struct Particle*) obj;
     float dt = *(float*) user;
-    float size = p->size * (1.0F - ((float)(window_time() - p->fade) / 2.0F));
+    float size = p->size * (1.0F - ((float) (window_time() - p->fade) / 2.0F));
 
     if (size < 0.01F) {
         return true;
@@ -213,16 +222,16 @@ void particle_create(TrueColor color, float x, float y, float z, float velocity,
 
         entitysys_add(&particles,
                       &(struct Particle) {
-                          .size = ((float)rand() / (float)RAND_MAX) * (max_size - min_size) + min_size,
-                          .x = x,
-                          .y = y,
-                          .z = z,
-                          .vx = vx,
-                          .vy = vy,
-                          .vz = vz,
-                          .fade = window_time(),
+                          .size  = ((float) rand() / (float) RAND_MAX) * (max_size - min_size) + min_size,
+                          .x     = x,
+                          .y     = y,
+                          .z     = z,
+                          .vx    = vx,
+                          .vy    = vy,
+                          .vz    = vz,
+                          .fade  = window_time(),
                           .color = color,
-                          .type = 255,
+                          .type  = 255,
                       });
     }
 }
