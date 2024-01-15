@@ -34,7 +34,7 @@
 #include <BetterSpades/entitysystem.h>
 
 struct entity_system particles;
-struct tesselator particle_tesselator;
+Tesselator particle_tesselator;
 
 Projectiles projectiles = { .size = 0, .length = 0, .head = NULL };
 
@@ -72,12 +72,12 @@ void trajectories_reset() {
 }
 
 void particle_init() {
-    entitysys_create(&particles, sizeof(struct Particle), 256);
+    entitysys_create(&particles, sizeof(Particle), 256);
     tesselator_create(&particle_tesselator, VERTEX_FLOAT, 0);
 }
 
 static bool particle_update_single(void * obj, void * user) {
-    struct Particle * p = (struct Particle*) obj;
+    Particle * p = (Particle*) obj;
     float dt = *(float*) user;
     float size = p->size * (1.0F - ((float) (window_time() - p->fade) / 2.0F));
 
@@ -145,8 +145,8 @@ void particle_update(float dt) {
 }
 
 static bool particle_render_single(void * obj, void * user) {
-    struct Particle * p = (struct Particle*) obj;
-    struct tesselator * tess = (struct tesselator*) user;
+    Particle * p = (Particle*) obj;
+    Tesselator * tess = (Tesselator*) user;
 
     if (distance2D(camera_x, camera_z, p->x, p->z) > settings.render_distance * settings.render_distance)
         return false;
@@ -191,7 +191,7 @@ void particle_render() {
 
 void particle_create_casing(Player * p) {
     entitysys_add(&particles,
-                  &(struct Particle) {
+                  &(Particle) {
                       .size  = 0.1F,
                       .x     = p->gun_pos.x,
                       .y     = p->gun_pos.y,
@@ -221,7 +221,7 @@ void particle_create(TrueColor color, float x, float y, float z, float velocity,
         vz = (vz / len) * velocity;
 
         entitysys_add(&particles,
-                      &(struct Particle) {
+                      &(Particle) {
                           .size  = ((float) rand() / (float) RAND_MAX) * (max_size - min_size) + min_size,
                           .x     = x,
                           .y     = y,

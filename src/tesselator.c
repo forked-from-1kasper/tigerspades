@@ -32,7 +32,7 @@ static size_t vertex_type_size(enum tesselator_vertex_type type) {
     }
 }
 
-void tesselator_create(struct tesselator* t, enum tesselator_vertex_type type, int has_normal) {
+void tesselator_create(Tesselator * t, enum tesselator_vertex_type type, int has_normal) {
     t->quad_count = 0;
     t->quad_space = 128;
     t->vertices = NULL;
@@ -69,11 +69,11 @@ void tesselator_create(struct tesselator* t, enum tesselator_vertex_type type, i
 #endif
 }
 
-void tesselator_clear(struct tesselator* t) {
+void tesselator_clear(Tesselator * t) {
     t->quad_count = 0;
 }
 
-void tesselator_free(struct tesselator* t) {
+void tesselator_free(Tesselator * t) {
     if (t->vertices) {
         free(t->vertices);
         t->vertices = NULL;
@@ -90,7 +90,7 @@ void tesselator_free(struct tesselator* t) {
     }
 }
 
-void tesselator_draw(struct tesselator* t, int with_color) {
+void tesselator_draw(Tesselator * t, int with_color) {
     glEnableClientState(GL_VERTEX_ARRAY);
 
     if (t->has_normal) {
@@ -127,7 +127,7 @@ void tesselator_draw(struct tesselator* t, int with_color) {
     }
 }
 
-void tesselator_glx(struct tesselator* t, struct glx_displaylist* x) {
+void tesselator_glx(Tesselator * t, struct glx_displaylist * x) {
 #ifdef TESSELATE_QUADS
     switch (t->vertex_type) {
         case VERTEX_INT:
@@ -151,17 +151,17 @@ void tesselator_glx(struct tesselator* t, struct glx_displaylist* x) {
 #endif
 }
 
-void tesselator_set_color(struct tesselator* t, TrueColor color) {
+void tesselator_set_color(Tesselator * t, TrueColor color) {
     t->color = color;
 }
 
-void tesselator_set_normal(struct tesselator* t, int8_t x, int8_t y, int8_t z) {
+void tesselator_set_normal(Tesselator * t, int8_t x, int8_t y, int8_t z) {
     t->normal[0] = x;
     t->normal[1] = y;
     t->normal[2] = z;
 }
 
-static void tesselator_check_space(struct tesselator* t) {
+static void tesselator_check_space(Tesselator * t) {
     if (t->quad_count >= t->quad_space) {
         t->quad_space *= 2;
 
@@ -191,7 +191,7 @@ static void tesselator_check_space(struct tesselator* t) {
     }
 }
 
-static void tesselator_emit_color(struct tesselator * t, TrueColor * colors) {
+static void tesselator_emit_color(Tesselator * t, TrueColor * colors) {
 #ifdef TESSELATE_QUADS
     uint32_t * dest = t->colors + t->quad_count * 4;
 
@@ -208,7 +208,7 @@ static void tesselator_emit_color(struct tesselator * t, TrueColor * colors) {
 #endif
 }
 
-static void tesselator_emit_normals(struct tesselator * t, int8_t * normals) {
+static void tesselator_emit_normals(Tesselator * t, int8_t * normals) {
     if (t->has_normal) {
 #ifdef TESSELATE_QUADS
         memcpy(t->normals + t->quad_count * 3 * 4, normals, sizeof(int8_t) * 3 * 4);
@@ -222,7 +222,7 @@ static void tesselator_emit_normals(struct tesselator * t, int8_t * normals) {
     }
 }
 
-void tesselator_addi(struct tesselator * t, int16_t * coords, TrueColor * colors, int8_t * normals) {
+void tesselator_addi(Tesselator * t, int16_t * coords, TrueColor * colors, int8_t * normals) {
     assert(t->vertex_type == VERTEX_INT);
 
     tesselator_check_space(t);
@@ -242,7 +242,7 @@ void tesselator_addi(struct tesselator * t, int16_t * coords, TrueColor * colors
     t->quad_count++;
 }
 
-void tesselator_addf(struct tesselator * t, float * coords, TrueColor * colors, int8_t * normals) {
+void tesselator_addf(Tesselator * t, float * coords, TrueColor * colors, int8_t * normals) {
     assert(t->vertex_type == VERTEX_FLOAT);
 
     tesselator_check_space(t);
@@ -262,7 +262,7 @@ void tesselator_addf(struct tesselator * t, float * coords, TrueColor * colors, 
     t->quad_count++;
 }
 
-void tesselator_addi_simple(struct tesselator * t, int16_t * coords) {
+void tesselator_addi_simple(Tesselator * t, int16_t * coords) {
     tesselator_addi(t, coords, (TrueColor[]) {t->color, t->color, t->color, t->color},
                     t->has_normal ? (int8_t[]) {t->normal[0], t->normal[1], t->normal[2], t->normal[0], t->normal[1],
                                                 t->normal[2], t->normal[0], t->normal[1], t->normal[2], t->normal[0],
@@ -270,7 +270,7 @@ void tesselator_addi_simple(struct tesselator * t, int16_t * coords) {
                                     NULL);
 }
 
-void tesselator_addf_simple(struct tesselator * t, float * coords) {
+void tesselator_addf_simple(Tesselator * t, float * coords) {
     tesselator_addf(t, coords, (TrueColor[]) {t->color, t->color, t->color, t->color},
                     t->has_normal ? (int8_t[]) {t->normal[0], t->normal[1], t->normal[2], t->normal[0], t->normal[1],
                                                 t->normal[2], t->normal[0], t->normal[1], t->normal[2], t->normal[0],
@@ -278,7 +278,7 @@ void tesselator_addf_simple(struct tesselator * t, float * coords) {
                                     NULL);
 }
 
-void tesselator_addi_cube_face_adv(struct tesselator * t, enum tesselator_cube_face face, int16_t x, int16_t y,
+void tesselator_addi_cube_face_adv(Tesselator * t, enum tesselator_cube_face face, int16_t x, int16_t y,
                                    int16_t z, int16_t sx, int16_t sy, int16_t sz) {
     switch (face) {
         case CUBE_FACE_Z_N:
@@ -305,11 +305,11 @@ void tesselator_addi_cube_face_adv(struct tesselator * t, enum tesselator_cube_f
     }
 }
 
-void tesselator_addi_cube_face(struct tesselator* t, enum tesselator_cube_face face, int16_t x, int16_t y, int16_t z) {
+void tesselator_addi_cube_face(Tesselator * t, enum tesselator_cube_face face, int16_t x, int16_t y, int16_t z) {
     tesselator_addi_cube_face_adv(t, face, x, y, z, 1, 1, 1);
 }
 
-void tesselator_addf_cube_face(struct tesselator* t, enum tesselator_cube_face face, float x, float y, float z,
+void tesselator_addf_cube_face(Tesselator * t, enum tesselator_cube_face face, float x, float y, float z,
                                float sz) {
     switch (face) {
         case CUBE_FACE_Z_N:

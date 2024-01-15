@@ -38,7 +38,7 @@
 
 #include <log.h>
 
-struct chunk chunks[CHUNKS_PER_DIM * CHUNKS_PER_DIM];
+Chunk chunks[CHUNKS_PER_DIM * CHUNKS_PER_DIM];
 
 HashTable chunk_block_queue;
 struct channel chunk_work_queue;
@@ -48,18 +48,18 @@ pthread_mutex_t chunk_block_queue_lock;
 struct chunk_work_packet {
     size_t chunk_x;
     size_t chunk_y;
-    struct chunk * chunk;
+    Chunk * chunk;
 };
 
 struct chunk_result_packet {
-    struct chunk * chunk;
+    Chunk * chunk;
     int max_height;
-    struct tesselator tesselator;
+    Tesselator tesselator;
     uint32_t * minimap_data;
 };
 
 struct chunk_render_call {
-    struct chunk * chunk;
+    Chunk * chunk;
     int mirror_x;
     int mirror_y;
 };
@@ -67,7 +67,7 @@ struct chunk_render_call {
 void chunk_init() {
     for (size_t x = 0; x < CHUNKS_PER_DIM; x++) {
         for (size_t y = 0; y < CHUNKS_PER_DIM; y++) {
-            struct chunk * c = chunks + x + y * CHUNKS_PER_DIM;
+            Chunk * c = chunks + x + y * CHUNKS_PER_DIM;
             c->created = false;
             c->max_height = 1;
             c->x = x;
@@ -77,7 +77,7 @@ void chunk_init() {
 
     channel_create(&chunk_work_queue, sizeof(struct chunk_work_packet), CHUNKS_PER_DIM * CHUNKS_PER_DIM);
     channel_create(&chunk_result_queue, sizeof(struct chunk_result_packet), CHUNKS_PER_DIM * CHUNKS_PER_DIM);
-    ht_setup(&chunk_block_queue, sizeof(struct chunk*), sizeof(struct chunk_result_packet), 64);
+    ht_setup(&chunk_block_queue, sizeof(Chunk*), sizeof(struct chunk_result_packet), 64);
 
     pthread_mutex_init(&chunk_block_queue_lock, NULL);
 
@@ -126,10 +126,10 @@ void chunk_draw_visible() {
         for (int x = -overshoot; x < CHUNKS_PER_DIM + overshoot; x++) {
             if (distance2D((x + 0.5F) * CHUNK_SIZE, (y + 0.5F) * CHUNK_SIZE, camera_x, camera_z)
                <= pow(settings.render_distance + 1.414F * CHUNK_SIZE, 2)) {
-                uint32_t tmp_x = ((uint32_t)x) % CHUNKS_PER_DIM;
-                uint32_t tmp_y = ((uint32_t)y) % CHUNKS_PER_DIM;
+                uint32_t tmp_x = ((uint32_t) x) % CHUNKS_PER_DIM;
+                uint32_t tmp_y = ((uint32_t) y) % CHUNKS_PER_DIM;
 
-                struct chunk* c = chunks + tmp_x + tmp_y * CHUNKS_PER_DIM;
+                Chunk * c = chunks + tmp_x + tmp_y * CHUNKS_PER_DIM;
 
                 if (camera_CubeInFrustum((x + 0.5F) * CHUNK_SIZE, 0.0F, (y + 0.5F) * CHUNK_SIZE, CHUNK_SIZE / 2,
                                         c->max_height))
@@ -224,7 +224,7 @@ void * chunk_generate(void * data) {
     return NULL;
 }
 
-void chunk_generate_greedy(struct libvxl_chunk_copy * blocks, size_t start_x, size_t start_z, struct tesselator * tess,
+void chunk_generate_greedy(struct libvxl_chunk_copy * blocks, size_t start_x, size_t start_z, Tesselator * tess,
                            int * max_height) {
     *max_height = 0;
 
@@ -553,7 +553,7 @@ static float vertexAO(int side1, int side2, int corner) {
     return 0.75F - (!side1 + !side2 + !corner) * 0.25F + 0.25F;
 }
 
-void chunk_generate_naive(struct libvxl_chunk_copy * blocks, struct tesselator * tess, int * max_height, int ao) {
+void chunk_generate_naive(struct libvxl_chunk_copy * blocks, Tesselator * tess, int * max_height, int ao) {
     *max_height = 0;
 
     for (size_t k = 0; k < blocks->blocks_sorted_count; k++) {
@@ -790,7 +790,7 @@ void chunk_rebuild_all() {
 
     for (int k = CHUNKS_PER_DIM / 2; k >= 0; k--) {
         for (int i = k; i < CHUNKS_PER_DIM - k; i++) {
-            struct chunk * build[] = {
+            Chunk * build[] = {
                 chunks + i + k * CHUNKS_PER_DIM,
                 chunks + i + (CHUNKS_PER_DIM - k - 1) * CHUNKS_PER_DIM,
                 chunks + k + i * CHUNKS_PER_DIM,
@@ -810,7 +810,7 @@ void chunk_rebuild_all() {
 }
 
 void chunk_block_update(int x, int y, int z) {
-    struct chunk * c = chunks + (x / CHUNK_SIZE) + (z / CHUNK_SIZE) * CHUNKS_PER_DIM;
+    Chunk * c = chunks + (x / CHUNK_SIZE) + (z / CHUNK_SIZE) * CHUNKS_PER_DIM;
 
     pthread_mutex_lock(&chunk_block_queue_lock);
     ht_insert(&chunk_block_queue, &c,

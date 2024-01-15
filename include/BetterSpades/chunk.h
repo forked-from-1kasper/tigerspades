@@ -33,13 +33,15 @@
 #define CHUNK_SIZE 16
 #define CHUNKS_PER_DIM (512 / CHUNK_SIZE)
 
-extern struct chunk {
+typedef struct {
     struct glx_displaylist display_list;
     int max_height;
     bool updated;
     bool created;
     int x, y;
-} chunks[CHUNKS_PER_DIM * CHUNKS_PER_DIM];
+} Chunk;
+
+extern Chunk chunks[CHUNKS_PER_DIM * CHUNKS_PER_DIM];
 
 #define CHUNK_WORKERS_MAX 16
 
@@ -47,10 +49,10 @@ void chunk_init(void);
 
 void chunk_block_update(int x, int y, int z);
 void chunk_update_all(void);
-void* chunk_generate(void* data);
-void chunk_generate_greedy(struct libvxl_chunk_copy* blocks, size_t start_x, size_t start_z, struct tesselator* tess,
-                           int* max_height);
-void chunk_generate_naive(struct libvxl_chunk_copy* blocks, struct tesselator* tess, int* max_height, int ao);
+void * chunk_generate(void * data);
+void chunk_generate_greedy(struct libvxl_chunk_copy * blocks, size_t start_x, size_t start_z, Tesselator * tess,
+                           int * max_height);
+void chunk_generate_naive(struct libvxl_chunk_copy* blocks, Tesselator * tess, int * max_height, int ao);
 void chunk_rebuild_all(void);
 void chunk_draw_visible(void);
 void chunk_queue_blocks();

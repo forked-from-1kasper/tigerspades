@@ -22,7 +22,7 @@
 
 #include <BetterSpades/player.h>
 
-struct Particle {
+typedef struct {
     float x, y, z;
     float vx, vy, vz;
     float ox, oy, oz;
@@ -30,7 +30,7 @@ struct Particle {
     float size;
     float fade;
     TrueColor color;
-};
+} Particle;
 
 void particle_init(void);
 void particle_update(float dt);

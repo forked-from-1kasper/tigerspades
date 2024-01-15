@@ -325,10 +325,8 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
         team = 2;
     if (!settings.voxlap_models) {
         if (!kv6->has_display_list) {
-            struct tesselator tess_color;
-            tesselator_create(&tess_color, VERTEX_INT, 1);
-            struct tesselator tess_team;
-            tesselator_create(&tess_team, VERTEX_INT, 1);
+            Tesselator tess_color; tesselator_create(&tess_color, VERTEX_INT, 1);
+            Tesselator tess_team;  tesselator_create(&tess_team, VERTEX_INT, 1);
 
             glx_displaylist_create(kv6->display_list + 0, true, true);
             glx_displaylist_create(kv6->display_list + 1, true, true);
@@ -343,7 +341,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
                 int b = voxel->color.b;
                 int a = voxel->color.a;
 
-                struct tesselator * tess = &tess_color;
+                Tesselator * tess = &tess_color;
 
                 if ((r | g | b) == 0) {
                     tess = &tess_team;

@@ -58,7 +58,7 @@ struct damaged_voxel {
 };
 
 HashTable map_damaged_voxels;
-struct tesselator map_damaged_tesselator;
+Tesselator map_damaged_tesselator;
 
 int map_object_visible(float x, float y, float z) {
     return !(x <= 0.0F && z <= 0.0F);
@@ -109,7 +109,7 @@ int map_damage_get(int x, int y, int z) {
 static bool damaged_voxel_update(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;
     struct damaged_voxel * voxel = (struct damaged_voxel*) value;
-    struct tesselator * tess = (struct tesselator*) user;
+    Tesselator * tess = (Tesselator*) user;
     int x = pos_keyx(pos);
     int y = pos_keyy(pos);
     int z = pos_keyz(pos);
@@ -166,7 +166,7 @@ struct map_collapsing {
     int voxel_count;
     int rotation, has_displaylist;
     struct glx_displaylist displaylist;
-    struct tesselator mesh_geometry;
+    Tesselator mesh_geometry;
 };
 
 struct entity_system map_collapsing_structures;
@@ -175,7 +175,7 @@ static bool falling_blocks_meshing(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;
     TrueColor color = *(TrueColor*) value;
     struct map_collapsing * collapsing = ((struct map_collapsing**) user)[0];
-    struct tesselator * tess = ((struct tesselator**) user)[1];
+    Tesselator * tess = ((Tesselator**) user)[1];
 
     int x2 = pos_keyx(pos);
     int y2 = pos_keyy(pos);
