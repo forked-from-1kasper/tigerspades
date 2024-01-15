@@ -1271,10 +1271,7 @@ void hud_ingame_hover(bool hovered) {
 
 static double last_x, last_y;
 static void hud_ingame_mouselocation(double x, double y) {
-    if (window_get_mousemode() != WINDOW_CURSOR_DISABLED)
-        return;
-
-    if (show_exit) {
+    if (window_get_mousemode() != WINDOW_CURSOR_DISABLED) {
         last_x = x;
         last_y = y;
         return;
