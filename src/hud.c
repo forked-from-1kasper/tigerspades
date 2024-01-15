@@ -1532,6 +1532,12 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 strcpy(chat[0][0], "/");
             }
 
+            if (key == WINDOW_KEY_YES) {
+                window_textinput(1);
+                chat_input_mode = CHAT_TEAM_INPUT;
+                chat[0][0][0] = 0;
+            }
+
             if (key == WINDOW_KEY_CHAT) {
                 window_textinput(1);
                 chat_input_mode = CHAT_ALL_INPUT;
@@ -1582,12 +1588,6 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 char volstr[64];
                 sprintf(volstr, "Volume: %i", settings.volume);
                 chat_add(0, Red, volstr, UTF8);
-            }
-
-            if (key == WINDOW_KEY_YES) {
-                window_textinput(1);
-                chat_input_mode = CHAT_TEAM_INPUT;
-                chat[0][0][0] = 0;
             }
 
             if ((key == WINDOW_KEY_CURSOR_UP || key == WINDOW_KEY_CURSOR_DOWN || key == WINDOW_KEY_CURSOR_LEFT || key == WINDOW_KEY_CURSOR_RIGHT)
