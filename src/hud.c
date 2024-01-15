@@ -565,7 +565,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             glColor3f(1.0F, 1.0F, 1.0F);
         }
 
-        if (window_key_down(WINDOW_KEY_TAB) || camera_mode == CAMERAMODE_SELECTION) {
+        if ((window_key_down(WINDOW_KEY_TAB) && chat_input_mode == CHAT_NO_INPUT) || camera_mode == CAMERAMODE_SELECTION) {
             if (network_connected && network_logged_in) {
                 char ping_str[16];
                 sprintf(ping_str, "Ping: %i ms", network_ping());
