@@ -92,6 +92,19 @@ static void window_impl_keys(GLFWwindow * window, int key, int scancode, int act
     window_sendkey(a, key, mods & GLFW_MOD_CONTROL);
 }
 
+static void window_cursor_enter_callback(GLFWwindow * window, int entered) {
+    mouse_hover(hud_window, entered);
+}
+
+static void window_focus_callback(GLFWwindow * window, int focused) {
+    mouse_focus(hud_window, focused);
+}
+
+int window_get_mousemode() {
+    int s = glfwGetInputMode(hud_window->impl, GLFW_CURSOR);
+    return s == GLFW_CURSOR_DISABLED ? WINDOW_CURSOR_DISABLED : WINDOW_CURSOR_ENABLED;
+}
+
 void window_init(int * argc, char ** argv) {
     static struct window_instance i;
     hud_window = &i;
@@ -147,6 +160,8 @@ void window_init(int * argc, char ** argv) {
     glfwSetMouseButtonCallback(hud_window->impl, window_impl_mouseclick);
     glfwSetScrollCallback(hud_window->impl, window_impl_mousescroll);
     glfwSetCharCallback(hud_window->impl, window_impl_textinput);
+    glfwSetWindowFocusCallback(hud_window->impl, window_focus_callback);
+    glfwSetCursorEnterCallback(hud_window->impl, window_cursor_enter_callback);
 
     if (glfwRawMouseMotionSupported())
         glfwSetInputMode(hud_window->impl, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);

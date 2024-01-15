@@ -21,6 +21,7 @@
 #define MAIN_H
 
 #include <BetterSpades/window.h>
+#include <stdbool.h>
 
 void reshape(struct window_instance * window, int width, int height);
 void text_input(struct window_instance * window, const uint8_t *);
@@ -28,6 +29,8 @@ void keys(struct window_instance * window, int key, int action, int mods);
 void mouse_click(struct window_instance * window, int button, int action, int mods);
 void mouse(struct window_instance * window, double x, double y);
 void mouse_scroll(struct window_instance * window, double xoffset, double yoffset);
+void mouse_focus(struct window_instance *, bool);
+void mouse_hover(struct window_instance *, bool);
 void on_error(int i, const char * s);
 
 #endif

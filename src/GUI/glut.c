@@ -78,6 +78,10 @@ void window_mouse_button(int button, int state, int x, int y) {
         mouse_click(hud_window, but, action, mod);
 }
 
+int window_get_mousemode() {
+    return captured ? WINDOW_CURSOR_DISABLED : WINDOW_CURSOR_ENABLED;
+}
+
 void window_mouse_motion(int x, int y) {
     static int warped = 0;
     mx = x; my = y;
@@ -99,6 +103,10 @@ void window_mouse_motion(int x, int y) {
     } else mouse(hud_window, x, y);
 }
 
+void window_entry(int state) {
+    mouse_hover(hud_window, state == GLUT_ENTERED ? true : false);
+}
+
 void window_init(int * argc, char ** argv) {
     static struct window_instance i;
     hud_window = &i;
@@ -118,6 +126,7 @@ void window_init(int * argc, char ** argv) {
     glutMouseFunc(window_mouse_button);
     glutMotionFunc(window_mouse_motion);
     glutPassiveMotionFunc(window_mouse_motion);
+    glutEntryFunc(window_entry);
 }
 
 static Idle idle       = NULL;

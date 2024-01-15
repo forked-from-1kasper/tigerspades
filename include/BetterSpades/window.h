@@ -149,6 +149,8 @@ int window_cpucores();
 void window_title(char * suffix);
 void window_sendkey(int action, int keycode, int mod);
 
+int window_get_mousemode();
+
 typedef void (*Idle)(double);
 typedef void (*Display)(void);
 

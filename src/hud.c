@@ -1257,13 +1257,29 @@ static void hud_ingame_scroll(double yoffset) {
     }
 }
 
+bool window_focused = true, window_hovered = true;
+
+void hud_ingame_focus(bool focused) {
+    window_focused = focused;
+    if (!focused) window_mousemode(WINDOW_CURSOR_ENABLED);
+}
+
+void hud_ingame_hover(bool hovered) {
+    window_hovered = hovered;
+    if (!hovered) window_mousemode(WINDOW_CURSOR_ENABLED);
+}
+
 static double last_x, last_y;
 static void hud_ingame_mouselocation(double x, double y) {
+    if (window_get_mousemode() != WINDOW_CURSOR_DISABLED)
+        return;
+
     if (show_exit) {
         last_x = x;
         last_y = y;
         return;
     }
+
     float dx = x - last_x;
     float dy = y - last_y;
     last_x = x;
@@ -1285,6 +1301,13 @@ static void hud_ingame_mouselocation(double x, double y) {
 }
 
 static void hud_ingame_mouseclick(double x, double y, int button, int action, int mods) {
+    if (window_get_mousemode() == WINDOW_CURSOR_ENABLED) {
+        if (window_focused && window_hovered && action == WINDOW_RELEASE && !show_exit)
+            window_mousemode(WINDOW_CURSOR_DISABLED);
+
+        return;
+    }
+
     if (button == WINDOW_MOUSE_LMB)
         button_map[0] = (action == WINDOW_PRESS);
 
@@ -1954,6 +1977,8 @@ HUD hud_ingame = {
     hud_ingame_mouseclick,
     hud_ingame_scroll,
     hud_ingame_touch,
+    hud_ingame_focus,
+    hud_ingame_hover,
     NULL,
     1,
     0,
@@ -2464,6 +2489,8 @@ HUD hud_serverlist = {
     NULL,
     NULL,
     hud_serverlist_touch,
+    NULL,
+    NULL,
     hud_serverlist_ui_images,
     0,
     0,
@@ -2644,6 +2671,8 @@ HUD hud_settings = {
     NULL,
     NULL,
     hud_settings_touch,
+    NULL,
+    NULL,
     hud_settings_ui_images,
     0,
     0,
@@ -2794,6 +2823,8 @@ HUD hud_controls = {
     NULL,
     NULL,
     hud_controls_touch,
+    NULL,
+    NULL,
     hud_settings_ui_images,
     0,
     0,

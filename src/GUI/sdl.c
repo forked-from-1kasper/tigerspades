@@ -66,6 +66,11 @@ int get_sdl_button(int button) {
     }
 }
 
+int window_get_mousemode() {
+    int s = SDL_GetRelativeMouseMode();
+    return s ? WINDOW_CURSOR_DISABLED : WINDOW_CURSOR_ENABLED;
+}
+
 void window_update() {
     SDL_GL_SwapWindow(hud_window->impl);
     SDL_Event event;
@@ -79,12 +84,26 @@ void window_update() {
             case SDL_MOUSEBUTTONDOWN: mouse_click(hud_window, get_sdl_button(event.button.button), WINDOW_PRESS, 0); break;
             case SDL_MOUSEBUTTONUP: mouse_click(hud_window, get_sdl_button(event.button.button), WINDOW_RELEASE, 0); break;
 
-            case SDL_WINDOWEVENT:
+            case SDL_WINDOWEVENT: {
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED
                    || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                     reshape(hud_window, event.window.data1, event.window.data2);
                 }
+
+                if (event.window.event == SDL_WINDOWEVENT_LEAVE)
+                    mouse_hover(hud_window, false);
+
+                if (event.window.event == SDL_WINDOWEVENT_ENTER)
+                    mouse_hover(hud_window, true);
+
+                if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+                    mouse_focus(hud_window, false);
+
+                if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+                    mouse_focus(hud_window, true);
+
                 break;
+            }
 
             case SDL_MOUSEWHEEL: mouse_scroll(hud_window, event.wheel.x, event.wheel.y); break;
 

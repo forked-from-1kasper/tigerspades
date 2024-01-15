@@ -676,6 +676,14 @@ void mouse_click(struct window_instance * window, int button, int action, int mo
     }
 }
 
+void mouse_focus(struct window_instance * window, bool focused) {
+    if (hud_active->focus) hud_active->focus(focused);
+}
+
+void mouse_hover(struct window_instance * window, bool hovered) {
+    if (hud_active->hover) hud_active->hover(hovered);
+}
+
 void mouse(struct window_instance * window, double x, double y) {
     if (hud_active->input_mouselocation)
         hud_active->input_mouselocation(x, y);

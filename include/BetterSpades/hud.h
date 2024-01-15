@@ -36,6 +36,8 @@ typedef struct {
     void (*input_mouseclick)(double x, double y, int button, int action, int mods);
     void (*input_mousescroll)(double yoffset);
     void (*input_touch)(void * finger, int action, float x, float y, float dx, float dy);
+    void (*focus)(bool);
+    void (*hover)(bool);
     Texture * (*ui_images)(int icon_id, bool * resize);
     char render_world;
     char render_localplayer;
