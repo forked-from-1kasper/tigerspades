@@ -118,11 +118,11 @@ void matrix_lookAt(mat4 m, double eyex, double eyey, double eyez, double centerx
 
 void matrix_upload() {
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf((float*)matrix_view);
-    glMultMatrixf((float*)matrix_model);
+    glLoadMatrixf((float*) matrix_view);
+    glMultMatrixf((float*) matrix_model);
 }
 
 void matrix_upload_p() {
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf((float*)matrix_projection);
+    glLoadMatrixf((float*) matrix_projection);
 }

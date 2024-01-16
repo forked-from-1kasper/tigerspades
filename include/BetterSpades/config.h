@@ -74,6 +74,7 @@ extern struct RENDER_OPTIONS {
     int tracing_enabled;
     int trajectory_length;
     int projectile_count;
+    int show_minimap;
 } settings, settings_tmp;
 
 extern List config_keys;

@@ -191,13 +191,8 @@ static void hud_ingame_render3D() {
             }
 
             if (local_player_ammo + local_player_ammo_reserved > 0) {
-                struct kv6_t * gun;
-                switch (players[local_player_id].weapon) {
-                    default:
-                    case WEAPON_RIFLE: gun = &model_semi; break;
-                    case WEAPON_SMG: gun = &model_smg; break;
-                    case WEAPON_SHOTGUN: gun = &model_shotgun; break;
-                }
+                struct kv6_t * gun = weapon_model(players[local_player_id].weapon);
+
                 matrix_identity(matrix_model);
                 matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player_id].held_item == TOOL_GUN) * 0.5F,
                                  -6.0F);
@@ -999,11 +994,12 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
                 for (int k = 0; k < PLAYERS_MAX; k++) {
                 #if HACKS_ENABLED && HACK_MAPHACK
-                    if (players[k].connected && players[k].alive && k != local_player_id) {
+                    if (players[k].connected && players[k].alive && k != local_player_id)
                 #else
                     if (players[k].connected && players[k].alive && k != local_player_id && players[k].team != TEAM_SPECTATOR
-                       && (players[k].team == players[local_player_id].team || camera_mode == CAMERAMODE_SPECTATOR)) {
+                    && (players[k].team == players[local_player_id].team || camera_mode == CAMERAMODE_SPECTATOR))
                 #endif
+                    {
                         switch (players[k].team) {
                             case TEAM_1:
                                 glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
@@ -1022,7 +1018,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 texture_draw_rotated(&texture_player, minimap_x + camera_x * scale, minimap_y - camera_z * scale,
                                      16 * scale, 16 * scale, camera_rot_x + PI);
                 glColor3f(1.0F, 1.0F, 1.0F);
-            } else {
+            } else if (settings.show_minimap) {
                 // minimized, top right
                 float view_x = camera_x - 64.0F; // min(max(camera_x-64.0F,0.0F),map_size_x+1-128.0F);
                 float view_z = camera_z - 64.0F; // min(max(camera_z-64.0F,0.0F),map_size_z+1-128.0F);
@@ -1116,13 +1112,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
                 for (int k = 0; k < PLAYERS_MAX; k++) {
                 #if HACKS_ENABLED && HACK_MAPHACK
-                    if (players[k].connected && players[k].alive) {
+                    if (players[k].connected && players[k].alive)
                 #else
                     if (players[k].connected && players[k].alive
                        && (players[k].team == players[local_player_id].team
                            || (camera_mode == CAMERAMODE_SPECTATOR
-                               && (k == local_player_id || players[k].team != TEAM_SPECTATOR)))) {
+                               && (k == local_player_id || players[k].team != TEAM_SPECTATOR))))
                 #endif
+                    {
                         if (k == local_player_id) {
                             glColor3ub(0, 255, 255);
                         } else {
@@ -1161,7 +1158,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
                 default: glColor3f(1.0F, 1.0F, 1.0F);
             }
-            sprintf(str, "%s's %s", players[player_intersection_player].name, th[player_intersection_type]);
+            sprintf(str, "%s (%s)", players[player_intersection_player].name, th[player_intersection_type]);
             font_centered(settings.window_width / 2.0F, settings.window_height * 0.2F, 1.0F * scale, str, UTF8);
             font_select(FONT_FIXEDSYS);
         }

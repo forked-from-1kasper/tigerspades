@@ -123,7 +123,7 @@ void camera_hit_mask(struct Camera_HitType * hit, int exclude_player, float x, f
 #if HACKS_ENABLED && HACK_WALLHACK
     if (players[local_player_id].held_item != TOOL_GUN) {
 #endif
-    int* pos = camera_terrain_pickEx(1, x, y, z, ray_x, ray_y, ray_z);
+    int * pos = camera_terrain_pickEx(1, x, y, z, ray_x, ray_y, ray_z);
     if (pos != NULL && distance3D(x, y, z, pos[0], pos[1], pos[2]) <= range * range) {
         AABB block = (AABB) {
             .min = {pos[0], pos[1], pos[2]},

@@ -652,10 +652,11 @@ void player_render(Player * p, int id) {
     kv6_calclight(p->pos.x, p->pos.y, p->pos.z);
 
 #if HACKS_ENABLED && HACK_ESP
-    if (id != local_player_id) {
+    if (id != local_player_id)
 #else
-    if (camera_mode == CAMERAMODE_SPECTATOR && p->team != TEAM_SPECTATOR && !cameracontroller_bodyview_mode) {
+    if (camera_mode == CAMERAMODE_SPECTATOR && p->team != TEAM_SPECTATOR && !cameracontroller_bodyview_mode)
 #endif
+    {
         matrix_push(matrix_model);
         matrix_translate(matrix_model, p->pos.x, p->physics.eye.y + player_height(p) + 1.25F, p->pos.z);
         matrix_rotate(matrix_model, camera_rot_x / PI * 180.0F + 180.0F, 0.0F, 1.0F, 0.0F);
@@ -705,6 +706,7 @@ void player_render(Player * p, int id) {
     struct kv6_t * torso = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playertorsoc : &model_playertorso;
     struct kv6_t * leg   = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playerlegc   : &model_playerleg;
     float height = player_height(p);
+
     if (id != local_player_id)
         height -= 0.25F;
 
@@ -737,7 +739,9 @@ void player_render(Player * p, int id) {
         matrix_upload();
         kv6_render(&model_playerhead, p->team);
         matrix_pop(matrix_model);
+    }
 
+    if (render_body) {
         matrix_push(matrix_model);
         matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
         matrix_pointAt(matrix_model, ox, 0.0F, oz);
@@ -809,8 +813,8 @@ void player_render(Player * p, int id) {
 
     matrix_push(matrix_model);
     matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
-    if (!render_fpv)
-        matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
+    if (!render_fpv) matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
+
     matrix_pointAt(matrix_model, ox, oy, oz);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
     if (render_fpv)
@@ -833,6 +837,7 @@ void player_render(Player * p, int id) {
         matrix_rotate(matrix_model, angles[0], 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, angles[1], 0.0F, 1.0F, 0.0F);
     }
+
     if (render_body || settings.player_arms) {
         matrix_upload();
         kv6_render(&model_playerarms, p->team);
@@ -850,23 +855,24 @@ void player_render(Player * p, int id) {
     matrix_upload();
     switch (p->held_item) {
         case TOOL_SPADE: kv6_render(&model_spade, p->team); break;
-        case TOOL_BLOCK:
+
+        case TOOL_BLOCK: {
             model_block.red   = p->block.r / 255.0F;
             model_block.green = p->block.g / 255.0F;
             model_block.blue  = p->block.b / 255.0F;
             kv6_render(&model_block, p->team);
             break;
-        case TOOL_GUN:
+        }
+
+        case TOOL_GUN: {
             // matrix_translate(matrix_model, 3.0F*0.1F-0.01F+0.025F,0.25F,-0.0625F);
             // matrix_upload();
-            if (!(render_fpv && (p->input.buttons & MASKON(BUTTON_SECONDARY)))) {
-                switch (p->weapon) {
-                    case WEAPON_RIFLE:   kv6_render(&model_semi, p->team);    break;
-                    case WEAPON_SMG:     kv6_render(&model_smg, p->team);     break;
-                    case WEAPON_SHOTGUN: kv6_render(&model_shotgun, p->team); break;
-                }
-            }
+            if (!(render_fpv && (p->input.buttons & MASKON(BUTTON_SECONDARY))))
+                kv6_render(weapon_model(p->weapon), p->team);
+
             break;
+        }
+
         case TOOL_GRENADE: kv6_render(&model_grenade, p->team); break;
     }
 
@@ -875,13 +881,13 @@ void player_render(Player * p, int id) {
     vec4 v2 = {1.1F, 0, -0.3F, 1};
     matrix_vector(matrix_model, v2);
 
-    p->gun_pos.x = v[0];
-    p->gun_pos.y = v[1];
-    p->gun_pos.z = v[2];
+    p->gun_pos.x = v[X];
+    p->gun_pos.y = v[Y];
+    p->gun_pos.z = v[Z];
 
-    p->casing_dir.x = v[0] - v2[0];
-    p->casing_dir.y = v[1] - v2[1];
-    p->casing_dir.z = v[2] - v2[2];
+    p->casing_dir.x = v[X] - v2[X];
+    p->casing_dir.y = v[Y] - v2[Y];
+    p->casing_dir.z = v[Z] - v2[Z];
 
     matrix_pop(matrix_model);
 }
@@ -893,12 +899,12 @@ int player_clipbox(float x, float y, float z) {
         return 1;
     else if (z < 0)
         return 0;
-    sz = (int)z;
+    sz = (int) z;
     if (sz == 63)
         sz = 62;
     else if (sz >= 64)
         return 1;
-    return !map_isair((int)x, 63 - sz, (int)y);
+    return !map_isair((int) x, 63 - sz, (int) y);
 }
 
 void player_reposition(Player * p) {

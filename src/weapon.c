@@ -196,6 +196,15 @@ struct kv6_t * weapon_casing(int gun) {
     }
 }
 
+struct kv6_t * weapon_model(int gun) {
+    switch (gun) {
+        case WEAPON_RIFLE:   return &model_semi;
+        case WEAPON_SMG:     return &model_smg;
+        case WEAPON_SHOTGUN: return &model_shotgun;
+        default:             return NULL;
+    }
+}
+
 void weapon_set(bool restock) {
     if (!restock) local_player_ammo = weapon_ammo(players[local_player_id].weapon);
 

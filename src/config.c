@@ -96,6 +96,7 @@ void config_save() {
     config_seti("client", "tracing_enabled",   settings.tracing_enabled);
     config_seti("client", "trajectory_length", settings.trajectory_length);
     config_seti("client", "projectile_count",  settings.projectile_count);
+    config_seti("client", "show_minimap",      settings.show_minimap);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair * e = list_get(&config_keys, k);
@@ -200,6 +201,8 @@ static int config_read_key(void * user, const char * section, const char * name,
             settings.trajectory_length = atoi(value);
         } else if (!strcmp(name, "projectile_count")) {
             settings.projectile_count = atoi(value);
+        } else if (!strcmp(name, "show_minimap")) {
+            settings.show_minimap = atoi(value);
         }
     }
 
@@ -404,7 +407,16 @@ void config_reload() {
                  .max      = sizeof(settings.name) - 1,
                  .name     = "Name",
                  .help     = "Ingame player name",
-                 .category = "Network"
+                 .category = "Game"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.show_minimap,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .name     = "Show minimap",
+                 .category = "Game"
              });
     list_add(&config_settings,
              &(struct config_setting) {
@@ -413,7 +425,7 @@ void config_reload() {
                  .max      = INT_MAX,
                  .name     = "Minimum LAN port",
                  .help     = "First port to scan for LAN games",
-                 .category = "Network"
+                 .category = "Game"
              });
     list_add(&config_settings,
              &(struct config_setting) {
@@ -422,7 +434,7 @@ void config_reload() {
                  .max      = INT_MAX,
                  .name     = "Maximum LAN port",
                  .help     = "Last port to scan for LAN games",
-                 .category = "Network"
+                 .category = "Game"
              });
     list_add(&config_settings,
              &(struct config_setting) {
