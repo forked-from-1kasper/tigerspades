@@ -35,53 +35,53 @@
 #define KV6_VIS_POS_Y (1 << 4)
 #define KV6_VIS_NEG_Y (1 << 5)
 
-struct kv6_voxel {
+typedef struct {
     uint16_t x, y, z;
     uint8_t visfaces;
     TrueColor color;
-};
+} Voxel;
 
-struct kv6_t {
+typedef struct {
     uint16_t xsiz, ysiz, zsiz;
     float xpiv, ypiv, zpiv;
     bool has_display_list, colorize;
     struct glx_displaylist display_list[2];
-    struct kv6_voxel * voxels;
+    Voxel * voxels;
     int voxel_count;
     float scale;
     float red, green, blue;
-};
+} kv6;
 
-extern struct kv6_t model_playerdead;
-extern struct kv6_t model_playerhead;
-extern struct kv6_t model_playertorso;
-extern struct kv6_t model_playertorsoc;
-extern struct kv6_t model_playerarms;
-extern struct kv6_t model_playerleg;
-extern struct kv6_t model_playerlegc;
-extern struct kv6_t model_intel;
-extern struct kv6_t model_tent;
+extern kv6 model_playerdead;
+extern kv6 model_playerhead;
+extern kv6 model_playertorso;
+extern kv6 model_playertorsoc;
+extern kv6 model_playerarms;
+extern kv6 model_playerleg;
+extern kv6 model_playerlegc;
+extern kv6 model_intel;
+extern kv6 model_tent;
 
-extern struct kv6_t model_semi;
-extern struct kv6_t model_smg;
-extern struct kv6_t model_shotgun;
-extern struct kv6_t model_spade;
-extern struct kv6_t model_block;
-extern struct kv6_t model_grenade;
+extern kv6 model_semi;
+extern kv6 model_smg;
+extern kv6 model_shotgun;
+extern kv6 model_spade;
+extern kv6 model_block;
+extern kv6 model_grenade;
 
-extern struct kv6_t model_semi_tracer;
-extern struct kv6_t model_smg_tracer;
-extern struct kv6_t model_shotgun_tracer;
+extern kv6 model_semi_tracer;
+extern kv6 model_smg_tracer;
+extern kv6 model_shotgun_tracer;
 
-extern struct kv6_t model_semi_casing;
-extern struct kv6_t model_smg_casing;
-extern struct kv6_t model_shotgun_casing;
+extern kv6 model_semi_casing;
+extern kv6 model_smg_casing;
+extern kv6 model_shotgun_casing;
 
 void kv6_calclight(int x, int y, int z);
 void kv6_rebuild_complete(void);
-void kv6_rebuild(struct kv6_t* kv6);
-void kv6_render(struct kv6_t* kv6, unsigned char team);
-void kv6_load(struct kv6_t* kv6, void* bytes, float scale);
+void kv6_rebuild(kv6 *);
+void kv6_render(kv6 *, unsigned char team);
+void kv6_load(kv6 *, void * bytes, float scale);
 void kv6_init(void);
 
 extern float kv6_normals[256][3];

@@ -703,8 +703,8 @@ void player_render(Player * p, int id) {
 
     float time = window_time() * 1000.0F;
 
-    struct kv6_t * torso = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playertorsoc : &model_playertorso;
-    struct kv6_t * leg   = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playerlegc   : &model_playerleg;
+    kv6 * torso = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playertorsoc : &model_playertorso;
+    kv6 * leg   = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playerlegc   : &model_playerleg;
     float height = player_height(p);
 
     if (id != local_player_id)

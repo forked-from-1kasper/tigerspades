@@ -191,7 +191,7 @@ static bool particle_render_single(void * obj, void * user) {
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_N, p->x - size, p->y - size, p->z - size, size * 2.0F);
         tesselator_addf_cube_face(tess, CUBE_FACE_Z_P, p->x - size, p->y - size, p->z - size, size * 2.0F);
     } else {
-        struct kv6_t * casing = weapon_casing(p->type);
+        kv6 * casing = weapon_casing(p->type);
 
         if (casing) {
             matrix_push(matrix_model);

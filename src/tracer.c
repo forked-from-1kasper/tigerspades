@@ -48,8 +48,8 @@ struct tracer_minimap_info {
 };
 
 static bool tracer_minimap_single(void * obj, void * user) {
-    struct Tracer* t = (struct Tracer*) obj;
-    struct tracer_minimap_info* info = (struct tracer_minimap_info*) user;
+    struct Tracer * t = (struct Tracer *) obj;
+    struct tracer_minimap_info * info = (struct tracer_minimap_info *) user;
 
     if (info->large) {
         float ang = -atan2(t->r.direction[Z], t->r.direction[X]) - HALFPI;
@@ -101,7 +101,7 @@ void tracer_add(int type, float x, float y, float z, float dx, float dy, float d
 static bool tracer_render_single(void * obj, void * user) {
     struct Tracer * t = (struct Tracer*) obj;
 
-    static struct kv6_t * model_tracer[] = {&model_semi_tracer, &model_smg_tracer, &model_shotgun_tracer};
+    static kv6 * model_tracer[] = {&model_semi_tracer, &model_smg_tracer, &model_shotgun_tracer};
 
     matrix_push(matrix_model);
     matrix_translate(matrix_model, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);

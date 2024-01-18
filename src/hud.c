@@ -191,7 +191,7 @@ static void hud_ingame_render3D() {
             }
 
             if (local_player_ammo + local_player_ammo_reserved > 0) {
-                struct kv6_t * gun = weapon_model(players[local_player_id].weapon);
+                kv6 * gun = weapon_model(players[local_player_id].weapon);
 
                 matrix_identity(matrix_model);
                 matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player_id].held_item == TOOL_GUN) * 0.5F,
@@ -285,7 +285,7 @@ static void hud_ingame_render3D() {
             kv6_render(&model_shotgun, TEAM_SPECTATOR);
         }
 
-        struct kv6_t * rotating_model = NULL;
+        kv6 * rotating_model = NULL;
         int rotating_model_team = TEAM_SPECTATOR;
         if (gamestate.gamemode_type == GAMEMODE_CTF) {
             switch (players[local_player_id].team) {

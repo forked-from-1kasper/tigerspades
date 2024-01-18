@@ -187,7 +187,7 @@ int weapon_ammo_reserved(int gun) {
     }
 }
 
-struct kv6_t * weapon_casing(int gun) {
+kv6 * weapon_casing(int gun) {
     switch (gun) {
         case WEAPON_RIFLE:   return &model_semi_casing;
         case WEAPON_SMG:     return &model_smg_casing;
@@ -196,7 +196,7 @@ struct kv6_t * weapon_casing(int gun) {
     }
 }
 
-struct kv6_t * weapon_model(int gun) {
+kv6 * weapon_model(int gun) {
     switch (gun) {
         case WEAPON_RIFLE:   return &model_semi;
         case WEAPON_SMG:     return &model_smg;

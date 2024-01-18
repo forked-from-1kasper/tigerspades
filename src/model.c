@@ -34,41 +34,41 @@
 
 #include <log.h>
 
-struct kv6_t model_playerdead;
-struct kv6_t model_playerhead;
-struct kv6_t model_playertorso;
-struct kv6_t model_playertorsoc;
-struct kv6_t model_playerarms;
-struct kv6_t model_playerleg;
-struct kv6_t model_playerlegc;
-struct kv6_t model_intel;
-struct kv6_t model_tent;
+kv6 model_playerdead;
+kv6 model_playerhead;
+kv6 model_playertorso;
+kv6 model_playertorsoc;
+kv6 model_playerarms;
+kv6 model_playerleg;
+kv6 model_playerlegc;
+kv6 model_intel;
+kv6 model_tent;
 
-struct kv6_t model_semi;
-struct kv6_t model_smg;
-struct kv6_t model_shotgun;
-struct kv6_t model_spade;
-struct kv6_t model_block;
-struct kv6_t model_grenade;
+kv6 model_semi;
+kv6 model_smg;
+kv6 model_shotgun;
+kv6 model_spade;
+kv6 model_block;
+kv6 model_grenade;
 
-struct kv6_t model_semi_tracer;
-struct kv6_t model_smg_tracer;
-struct kv6_t model_shotgun_tracer;
+kv6 model_semi_tracer;
+kv6 model_smg_tracer;
+kv6 model_shotgun_tracer;
 
-struct kv6_t model_semi_casing;
-struct kv6_t model_smg_casing;
-struct kv6_t model_shotgun_casing;
+kv6 model_semi_casing;
+kv6 model_smg_casing;
+kv6 model_shotgun_casing;
 
-static void kv6_load_file(struct kv6_t * kv6, char * filename, float scale) {
+static void kv6_load_file(kv6 * model, char * filename, float scale) {
     void * data = file_load(filename);
-    kv6_load(kv6, data, scale);
+    kv6_load(model, data, scale);
     free(data);
 }
 
-static void kv6_check_dimensions(struct kv6_t * kv6, float max) {
-    if (max(max(kv6->xsiz, kv6->ysiz), kv6->zsiz) * kv6->scale > max) {
+static void kv6_check_dimensions(kv6 * model, float max) {
+    if (max(max(model->xsiz, model->ysiz), model->zsiz) * model->scale > max) {
         log_error("Model dimensions too large");
-        kv6->voxel_count = 0;
+        model->voxel_count = 0;
     }
 }
 
@@ -139,35 +139,35 @@ void kv6_rebuild_complete() {
     kv6_rebuild(&model_shotgun_casing);
 }
 
-void kv6_load(struct kv6_t * kv6, void * bytes, float scale) {
-    kv6->colorize = false;
-    kv6->has_display_list = false;
-    kv6->scale = scale;
+void kv6_load(kv6 * model, void * bytes, float scale) {
+    model->colorize = false;
+    model->has_display_list = false;
+    model->scale = scale;
 
     size_t index = 0;
     if (buffer_read32(bytes, index) == 0x6C78764B) { //"Kvxl"
         index += 4;
-        kv6->xsiz = buffer_read32(bytes, index);
+        model->xsiz = buffer_read32(bytes, index);
         index += 4;
-        kv6->ysiz = buffer_read32(bytes, index);
+        model->ysiz = buffer_read32(bytes, index);
         index += 4;
-        kv6->zsiz = buffer_read32(bytes, index);
-        index += 4;
-
-        kv6->xpiv = buffer_readf(bytes, index);
-        index += 4;
-        kv6->ypiv = buffer_readf(bytes, index);
-        index += 4;
-        kv6->zpiv = kv6->zsiz - buffer_readf(bytes, index);
+        model->zsiz = buffer_read32(bytes, index);
         index += 4;
 
-        kv6->voxel_count = buffer_read32(bytes, index);
+        model->xpiv = buffer_readf(bytes, index);
+        index += 4;
+        model->ypiv = buffer_readf(bytes, index);
+        index += 4;
+        model->zpiv = model->zsiz - buffer_readf(bytes, index);
         index += 4;
 
-        kv6->voxels = malloc(sizeof(struct kv6_voxel) * kv6->voxel_count);
-        CHECK_ALLOCATION_ERROR(kv6->voxels)
+        model->voxel_count = buffer_read32(bytes, index);
+        index += 4;
 
-        for (size_t k = 0; k < kv6->voxel_count; k++) {
+        model->voxels = malloc(sizeof(Voxel) * model->voxel_count);
+        CHECK_ALLOCATION_ERROR(model->voxels)
+
+        for (size_t k = 0; k < model->voxel_count; k++) {
             TrueColor color = readBGRA(bytes + index); index += 4;
             uint16_t zpos = buffer_read16(bytes, index); index += 2;
             uint8_t visfaces = buffer_read8(bytes, index++); // 0x00zZyYxX
@@ -175,19 +175,19 @@ void kv6_load(struct kv6_t * kv6, void * bytes, float scale) {
 
             color.a = lighting;
 
-            kv6->voxels[k] = (struct kv6_voxel) {
+            model->voxels[k] = (Voxel) {
                 .color = color,
                 .visfaces = visfaces,
-                .z = (kv6->zsiz - 1) - zpos,
+                .z = (model->zsiz - 1) - zpos,
             };
         }
 
-        index += 4 * kv6->xsiz;
+        index += 4 * model->xsiz;
 
-        struct kv6_voxel * voxel = kv6->voxels;
+        Voxel * voxel = model->voxels;
 
-        for (size_t x = 0; x < kv6->xsiz; x++) {
-            for (size_t y = 0; y < kv6->ysiz; y++) {
+        for (size_t x = 0; x < model->xsiz; x++) {
+            for (size_t y = 0; y < model->ysiz; y++) {
                 uint16_t size = buffer_read16(bytes, index);
                 index += 2;
 
@@ -199,16 +199,16 @@ void kv6_load(struct kv6_t * kv6, void * bytes, float scale) {
         }
     } else {
         log_error("Data not in kv6 format");
-        kv6->xsiz = kv6->ysiz = kv6->zsiz = 0;
-        kv6->voxel_count = 0;
+        model->xsiz = model->ysiz = model->zsiz = 0;
+        model->voxel_count = 0;
     }
 }
 
-void kv6_rebuild(struct kv6_t * kv6) {
-    if (kv6->has_display_list) {
-        glx_displaylist_destroy(kv6->display_list + 0);
-        glx_displaylist_destroy(kv6->display_list + 1);
-        kv6->has_display_list = false;
+void kv6_rebuild(kv6 * model) {
+    if (model->has_display_list) {
+        glx_displaylist_destroy(model->display_list + 0);
+        glx_displaylist_destroy(model->display_list + 1);
+        model->has_display_list = false;
     }
 }
 
@@ -226,8 +226,8 @@ void kv6_calclight(int x, int y, int z) {
 }
 
 static int kv6_voxel_cmp(const void * a, const void * b) {
-    const struct kv6_voxel * A = a;
-    const struct kv6_voxel * B = b;
+    const Voxel * A = a;
+    const Voxel * B = b;
 
     if (A->x == B->x) {
         if (A->y == B->y) {
@@ -240,8 +240,7 @@ static int kv6_voxel_cmp(const void * a, const void * b) {
     }
 }
 
-static void greedy_mesh(struct kv6_t* kv6, struct kv6_voxel* voxel, uint8_t* marked, size_t* max_a, size_t* max_b,
-                        uint8_t face) {
+static void greedy_mesh(kv6 * model, Voxel * voxel, uint8_t * marked, size_t * max_a, size_t * max_b, uint8_t face) {
     if (!settings.greedy_meshing) {
         *max_a = 1;
         *max_b = 1;
@@ -249,25 +248,25 @@ static void greedy_mesh(struct kv6_t* kv6, struct kv6_voxel* voxel, uint8_t* mar
         switch (face) {
             case KV6_VIS_POS_X:
             case KV6_VIS_NEG_X:
-                *max_a = kv6->ysiz;
-                *max_b = kv6->zsiz;
+                *max_a = model->ysiz;
+                *max_b = model->zsiz;
                 break;
             case KV6_VIS_POS_Y:
             case KV6_VIS_NEG_Y:
-                *max_a = kv6->xsiz;
-                *max_b = kv6->ysiz;
+                *max_a = model->xsiz;
+                *max_b = model->ysiz;
                 break;
             case KV6_VIS_POS_Z:
             case KV6_VIS_NEG_Z:
-                *max_a = kv6->xsiz;
-                *max_b = kv6->zsiz;
+                *max_a = model->xsiz;
+                *max_b = model->zsiz;
                 break;
         }
 
-        struct kv6_voxel lookup = *voxel;
+        Voxel lookup = *voxel;
 
         for (size_t a = 0; a < *max_a; a++) {
-            struct kv6_voxel* recent[*max_b];
+            Voxel* recent[*max_b];
             size_t b;
             for (b = 0; b < *max_b; b++) {
                 switch (face) {
@@ -288,16 +287,16 @@ static void greedy_mesh(struct kv6_t* kv6, struct kv6_voxel* voxel, uint8_t* mar
                         break;
                 }
 
-                struct kv6_voxel * neighbour = bsearch(&lookup, kv6->voxels, kv6->voxel_count, sizeof(struct kv6_voxel), kv6_voxel_cmp);
+                Voxel * neighbour = bsearch(&lookup, model->voxels, model->voxel_count, sizeof(Voxel), kv6_voxel_cmp);
 
                 if (!neighbour || !(neighbour->visfaces & face)
                    || neighbour->color.r != voxel->color.r
                    || neighbour->color.g != voxel->color.g
                    || neighbour->color.b != voxel->color.b
-                   || marked[neighbour - kv6->voxels] & face) {
+                   || marked[neighbour - model->voxels] & face) {
                     break;
                 } else {
-                    marked[neighbour - kv6->voxels] |= face;
+                    marked[neighbour - model->voxels] |= face;
                     recent[b] = neighbour;
                 }
             }
@@ -309,7 +308,7 @@ static void greedy_mesh(struct kv6_t* kv6, struct kv6_voxel* voxel, uint8_t* mar
                 *max_a = a;
 
                 for (size_t k = 0; k < b; k++)
-                    marked[recent[k] - kv6->voxels] &= ~face;
+                    marked[recent[k] - model->voxels] &= ~face;
 
                 break;
             }
@@ -318,24 +317,24 @@ static void greedy_mesh(struct kv6_t* kv6, struct kv6_voxel* voxel, uint8_t* mar
 }
 
 static int kv6_program = -1;
-void kv6_render(struct kv6_t * kv6, unsigned char team) {
-    if (!kv6)
+void kv6_render(kv6 * model, unsigned char team) {
+    if (!model)
         return;
     if (team == TEAM_SPECTATOR)
         team = 2;
     if (!settings.voxlap_models) {
-        if (!kv6->has_display_list) {
+        if (!model->has_display_list) {
             Tesselator tess_color; tesselator_create(&tess_color, VERTEX_INT, 1);
             Tesselator tess_team;  tesselator_create(&tess_team, VERTEX_INT, 1);
 
-            glx_displaylist_create(kv6->display_list + 0, true, true);
-            glx_displaylist_create(kv6->display_list + 1, true, true);
+            glx_displaylist_create(model->display_list + 0, true, true);
+            glx_displaylist_create(model->display_list + 1, true, true);
 
-            uint8_t marked[kv6->voxel_count];
-            memset(marked, 0, sizeof(uint8_t) * kv6->voxel_count);
+            uint8_t marked[model->voxel_count];
+            memset(marked, 0, sizeof(uint8_t) * model->voxel_count);
 
-            struct kv6_voxel * voxel = kv6->voxels;
-            for (size_t k = 0; k < kv6->voxel_count; k++, voxel++) {
+            Voxel * voxel = model->voxels;
+            for (size_t k = 0; k < model->voxel_count; k++, voxel++) {
                 int r = voxel->color.r;
                 int g = voxel->color.g;
                 int b = voxel->color.b;
@@ -346,7 +345,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
                 if ((r | g | b) == 0) {
                     tess = &tess_team;
                     r = g = b = 255;
-                } else if (kv6->colorize) {
+                } else if (model->colorize) {
                     r = g = b = 255;
                 }
 
@@ -354,7 +353,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
 
                 if (voxel->visfaces & KV6_VIS_POS_Y) {
                     size_t max_x, max_z;
-                    greedy_mesh(kv6, voxel, marked, &max_x, &max_z, KV6_VIS_POS_Y);
+                    greedy_mesh(model, voxel, marked, &max_x, &max_z, KV6_VIS_POS_Y);
 
                     tesselator_set_color(tess, (TrueColor) {r, g, b, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Y_P, voxel->x, voxel->z, voxel->y, max_x, 1, max_z);
@@ -362,7 +361,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
 
                 if (voxel->visfaces & KV6_VIS_NEG_Y) {
                     size_t max_x, max_z;
-                    greedy_mesh(kv6, voxel, marked, &max_x, &max_z, KV6_VIS_NEG_Y);
+                    greedy_mesh(model, voxel, marked, &max_x, &max_z, KV6_VIS_NEG_Y);
 
                     tesselator_set_color(tess, (TrueColor) {r * 0.6F, g * 0.6F, b * 0.6F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Y_N, voxel->x, voxel->z, voxel->y, max_x, 1, max_z);
@@ -370,7 +369,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
 
                 if (voxel->visfaces & KV6_VIS_NEG_Z) {
                     size_t max_x, max_y;
-                    greedy_mesh(kv6, voxel, marked, &max_x, &max_y, KV6_VIS_NEG_Z);
+                    greedy_mesh(model, voxel, marked, &max_x, &max_y, KV6_VIS_NEG_Z);
 
                     tesselator_set_color(tess, (TrueColor) {r * 0.95F, g * 0.95F, b * 0.95F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Z_N, voxel->x, voxel->z - (max_y - 1), voxel->y,
@@ -379,7 +378,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
 
                 if (voxel->visfaces & KV6_VIS_POS_Z) {
                     size_t max_x, max_y;
-                    greedy_mesh(kv6, voxel, marked, &max_x, &max_y, KV6_VIS_POS_Z);
+                    greedy_mesh(model, voxel, marked, &max_x, &max_y, KV6_VIS_POS_Z);
 
                     tesselator_set_color(tess, (TrueColor) {r * 0.9F, g * 0.9F, b * 0.9F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_Z_P, voxel->x, voxel->z - (max_y - 1), voxel->y,
@@ -388,7 +387,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
 
                 if (voxel->visfaces & KV6_VIS_NEG_X) {
                     size_t max_y, max_z;
-                    greedy_mesh(kv6, voxel, marked, &max_y, &max_z, KV6_VIS_NEG_X);
+                    greedy_mesh(model, voxel, marked, &max_y, &max_z, KV6_VIS_NEG_X);
 
                     tesselator_set_color(tess, (TrueColor) {r * 0.85F, g * 0.85F, b * 0.85F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_X_N, voxel->x, voxel->z - (max_y - 1), voxel->y, 1,
@@ -397,7 +396,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
 
                 if (voxel->visfaces & KV6_VIS_POS_X) {
                     size_t max_y, max_z;
-                    greedy_mesh(kv6, voxel, marked, &max_y, &max_z, KV6_VIS_POS_X);
+                    greedy_mesh(model, voxel, marked, &max_y, &max_z, KV6_VIS_POS_X);
 
                     tesselator_set_color(tess, (TrueColor) {r * 0.8F, g * 0.8F, b * 0.8F, 0});
                     tesselator_addi_cube_face_adv(tess, CUBE_FACE_X_P, voxel->x, voxel->z - (max_y - 1), voxel->y, 1,
@@ -405,13 +404,13 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
                 }
             }
 
-            tesselator_glx(&tess_color, kv6->display_list + 0);
-            tesselator_glx(&tess_team, kv6->display_list + 1);
+            tesselator_glx(&tess_color, model->display_list + 0);
+            tesselator_glx(&tess_team, model->display_list + 1);
 
             tesselator_free(&tess_color);
             tesselator_free(&tess_team);
 
-            kv6->has_display_list = true;
+            model->has_display_list = true;
         } else {
             glEnable(GL_LIGHTING);
             glEnable(GL_LIGHT0);
@@ -434,19 +433,19 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
             glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
             glBindTexture(GL_TEXTURE_2D, texture_dummy.texture_id);
 
-            if (kv6->colorize) {
+            if (model->colorize) {
                 glEnable(GL_TEXTURE_2D);
-                glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, (float[]) {kv6->red, kv6->green, kv6->blue, 1.0F});
+                glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, (float[]) {model->red, model->green, model->blue, 1.0F});
             }
 
             matrix_push(matrix_model);
-            matrix_scale3(matrix_model, kv6->scale);
-            matrix_translate(matrix_model, -kv6->xpiv, -kv6->zpiv, -kv6->ypiv);
+            matrix_scale3(matrix_model, model->scale);
+            matrix_translate(matrix_model, -model->xpiv, -model->zpiv, -model->ypiv);
             matrix_upload();
 
-            glx_displaylist_draw(kv6->display_list + 0, GLX_DISPLAYLIST_NORMAL);
+            glx_displaylist_draw(model->display_list + 0, GLX_DISPLAYLIST_NORMAL);
 
-            if (!kv6->colorize)
+            if (!model->colorize)
                 glEnable(GL_TEXTURE_2D);
 
             switch (team) {
@@ -465,7 +464,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
                 default: glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, (float[]) {0, 0, 0, 1});
             }
 
-            glx_displaylist_draw(kv6->display_list + 1, GLX_DISPLAYLIST_NORMAL);
+            glx_displaylist_draw(model->display_list + 1, GLX_DISPLAYLIST_NORMAL);
 
             matrix_pop(matrix_model);
 
@@ -480,22 +479,22 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
         }
     } else {
         // render like on voxlap
-        if (!kv6->has_display_list) {
-            float vertices[2][kv6->voxel_count * 3];
-            uint8_t colors[2][kv6->voxel_count * 4];
-            int8_t normals[2][kv6->voxel_count * 3];
-            kv6->has_display_list = true;
+        if (!model->has_display_list) {
+            float vertices[2][model->voxel_count * 3];
+            uint8_t colors[2][model->voxel_count * 4];
+            int8_t normals[2][model->voxel_count * 3];
+            model->has_display_list = true;
 
             int cnt[2] = {0, 0};
 
-            glx_displaylist_create(kv6->display_list + 0, !kv6->colorize, true);
-            glx_displaylist_create(kv6->display_list + 1, false, true);
+            glx_displaylist_create(model->display_list + 0, !model->colorize, true);
+            glx_displaylist_create(model->display_list + 1, false, true);
 
-            for (int i = 0; i < kv6->voxel_count; i++) {
-                int r = kv6->voxels[i].color.r;
-                int g = kv6->voxels[i].color.g;
-                int b = kv6->voxels[i].color.b;
-                int a = kv6->voxels[i].color.a;
+            for (int i = 0; i < model->voxel_count; i++) {
+                int r = model->voxels[i].color.r;
+                int g = model->voxels[i].color.g;
+                int b = model->voxels[i].color.b;
+                int a = model->voxels[i].color.a;
 
                 int ind = ((r | g | b) == 0) ? 1 : 0;
 
@@ -508,17 +507,17 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
                 normals[ind][cnt[ind] * 3 + 1] = -kv6_normals[a][2] * 128;
                 normals[ind][cnt[ind] * 3 + 2] = kv6_normals[a][1] * 128;
 
-                vertices[ind][cnt[ind] * 3 + 0] = (kv6->voxels[i].x - kv6->xpiv + 0.5F) * kv6->scale;
-                vertices[ind][cnt[ind] * 3 + 1] = (kv6->voxels[i].z - kv6->zpiv + 0.5F) * kv6->scale;
-                vertices[ind][cnt[ind] * 3 + 2] = (kv6->voxels[i].y - kv6->ypiv + 0.5F) * kv6->scale;
+                vertices[ind][cnt[ind] * 3 + 0] = (model->voxels[i].x - model->xpiv + 0.5F) * model->scale;
+                vertices[ind][cnt[ind] * 3 + 1] = (model->voxels[i].z - model->zpiv + 0.5F) * model->scale;
+                vertices[ind][cnt[ind] * 3 + 2] = (model->voxels[i].y - model->ypiv + 0.5F) * model->scale;
 
                 cnt[ind]++;
             }
 
-            glx_displaylist_update(kv6->display_list + 0, cnt[0], GLX_DISPLAYLIST_POINTS, colors[0], vertices[0],
+            glx_displaylist_update(model->display_list + 0, cnt[0], GLX_DISPLAYLIST_POINTS, colors[0], vertices[0],
                                    normals[0]);
 
-            glx_displaylist_update(kv6->display_list + 1, cnt[1], GLX_DISPLAYLIST_POINTS, colors[1], vertices[1],
+            glx_displaylist_update(model->display_list + 1, cnt[1], GLX_DISPLAYLIST_POINTS, colors[1], vertices[1],
                                    normals[1]);
 
             if (kv6_program < 0) {
@@ -544,7 +543,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
         }
 
         float near_plane_height
-            = (float)settings.window_height / (2.0F * tan(glm_persp_fovy(matrix_projection) / 2.0F));
+            = (float) settings.window_height / (2.0F * tan(glm_persp_fovy(matrix_projection) / 2.0F));
 
         float len_x = len3D(matrix_model[0][0], matrix_model[1][0], matrix_model[2][0]);
         float len_y = len3D(matrix_model[0][1], matrix_model[1][1], matrix_model[2][1]);
@@ -555,7 +554,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
 #endif
         {
             glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, (float[]) {0.0F, 0.0F, 1.0F});
-            glPointSize(1.414F * near_plane_height * kv6->scale * (len_x + len_y + len_z) / 3.0F);
+            glPointSize(1.414F * near_plane_height * model->scale * (len_x + len_y + len_z) / 3.0F);
             glEnable(GL_LIGHTING);
             glEnable(GL_LIGHT0);
             glEnable(GL_COLOR_MATERIAL);
@@ -572,7 +571,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
             glUniform1f(glGetUniformLocation(kv6_program, "dist_factor"),
                         glx_fog ? 1.0F / settings.render_distance : 0.0F);
             glUniform1f(glGetUniformLocation(kv6_program, "size"),
-                        1.414F * near_plane_height * kv6->scale * (len_x + len_y + len_z) / 3.0F);
+                        1.414F * near_plane_height * model->scale * (len_x + len_y + len_z) / 3.0F);
             glUniform3f(glGetUniformLocation(kv6_program, "fog"), fog_color[0], fog_color[1], fog_color[2]);
             glUniform3f(glGetUniformLocation(kv6_program, "camera"), camera_x, camera_y, camera_z);
             glUniformMatrix4fv(glGetUniformLocation(kv6_program, "model"), 1, 0, (float*)matrix_model);
@@ -581,10 +580,10 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
         if (settings.multisamples)
             glDisable(GL_MULTISAMPLE);
 
-        if (kv6->colorize)
-            glColor3f(kv6->red, kv6->green, kv6->blue);
+        if (model->colorize)
+            glColor3f(model->red, model->green, model->blue);
 
-        glx_displaylist_draw(kv6->display_list + 0, GLX_DISPLAYLIST_POINTS);
+        glx_displaylist_draw(model->display_list + 0, GLX_DISPLAYLIST_POINTS);
 
         switch (team) {
             case TEAM_1:
@@ -596,7 +595,7 @@ void kv6_render(struct kv6_t * kv6, unsigned char team) {
             default: glColor3ub(0, 0, 0);
         }
 
-        glx_displaylist_draw(kv6->display_list + 1, GLX_DISPLAYLIST_POINTS);
+        glx_displaylist_draw(model->display_list + 1, GLX_DISPLAYLIST_POINTS);
 
         if (settings.multisamples)
             glEnable(GL_MULTISAMPLE);
