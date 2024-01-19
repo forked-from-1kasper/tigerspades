@@ -129,7 +129,7 @@ void drawScene() {
     matrix_upload();
 
     if (gamestate.gamemode_type == GAMEMODE_CTF) {
-        if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))) {
+        if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
             float x = gamestate.gamemode.ctf.team_1_intel_location.dropped.x;
             float y = 63.0F - gamestate.gamemode.ctf.team_1_intel_location.dropped.z + 1.0F;
             float z = gamestate.gamemode.ctf.team_1_intel_location.dropped.y;
@@ -141,7 +141,7 @@ void drawScene() {
             matrix_pop(matrix_model);
         }
 
-        if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))) {
+        if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
             float x = gamestate.gamemode.ctf.team_2_intel_location.dropped.x;
             float y = 63.0F - gamestate.gamemode.ctf.team_2_intel_location.dropped.z + 1.0F;
             float z = gamestate.gamemode.ctf.team_2_intel_location.dropped.y;
@@ -241,10 +241,10 @@ void display() {
             if (camera_mode == CAMERAMODE_FPS) {
                 weapon_update();
 
-                if ((players[local_player_id].input.buttons & MASKON(BUTTON_PRIMARY)) &&
-                    (players[local_player_id].held_item == TOOL_BLOCK) &&
-                    (window_time() - players[local_player_id].item_showup >= 0.5F) &&
-                    (local_player_blocks > 0)) {
+                if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) &&
+                   (players[local_player_id].held_item == TOOL_BLOCK) &&
+                   (window_time() - players[local_player_id].item_showup >= 0.5F) &&
+                   (local_player_blocks > 0)) {
                     int * pos = camera_terrain_pick(0);
                     if (pos != NULL && pos[1] > 1
                        && distance3D(camera_x, camera_y, camera_z, pos[0], pos[1], pos[2]) < 5.0F * 5.0F
@@ -264,9 +264,9 @@ void display() {
                     }
                 }
 
-                if ((players[local_player_id].input.buttons & MASKON(BUTTON_PRIMARY)) &&
-                    (players[local_player_id].held_item == TOOL_GRENADE) &&
-                    (window_time() - players[local_player_id].start.lmb > 3.0F)) {
+                if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) &&
+                   (players[local_player_id].held_item == TOOL_GRENADE) &&
+                   (window_time() - players[local_player_id].start.lmb > 3.0F)) {
                     local_player_grenades = max(local_player_grenades - 1, 0);
                     struct PacketGrenade g;
                     g.player_id = local_player_id;
@@ -283,7 +283,7 @@ void display() {
             int * pos = NULL;
             switch (players[local_id].held_item) {
                 case TOOL_BLOCK:
-                    if (!(players[local_id].input.keys & MASKON(INPUT_SPRINT)) && render_fpv) {
+                    if (!HASBIT(players[local_id].input.keys, INPUT_SPRINT) && render_fpv) {
                         if (is_local)
                             pos = camera_terrain_pick(0);
                         else
@@ -303,7 +303,7 @@ void display() {
                 glDepthMask(GL_FALSE);
                 Point cubes[64];
                 int amount = 0;
-                if (is_local && local_player_drag_active && (players[local_player_id].input.buttons & MASKON(BUTTON_SECONDARY))
+                if (is_local && local_player_drag_active && HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY)
                    && players[local_player_id].held_item == TOOL_BLOCK) {
                     amount = map_cube_line(local_player_drag_x, local_player_drag_z, 63 - local_player_drag_y, pos[0],
                                            pos[2], 63 - pos[1], cubes);
@@ -358,9 +358,9 @@ void display() {
 
             if (window_time() - players[local_player_id].item_disabled < 0.3F) {
                 players[local_player_id].item_showup = window_time();
-                if (players[local_player_id].input.buttons & MASKON(BUTTON_PRIMARY))
+                if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY))
                     players[local_player_id].start.lmb = window_time() + 0.5F;
-                if (players[local_player_id].input.buttons & MASKON(BUTTON_SECONDARY))
+                if (HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY))
                     players[local_player_id].start.rmb = window_time() + 0.5F;
             } else {
                 if (hud_active->render_localplayer) {
@@ -589,8 +589,7 @@ void keys(struct window_instance * window, int key, int action, int mods) {
 
         if (action == WINDOW_PRESS && key == WINDOW_KEY_V && mods) {
             const char * clipboard = window_clipboard();
-            if (clipboard)
-                mu_input_text(hud_active->ctx, clipboard);
+            if (clipboard) mu_input_text(hud_active->ctx, clipboard);
         }
     }
 
@@ -625,9 +624,9 @@ void keys(struct window_instance * window, int key, int action, int mods) {
         time_t pic_time;
         time(&pic_time);
         char pic_name[128];
-        sprintf(pic_name, "screenshots/%ld.png", (long)pic_time);
+        sprintf(pic_name, "screenshots/%ld.png", (long) pic_time);
 
-        unsigned char* pic_data = malloc(settings.window_width * settings.window_height * 4 * 2);
+        unsigned char * pic_data = malloc(settings.window_width * settings.window_height * 4 * 2);
         CHECK_ALLOCATION_ERROR(pic_data)
         glReadPixels(0, 0, settings.window_width, settings.window_height, GL_RGBA, GL_UNSIGNED_BYTE, pic_data);
 

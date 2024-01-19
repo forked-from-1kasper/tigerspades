@@ -75,6 +75,8 @@ extern struct RENDER_OPTIONS {
     int trajectory_length;
     int projectile_count;
     int show_minimap;
+    int toggle_crouch;
+    int toggle_sprint;
 } settings, settings_tmp;
 
 extern List config_keys;

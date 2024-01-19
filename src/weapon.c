@@ -72,10 +72,10 @@ void weapon_update() {
         }
     } else {
         if (screen_current == SCREEN_NONE && window_time() - players[local_player_id].item_disabled >= 0.5F) {
-            if ((players[local_player_id].input.buttons & MASKON(BUTTON_PRIMARY)) &&
-                (players[local_player_id].held_item == TOOL_GUN) &&
-                (local_player_ammo > 0) &&
-                (window_time() - weapon_last_shot >= delay)) {
+            if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) &&
+               (players[local_player_id].held_item == TOOL_GUN) &&
+               (local_player_ammo > 0) &&
+               (window_time() - weapon_last_shot >= delay)) {
                 weapon_shoot();
                 #if !(HACKS_ENABLED && HACK_NORELOAD)
                 local_player_ammo = max(local_player_ammo - 1, 0);
@@ -140,8 +140,8 @@ void weapon_spread(Player * p, float * d) {
     }
 
 #if !(HACKS_ENABLED && HACK_NOSPREAD)
-    float scope  = (p->input.buttons & MASKON(BUTTON_SECONDARY)) ? 0.5F : 1.0F;
-    float crouch = ((p->input.keys & MASKON(INPUT_CROUCH)) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F;
+    float scope  = HASBIT(p->input.buttons, BUTTON_SECONDARY) ? 0.5F : 1.0F;
+    float crouch = (HASBIT(p->input.keys, INPUT_CROUCH) && p->weapon != WEAPON_SHOTGUN) ? 0.5F : 1.0F;
 
     d[0] += (ms_rand() - ms_rand()) / 16383.0F * spread * scope * crouch;
     d[1] += (ms_rand() - ms_rand()) / 16383.0F * spread * scope * crouch;
@@ -329,18 +329,18 @@ void weapon_shoot() {
     double horiz_recoil, vert_recoil;
     weapon_recoil(players[local_player_id].weapon, &horiz_recoil, &vert_recoil);
 
-    long triangle_wave = (long)(window_time() * 1000) & 511;
-    horiz_recoil *= ((double)triangle_wave - 255.5);
+    long triangle_wave = (long) (window_time() * 1000) & 511;
+    horiz_recoil *= ((double) triangle_wave) - 255.5;
 
-    if (((long)(window_time() * 1000) & 1023) < 512) {
+    if (((long) (window_time() * 1000) & 1023) < 512) {
         horiz_recoil *= -1.0;
     }
 
-    if (((players[local_player_id].input.keys   & MASKON(INPUT_UP))   ||
-         (players[local_player_id].input.keys   & MASKON(INPUT_DOWN)) ||
-         (players[local_player_id].input.keys   & MASKON(INPUT_LEFT)) ||
-         (players[local_player_id].input.keys   & MASKON(INPUT_RIGHT))) &&
-       !(players[local_player_id].input.buttons & MASKON(BUTTON_SECONDARY))) {
+    if ((HASBIT(players[local_player_id].input.keys, INPUT_UP)   ||
+         HASBIT(players[local_player_id].input.keys, INPUT_DOWN) ||
+         HASBIT(players[local_player_id].input.keys, INPUT_LEFT) ||
+         HASBIT(players[local_player_id].input.keys, INPUT_RIGHT)) &&
+        !HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY)) {
         vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     }
@@ -349,7 +349,7 @@ void weapon_shoot() {
         vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     } else {
-        if (players[local_player_id].input.keys & MASKON(INPUT_CROUCH)) {
+        if (HASBIT(players[local_player_id].input.keys, INPUT_CROUCH)) {
             vert_recoil  *= 0.5;
             horiz_recoil *= 0.5;
         }

@@ -289,20 +289,23 @@ static void hud_ingame_render3D() {
         int rotating_model_team = TEAM_SPECTATOR;
         if (gamestate.gamemode_type == GAMEMODE_CTF) {
             switch (players[local_player_id].team) {
-                case TEAM_1:
-                    if ((gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))
-                     && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player_id)) {
+                case TEAM_1: {
+                    if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)
+                    && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player_id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_2;
                     }
                     break;
-                case TEAM_2:
-                    if ((gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))
-                     && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player_id)) {
+                }
+
+                case TEAM_2: {
+                    if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)
+                    && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player_id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_1;
                     }
                     break;
+                }
             }
         }
         if (gamestate.gamemode_type == GAMEMODE_TC) {
@@ -637,9 +640,9 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 char id_str[16];
                 sprintf(id_str, "#%i", pt[k].id);
                 if (gamestate.gamemode_type == GAMEMODE_CTF &&
-                      (((gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL)) &&
+                      ((HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL) &&
                         (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == pt[k].id)) ||
-                       ((gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL)) &&
+                       (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL) &&
                         (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == pt[k].id)))) {
                     texture_draw(&texture_intel,
                                  settings.window_width / 4.0F * mul
@@ -700,7 +703,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             glColor3f(1.0F, 1.0F, 1.0F);
 
             if (players[local_id].held_item == TOOL_GUN &&
-                (players[local_id].input.buttons & MASKON(BUTTON_SECONDARY)) &&
+                HASBIT(players[local_id].input.buttons, BUTTON_SECONDARY) &&
                 players[local_id].alive) {
                 Texture * zoom;
                 switch (players[local_id].weapon) {
@@ -728,7 +731,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 );
             } else {
                 texture_draw(
-                    players[local_player_id].input.buttons & MASKON(BUTTON_PRIMARY) ? &texture_crosshair2 : &texture_crosshair1,
+                    HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) ? &texture_crosshair2 : &texture_crosshair1,
                     (settings.window_width - 32) / 2.0F, (settings.window_height + 32) / 2.0F, 32, 32
                 );
             }
@@ -941,7 +944,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 tracer_minimap(1, scale, minimap_x, minimap_y);
 
                 if (gamestate.gamemode_type == GAMEMODE_CTF) {
-                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))) {
+                    if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
                         glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
                         texture_draw_rotated(
                             &texture_intel, minimap_x + gamestate.gamemode.ctf.team_1_intel_location.dropped.x * scale,
@@ -957,7 +960,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         );
                     }
 
-                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))) {
+                    if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
                         glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
                         texture_draw_rotated(
                             &texture_intel, minimap_x + gamestate.gamemode.ctf.team_2_intel_location.dropped.x * scale,
@@ -1059,7 +1062,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         texture_draw_rotated(&texture_medical, minimap_x + tent1_x * scale,
                                              minimap_y - tent1_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
-                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))) {
+                    if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.x, view_x), view_x + 128.0F)
                             - view_x;
@@ -1077,7 +1080,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         texture_draw_rotated(&texture_medical, minimap_x + tent2_x * scale,
                                              minimap_y - tent2_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
-                    if (!(gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))) {
+                    if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.x, view_x), view_x + 128.0F)
                             - view_x;
@@ -1281,7 +1284,7 @@ static void hud_ingame_mouselocation(double x, double y) {
 
     float s = 1.0F;
     if (camera_mode == CAMERAMODE_FPS && players[local_player_id].held_item == TOOL_GUN &&
-        (players[local_player_id].input.buttons & MASKON(BUTTON_SECONDARY))) {
+        HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY)) {
         s = 0.5F;
     }
 

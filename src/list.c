@@ -14,10 +14,10 @@ int list_created(List * l) {
 void list_create(List * l, size_t element_size) {
     assert(l != NULL && element_size > 0);
 
-    l->data = NULL;
-    l->elements = 0;
+    l->data         = NULL;
+    l->elements     = 0;
     l->element_size = element_size;
-    l->mem_size = 0;
+    l->mem_size     = 0;
 }
 
 void list_free(List * l) {
@@ -35,7 +35,7 @@ void * list_find(List * l, void * ref, enum list_traverse_direction dir, int (*c
     switch (dir) {
         case LIST_TRAVERSE_FORWARD:
             for (size_t k = 0; k < l->elements; k++) {
-                void* obj = l->data + l->element_size * k;
+                void * obj = l->data + l->element_size * k;
 
                 if (cmp(obj, ref))
                     return obj;
@@ -48,10 +48,9 @@ void * list_find(List * l, void * ref, enum list_traverse_direction dir, int (*c
             size_t k = l->elements - 1;
 
             do {
-                void* obj = l->data + l->element_size * k;
+                void * obj = l->data + l->element_size * k;
 
-                if (cmp(obj, ref))
-                    return obj;
+                if (cmp(obj, ref)) return obj;
             } while ((k--) > 0);
 
             break;

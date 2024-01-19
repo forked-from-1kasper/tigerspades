@@ -40,6 +40,11 @@ struct RENDER_OPTIONS settings, settings_tmp;
 
 List config_keys, config_settings, config_file, config_keybind;
 
+static void config_keys_update() {
+    config_key(WINDOW_KEY_CROUCH)->toggle = settings.toggle_crouch;
+    config_key(WINDOW_KEY_SPRINT)->toggle = settings.toggle_sprint;
+}
+
 static void config_sets(const char * section, const char * name, const char * value) {
     for (int k = 0; k < list_size(&config_file); k++) {
         struct config_file_entry * e = list_get(&config_file, k);
@@ -50,8 +55,8 @@ static void config_sets(const char * section, const char * name, const char * va
     }
     struct config_file_entry e;
     strncpy(e.section, section, sizeof(e.section) - 1);
-    strncpy(e.name, name, sizeof(e.name) - 1);
-    strncpy(e.value, value, sizeof(e.value) - 1);
+    strncpy(e.name,    name,    sizeof(e.name)    - 1);
+    strncpy(e.value,   value,   sizeof(e.value)   - 1);
     list_add(&config_file, &e);
 }
 
@@ -68,6 +73,7 @@ static void config_setf(const char * section, const char * name, float value) {
 }
 
 void config_save() {
+    config_keys_update();
     kv6_rebuild_complete();
 
     config_sets("client", "name",              settings.name);
@@ -97,6 +103,8 @@ void config_save() {
     config_seti("client", "trajectory_length", settings.trajectory_length);
     config_seti("client", "projectile_count",  settings.projectile_count);
     config_seti("client", "show_minimap",      settings.show_minimap);
+    config_seti("client", "toggle_crouch",     settings.toggle_crouch);
+    config_seti("client", "toggle_sprint",     settings.toggle_sprint);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair * e = list_get(&config_keys, k);
@@ -203,6 +211,10 @@ static int config_read_key(void * user, const char * section, const char * name,
             settings.projectile_count = atoi(value);
         } else if (!strcmp(name, "show_minimap")) {
             settings.show_minimap = atoi(value);
+        } else if (!strcmp(name, "toggle_crouch")) {
+            settings.toggle_crouch = atoi(value);
+        } else if (!strcmp(name, "toggle_sprint")) {
+            settings.toggle_sprint = atoi(value);
         }
     }
 
@@ -224,9 +236,10 @@ void config_register_key(int internal, int def, const char * name, int toggle, c
                          const char * category) {
     struct config_key_pair key;
     key.internal = internal;
-    key.def = def;
+    key.def      = def;
     key.original = def;
-    key.toggle = toggle;
+    key.toggle   = toggle;
+
     if (display)
         strncpy(key.display, display, sizeof(key.display) - 1);
     else
@@ -241,6 +254,7 @@ void config_register_key(int internal, int def, const char * name, int toggle, c
         strncpy(key.category, category, sizeof(key.category) - 1);
     else
         *key.category = 0;
+
     list_add(&config_keys, &key);
 }
 
@@ -248,7 +262,7 @@ int config_key_translate(int key, int dir, int * results) {
     int count = 0;
 
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair* a = list_get(&config_keys, k);
+        struct config_key_pair * a = list_get(&config_keys, k);
 
         if (dir && a->internal == key) {
             if (results)
@@ -270,14 +284,14 @@ struct config_key_pair * config_key(int key) {
         if (a->internal == key)
             return a;
     }
+
     return NULL;
 }
 
 void config_key_reset_togglestates() {
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair * a = list_get(&config_keys, k);
-        if (a->toggle)
-            window_pressed_keys[a->internal] = 0;
+        if (a->toggle) window_pressed_keys[a->internal] = 0;
     }
 }
 
@@ -388,12 +402,14 @@ void config_reload() {
 
     list_sort(&config_keys, config_key_cmp);
 
-    char * s = file_load(config_filepath);
+    char * fin = file_load(config_filepath);
 
-    if (s) {
-        ini_parse_string(s, config_read_key, NULL);
-        free(s);
+    if (fin) {
+        ini_parse_string(fin, config_read_key, NULL);
+        free(fin);
     }
+
+    config_keys_update();
 
     if (!list_created(&config_settings))
         list_create(&config_settings, sizeof(struct config_setting));
@@ -463,6 +479,24 @@ void config_reload() {
                  .max      = 1,
                  .help     = "Only aim while pressing RMB",
                  .name     = "Hold down sights",
+                 .category = "Control"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.toggle_crouch,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .name     = "Toggle crouch",
+                 .category = "Control"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.toggle_sprint,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .name     = "Toggle sprint",
                  .category = "Control"
              });
     list_add(&config_settings,

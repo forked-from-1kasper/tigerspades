@@ -306,7 +306,7 @@ void read_PacketStateData(void * data, int len) {
         gamestate.gamemode.ctf.capture_limit = p->gamemode_data.ctf.capture_limit;
         gamestate.gamemode.ctf.intels        = p->gamemode_data.ctf.intels;
 
-        if (p->gamemode_data.ctf.intels & MASKON(TEAM_1_INTEL))
+        if (HASBIT(p->gamemode_data.ctf.intels, TEAM_1_INTEL))
             gamestate.gamemode.ctf.team_1_intel_location.held.player_id = p->gamemode_data.ctf.team_1_intel_location.held.player_id;
         else {
             gamestate.gamemode.ctf.team_1_intel_location.dropped.x = letohf(p->gamemode_data.ctf.team_1_intel_location.dropped.x);
@@ -314,7 +314,7 @@ void read_PacketStateData(void * data, int len) {
             gamestate.gamemode.ctf.team_1_intel_location.dropped.z = letohf(p->gamemode_data.ctf.team_1_intel_location.dropped.z);
         }
 
-        if (p->gamemode_data.ctf.intels & MASKON(TEAM_2_INTEL))
+        if (HASBIT(p->gamemode_data.ctf.intels, TEAM_2_INTEL))
             gamestate.gamemode.ctf.team_2_intel_location.held.player_id = p->gamemode_data.ctf.team_2_intel_location.held.player_id;
         else {
             gamestate.gamemode.ctf.team_2_intel_location.dropped.x = letohf(p->gamemode_data.ctf.team_2_intel_location.dropped.x);
@@ -624,7 +624,7 @@ void read_PacketInputData(void * data, int len) {
         if (p->player_id != local_player_id)
             players[p->player_id].input.keys = p->keys;
 
-        players[p->player_id].physics.jump = (p->keys & MASKON(INPUT_JUMP)) > 0;
+        players[p->player_id].physics.jump = HASBIT(p->keys, INPUT_JUMP) > 0;
     }
 }
 
@@ -633,9 +633,9 @@ void read_PacketWeaponInput(void * data, int len) {
     if (p->player_id < PLAYERS_MAX && p->player_id != local_player_id) {
         players[p->player_id].input.buttons = p->input;
 
-        if (p->input & MASKON(BUTTON_PRIMARY))
+        if (HASBIT(p->input, BUTTON_PRIMARY))
             players[p->player_id].start.lmb = window_time();
-        if (p->input & MASKON(BUTTON_SECONDARY))
+        if (HASBIT(p->input, BUTTON_SECONDARY))
             players[p->player_id].start.rmb = window_time();
     }
 }
@@ -1234,7 +1234,7 @@ int network_update() {
             }
 
             if ((players[local_player_id].input.buttons != network_buttons_last) &&
-               !(players[local_player_id].input.keys & MASKON(INPUT_SPRINT))) {
+               !HASBIT(players[local_player_id].input.keys, INPUT_SPRINT)) {
                 struct PacketWeaponInput in;
                 in.player_id = local_player_id;
                 in.input     = players[local_player_id].input.buttons;

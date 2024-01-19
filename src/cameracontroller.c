@@ -78,7 +78,7 @@ void cameracontroller_death_render() {
 float last_cy;
 void cameracontroller_fps(float dt) {
     players[local_player_id].connected = 1;
-    players[local_player_id].alive = 1;
+    players[local_player_id].alive     = 1;
 
     int cooldown = 0;
     if (players[local_player_id].held_item == TOOL_GRENADE && local_player_grenades == 0) {
@@ -114,17 +114,17 @@ void cameracontroller_fps(float dt) {
         SETBIT(players[local_player_id].input.keys, INPUT_LEFT,  window_key_down(WINDOW_KEY_LEFT));
         SETBIT(players[local_player_id].input.keys, INPUT_RIGHT, window_key_down(WINDOW_KEY_RIGHT));
 
-        if ((players[local_player_id].input.keys & MASKON(INPUT_CROUCH)) &&
-            !window_key_down(WINDOW_KEY_CROUCH) &&
-            player_uncrouch(&players[local_player_id]))
+        if (HASBIT(players[local_player_id].input.keys, INPUT_CROUCH) &&
+            !window_key_down(WINDOW_KEY_CROUCH) && player_uncrouch(&players[local_player_id]))
             players[local_player_id].input.keys &= MASKOFF(INPUT_CROUCH);
 
         if (window_key_down(WINDOW_KEY_CROUCH)) {
             // following if-statement disables smooth crouching on local player
-            if (!(players[local_player_id].input.keys & MASKON(INPUT_CROUCH)) && !players[local_player_id].physics.airborne) {
-                players[local_player_id].pos.y -= 0.9F;
+            if (!HASBIT(players[local_player_id].input.keys, INPUT_CROUCH) &&
+                !players[local_player_id].physics.airborne) {
+                players[local_player_id].pos.y         -= 0.9F;
                 players[local_player_id].physics.eye.y -= 0.9F;
-                last_cy -= 0.9F;
+                last_cy                                -= 0.9F;
             }
 
             players[local_player_id].input.keys |= MASKON(INPUT_CROUCH);
@@ -146,7 +146,7 @@ void cameracontroller_fps(float dt) {
         players[local_player_id].item_disabled = window_time();
     } else if (window_time() - players[local_player_id].item_disabled < 0.4F && !players[local_player_id].items_show) {
         players[local_player_id].items_show_start = window_time();
-        players[local_player_id].items_show = 1;
+        players[local_player_id].items_show       = 1;
     }
 
     SETBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY, button_map[0]);
@@ -155,8 +155,12 @@ void cameracontroller_fps(float dt) {
         SETBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY, button_map[1]);
 
     if (chat_input_mode != CHAT_NO_INPUT) {
-        players[local_player_id].input.keys    = 0;
-        players[local_player_id].input.buttons = 0;
+        players[local_player_id].input.keys    &= MASKOFF(INPUT_UP);
+        players[local_player_id].input.keys    &= MASKOFF(INPUT_DOWN);
+        players[local_player_id].input.keys    &= MASKOFF(INPUT_LEFT);
+        players[local_player_id].input.keys    &= MASKOFF(INPUT_RIGHT);
+        players[local_player_id].input.keys    &= MASKOFF(INPUT_JUMP);
+        players[local_player_id].input.buttons &= MASKOFF(BUTTON_PRIMARY);
     }
 
     float lx = players[local_player_id].orientation_smooth.x * pow(0.7F, dt * 60.0F)

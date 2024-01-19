@@ -26,6 +26,7 @@
 #define MASKOFF(X) ~(1 << X)
 
 #define SETBIT(dest, bit, value) { dest &= MASKOFF(bit); dest |= (value << bit); }
+#define HASBIT(dest, bit) ((dest) & MASKON(bit))
 
 typedef struct { char ip[32]; int port; Version version; } Address;
 

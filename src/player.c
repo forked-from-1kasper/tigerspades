@@ -101,10 +101,10 @@ void player_reset(Player * p) {
 }
 
 void player_on_held_item_change(Player * p) {
-    if (p->input.buttons & MASKON(BUTTON_PRIMARY))
+    if (HASBIT(p->input.buttons, BUTTON_PRIMARY))
         p->start.lmb = window_time() + 0.8F;
 
-    if (p->input.buttons & MASKON(BUTTON_SECONDARY))
+    if (HASBIT(p->input.buttons, BUTTON_SECONDARY))
         p->start.rmb = window_time() + 0.8F;
 
     p->item_disabled    = window_time();
@@ -163,11 +163,12 @@ float * player_tool_func(const Player * p) {
                     }
                 }
             } else {
-                if (p->input.buttons & MASKON(BUTTON_PRIMARY)) {
+                if (HASBIT(p->input.buttons, BUTTON_PRIMARY)) {
                     ret[0] = (player_swing_func((window_time() - p->spade_use_timer) * 2.5F) + 1.0F) / 2.0F * 60.0F;
                     return ret;
                 }
-                if (p->input.buttons & MASKON(BUTTON_SECONDARY)) {
+
+                if (HASBIT(p->input.buttons, BUTTON_SECONDARY)) {
                     ret[0] = (player_swing_func((window_time() - p->spade_use_timer) * 0.5F) + 1.0F) / 2.0F * 60.0F;
                     return ret;
                 }
@@ -216,7 +217,7 @@ float * player_tool_translate_func(Player * p) {
             }
         }
         if (p->held_item == TOOL_GRENADE) {
-            if (p->input.buttons & MASKON(BUTTON_PRIMARY)) {
+            if (HASBIT(p->input.buttons, BUTTON_PRIMARY)) {
                 ret[1] = (window_time() - p->start.lmb) * 1.3F;
                 ret[0] = -ret[1];
                 return ret;
@@ -229,7 +230,7 @@ float * player_tool_translate_func(Player * p) {
 }
 
 float player_height(const Player * p) {
-    return (p->input.keys & MASKON(INPUT_CROUCH)) ? 1.05F : 1.1F;
+    return HASBIT(p->input.keys, INPUT_CROUCH) ? 1.05F : 1.1F;
 }
 
 float player_height2(const Player * p) {
@@ -318,8 +319,8 @@ void player_render_all() {
         if (!players[k].connected || players[k].team == TEAM_SPECTATOR)
             continue;
 
-        if (!(players[k].input.buttons & MASKON(BUTTON_PRIMARY)) &&
-            !(players[k].input.buttons & MASKON(BUTTON_SECONDARY))) {
+        if (!HASBIT(players[k].input.buttons, BUTTON_PRIMARY) &&
+            !HASBIT(players[k].input.buttons, BUTTON_SECONDARY)) {
             players[k].spade_used = 0;
 
             if (players[k].spade_use_type == 1)
@@ -329,13 +330,13 @@ void player_render_all() {
                 players[k].spade_use_timer = 0;
         }
         if (players[k].alive && players[k].held_item == TOOL_SPADE
-           && ((players[k].input.buttons & MASKON(BUTTON_PRIMARY)) ||
-               (players[k].input.buttons & MASKON(BUTTON_SECONDARY)))
+           && (HASBIT(players[k].input.buttons, BUTTON_PRIMARY) ||
+               HASBIT(players[k].input.buttons, BUTTON_SECONDARY))
            && window_time() - players[k].item_showup >= 0.5F) {
             // now run a hitscan and see if any block or player is in the way
             struct Camera_HitType hit;
-            if ((players[k].input.buttons & MASKON(BUTTON_PRIMARY)) &&
-                (window_time() - players[k].spade_use_timer > 0.2F)) {
+            if (HASBIT(players[k].input.buttons, BUTTON_PRIMARY) &&
+               (window_time() - players[k].spade_use_timer > 0.2F)) {
                 camera_hit_fromplayer(&hit, k, 4.0F);
                 if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
                     hit.type = CAMERA_HITTYPE_NONE;
@@ -384,8 +385,8 @@ void player_render_all() {
                 players[k].spade_use_timer = window_time();
             }
 
-            if ((players[k].input.buttons & MASKON(BUTTON_SECONDARY)) &&
-                (window_time() - players[k].spade_use_timer > 1.0F)) {
+            if (HASBIT(players[k].input.buttons, BUTTON_SECONDARY) &&
+               (window_time() - players[k].spade_use_timer > 1.0F)) {
                 if (players[k].spade_used) {
                     camera_hit_fromplayer(&hit, k, 4.0F);
                     if (hit.type == CAMERA_HITTYPE_BLOCK && hit.y > 1) {
@@ -426,9 +427,8 @@ void player_render_all() {
                 }
             }
 
-            if (players[k].alive && players[k].held_item == TOOL_GUN && (players[k].input.buttons & MASKON(BUTTON_PRIMARY))) {
-                if (window_time() - players[k].gun_shoot_timer > weapon_delay(players[k].weapon)
-                   && players[k].ammo > 0) {
+            if (players[k].alive && players[k].held_item == TOOL_GUN && HASBIT(players[k].input.buttons, BUTTON_PRIMARY)) {
+                if (window_time() - players[k].gun_shoot_timer > weapon_delay(players[k].weapon) && players[k].ammo > 0) {
                     players[k].ammo--;
                     sound_create_sticky(weapon_sound(players[k].weapon), players + k, k);
 
@@ -472,7 +472,7 @@ void player_render_all() {
 
 static float foot_function(const Player * p) {
     float f = (window_time() - p->sound.feet_started_cycle) /
-              ((p->input.keys & MASKON(INPUT_SPRINT)) ? (0.5F / 1.3F) : 0.5F);
+              (HASBIT(p->input.keys, INPUT_SPRINT) ? (0.5F / 1.3F) : 0.5F);
     f = f * 2.0F - 1.0F;
     return p->sound.feet_cylce ? f : -f;
 }
@@ -555,8 +555,8 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     float oy = p->orientation_smooth.y / l;
     float oz = p->orientation_smooth.z / l;
 
-    const struct hitbox * torso = (p->input.keys & MASKON(INPUT_CROUCH)) ? &box_torsoc : &box_torso;
-    const struct hitbox * leg   = (p->input.keys & MASKON(INPUT_CROUCH)) ? &box_legc   : &box_leg;
+    const struct hitbox * torso = HASBIT(p->input.keys, INPUT_CROUCH) ? &box_torsoc : &box_torso;
+    const struct hitbox * leg   = HASBIT(p->input.keys, INPUT_CROUCH) ? &box_legc   : &box_leg;
 
     float height = player_height(p) - 0.25F;
 
@@ -598,8 +598,8 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 
     matrix_push(matrix_model);
     matrix_translate(matrix_model, torso->size[0] * 0.1F * 0.5F - leg->size[0] * 0.1F * 0.5F,
-                     -torso->size[2] * 0.1F * ((p->input.keys & MASKON(INPUT_CROUCH)) ? 0.6F : 1.0F),
-                     (p->input.keys & MASKON(INPUT_CROUCH)) ? (-torso->size[2] * 0.1F * 0.75F) : 0.0F);
+                     -torso->size[2] * 0.1F * (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.6F : 1.0F),
+                     HASBIT(p->input.keys, INPUT_CROUCH) ? (-torso->size[2] * 0.1F * 0.75F) : 0.0F);
     matrix_rotate(matrix_model, 45.0F * foot_function(p) * a, 1.0F, 0.0F, 0.0F);
     matrix_rotate(matrix_model, 45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
 
@@ -610,8 +610,8 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 
     matrix_pop(matrix_model);
     matrix_translate(matrix_model, -torso->size[0] * 0.1F * 0.5F + leg->size[0] * 0.1F * 0.5F,
-                     -torso->size[2] * 0.1F * ((p->input.keys & MASKON(INPUT_CROUCH)) ? 0.6F : 1.0F),
-                     p->input.keys & MASKON(INPUT_CROUCH) ? (-torso->size[2] * 0.1F * 0.75F) : 0.0F);
+                     -torso->size[2] * 0.1F * (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.6F : 1.0F),
+                     HASBIT(p->input.keys, INPUT_CROUCH) ? (-torso->size[2] * 0.1F * 0.75F) : 0.0F);
     matrix_rotate(matrix_model, -45.0F * foot_function(p) * a, 1.0F, 0.0F, 0.0F);
     matrix_rotate(matrix_model, -45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
 
@@ -622,11 +622,11 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 
     matrix_identity(matrix_model);
     matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
-    matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
+    matrix_translate(matrix_model, 0.0F, (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
     matrix_pointAt(matrix_model, ox, oy, oz);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
 
-    if ((p->input.keys & MASKON(INPUT_SPRINT)) && !(p->input.keys & MASKON(INPUT_CROUCH)))
+    if (HASBIT(p->input.keys, INPUT_SPRINT) && !HASBIT(p->input.keys, INPUT_CROUCH))
         matrix_rotate(matrix_model, 45.0F, 1.0F, 0.0F, 0.0F);
 
     float * angles = player_tool_func(p);
@@ -703,8 +703,8 @@ void player_render(Player * p, int id) {
 
     float time = window_time() * 1000.0F;
 
-    kv6 * torso = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playertorsoc : &model_playertorso;
-    kv6 * leg   = (p->input.keys & MASKON(INPUT_CROUCH)) ? &model_playerlegc   : &model_playerleg;
+    kv6 * torso = HASBIT(p->input.keys, INPUT_CROUCH) ? &model_playertorsoc : &model_playertorso;
+    kv6 * leg   = HASBIT(p->input.keys, INPUT_CROUCH) ? &model_playerlegc   : &model_playerleg;
     float height = player_height(p);
 
     if (id != local_player_id)
@@ -751,32 +751,32 @@ void player_render(Player * p, int id) {
         matrix_pop(matrix_model);
 
         if (gamestate.gamemode_type == GAMEMODE_CTF &&
-            (((gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL)) &&
+            ((HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL) &&
               (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id)) ||
-             ((gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL)) &&
+             (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL) &&
               (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id)))) {
             matrix_push(matrix_model);
             matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
             matrix_pointAt(matrix_model, -oz, 0.0F, ox);
             matrix_translate(
                 matrix_model, (torso->xsiz - model_intel.xsiz) * 0.5F * torso->scale,
-                -(torso->zpiv - torso->zsiz * 0.5F + model_intel.zsiz * (p->input.keys & MASKON(INPUT_CROUCH) ? 0.125F : 0.25F)) * torso->scale,
+                -(torso->zpiv - torso->zsiz * 0.5F + model_intel.zsiz * (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.125F : 0.25F)) * torso->scale,
                 (torso->ypiv + model_intel.ypiv) * torso->scale
             );
 
             matrix_scale3(matrix_model, torso->scale / model_intel.scale);
 
-            if (p->input.keys & MASKON(INPUT_CROUCH))
+            if (HASBIT(p->input.keys, INPUT_CROUCH))
                 matrix_rotate(matrix_model, -45.0F, 1.0F, 0.0F, 0.0F);
             matrix_upload();
 
             int t = TEAM_SPECTATOR;
 
-            if ((gamestate.gamemode.ctf.intels & MASKON(TEAM_1_INTEL))
+            if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)
              && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id))
                 t = TEAM_1;
 
-            if ((gamestate.gamemode.ctf.intels & MASKON(TEAM_2_INTEL))
+            if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)
              && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id))
                 t = TEAM_2;
 
@@ -789,8 +789,8 @@ void player_render(Player * p, int id) {
         matrix_pointAt(matrix_model, ox, 0.0F, oz);
         matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
         matrix_translate(matrix_model, torso->xsiz * 0.1F * 0.5F - leg->xsiz * 0.1F * 0.5F,
-                         -torso->zsiz * 0.1F * (p->input.keys & MASKON(INPUT_CROUCH) ? 0.6F : 1.0F),
-                         p->input.keys & MASKON(INPUT_CROUCH) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
+                         -torso->zsiz * 0.1F * (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.6F : 1.0F),
+                         HASBIT(p->input.keys, INPUT_CROUCH) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
         matrix_rotate(matrix_model, 45.0F * foot_function(p) * a, 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, 45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
         matrix_upload();
@@ -802,8 +802,8 @@ void player_render(Player * p, int id) {
         matrix_pointAt(matrix_model, ox, 0.0F, oz);
         matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
         matrix_translate(matrix_model, -torso->xsiz * 0.1F * 0.5F + leg->xsiz * 0.1F * 0.5F,
-                         -torso->zsiz * 0.1F * (p->input.keys & MASKON(INPUT_CROUCH) ? 0.6F : 1.0F),
-                         p->input.keys & MASKON(INPUT_CROUCH) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
+                         -torso->zsiz * 0.1F * (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.6F : 1.0F),
+                         HASBIT(p->input.keys, INPUT_CROUCH) ? (-torso->zsiz * 0.1F * 0.75F) : 0.0F);
         matrix_rotate(matrix_model, -45.0F * foot_function(p) * a, 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, -45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
         matrix_upload();
@@ -813,7 +813,7 @@ void player_render(Player * p, int id) {
 
     matrix_push(matrix_model);
     matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
-    if (!render_fpv) matrix_translate(matrix_model, 0.0F, (p->input.keys & MASKON(INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
+    if (!render_fpv) matrix_translate(matrix_model, 0.0F, (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.1F : 0.0F) - 0.1F * 2, 0.0F);
 
     matrix_pointAt(matrix_model, ox, oy, oz);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
@@ -826,7 +826,7 @@ void player_render(Player * p, int id) {
         matrix_translate(matrix_model, f[0], f[1], 0.1F * player_swing_func(time / 1000.0F) * speed + f[2]);
     }
 
-    if ((p->input.keys & MASKON(INPUT_SPRINT)) && !(p->input.keys & MASKON(INPUT_CROUCH)))
+    if (HASBIT(p->input.keys, INPUT_SPRINT) && !HASBIT(p->input.keys, INPUT_CROUCH))
         matrix_rotate(matrix_model, 45.0F, 1.0F, 0.0F, 0.0F);
 
     if (render_fpv && window_time() - p->item_showup < 0.5F)
@@ -867,7 +867,7 @@ void player_render(Player * p, int id) {
         case TOOL_GUN: {
             // matrix_translate(matrix_model, 3.0F*0.1F-0.01F+0.025F,0.25F,-0.0625F);
             // matrix_upload();
-            if (!(render_fpv && (p->input.buttons & MASKON(BUTTON_SECONDARY))))
+            if (!(render_fpv && HASBIT(p->input.buttons, BUTTON_SECONDARY)))
                 kv6_render(weapon_model(p->weapon), p->team);
 
             break;
@@ -911,8 +911,9 @@ void player_reposition(Player * p) {
     p->physics.eye.x = p->pos.x;
     p->physics.eye.y = p->pos.y;
     p->physics.eye.z = p->pos.z;
+
     float f = p->physics.lastclimb - window_time();
-    if (f > -0.25F && !(p->input.keys & MASKON(INPUT_CROUCH))) {
+    if (f > -0.25F && !HASBIT(p->input.keys, INPUT_CROUCH)) {
         p->physics.eye.z += (f + 0.25F) / 0.25F;
         if (&players[local_player_id] == p) {
             last_cy = 63.0F - p->physics.eye.z;
@@ -968,7 +969,7 @@ void player_boxclipmove(Player * p, float fsynctics) {
     nx = f * p->physics.velocity.x + p->pos.x;
     ny = f * p->physics.velocity.y + p->pos.y;
 
-    if (p->input.keys & MASKON(INPUT_CROUCH)) {
+    if (HASBIT(p->input.keys, INPUT_CROUCH)) {
         offset = 0.45f;
         m      = 0.9f;
     } else {
@@ -988,9 +989,9 @@ void player_boxclipmove(Player * p, float fsynctics) {
         z -= 0.9f;
     if (z < -1.36f)
         p->pos.x = nx;
-    else if (!(p->input.keys & MASKON(INPUT_CROUCH)) &&
-              (p->orientation.z < 0.5f)            &&
-             !(p->input.keys & MASKON(INPUT_SPRINT))) {
+    else if (!HASBIT(p->input.keys, INPUT_CROUCH) &&
+              (p->orientation.z < 0.5f)           &&
+             !HASBIT(p->input.keys, INPUT_SPRINT)) {
         z = 0.35f;
         while (z >= -2.36f && !player_clipbox(nx + f, p->pos.y - 0.45f, nz + z)
               && !player_clipbox(nx + f, p->pos.y + 0.45f, nz + z))
@@ -1013,9 +1014,9 @@ void player_boxclipmove(Player * p, float fsynctics) {
         z -= 0.9f;
     if (z < -1.36f)
         p->pos.y = ny;
-    else if (!(p->input.keys & MASKON(INPUT_CROUCH)) &&
-              (p->orientation.z < 0.5f)            &&
-             !(p->input.keys & MASKON(INPUT_SPRINT)) &&
+    else if (!HASBIT(p->input.keys, INPUT_CROUCH) &&
+              (p->orientation.z < 0.5f)           &&
+             !HASBIT(p->input.keys, INPUT_SPRINT) &&
              !climb) {
         z = 0.35f;
         while (z >= -2.36f && !player_clipbox(p->pos.x - 0.45f, ny + f, nz + z)
@@ -1094,15 +1095,15 @@ int player_move(Player * p, float fsynctics, int id) {
     f = fsynctics; // player acceleration scalar
     if (p->physics.airborne)
         f *= 0.1f;
-    else if (p->input.keys & MASKON(INPUT_CROUCH))
+    else if (HASBIT(p->input.keys, INPUT_CROUCH))
         f *= 0.3f;
-    else if (((p->input.buttons & MASKON(BUTTON_SECONDARY)) && p->held_item == TOOL_GUN) || (p->input.keys & MASKON(INPUT_SNEAK)))
+    else if ((HASBIT(p->input.buttons, BUTTON_SECONDARY) && p->held_item == TOOL_GUN) || HASBIT(p->input.keys, INPUT_SNEAK))
         f *= 0.5f;
-    else if (p->input.keys & MASKON(INPUT_SPRINT))
+    else if (HASBIT(p->input.keys, INPUT_SPRINT))
         f *= 1.3f;
 
-    if (((p->input.keys & MASKON(INPUT_UP))   || (p->input.keys & MASKON(INPUT_DOWN))) &&
-        ((p->input.keys & MASKON(INPUT_LEFT)) || (p->input.keys & MASKON(INPUT_RIGHT))))
+    if ((HASBIT(p->input.keys, INPUT_UP)   || HASBIT(p->input.keys, INPUT_DOWN)) &&
+        (HASBIT(p->input.keys, INPUT_LEFT) || HASBIT(p->input.keys, INPUT_RIGHT)))
         f *= SQRT; // if strafe + forward/backwards then limit diagonal velocity
 
     float len = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.y, 2.0F));
@@ -1110,19 +1111,18 @@ int player_move(Player * p, float fsynctics, int id) {
     float sx = p->orientation.x / len;
     float sy = p->orientation.y / len;
 
-    if (p->input.keys & MASKON(INPUT_UP)) {
+    if (HASBIT(p->input.keys, INPUT_UP)) {
         p->physics.velocity.x += sx * f;
         p->physics.velocity.y += sy * f;
-
-    } else if (p->input.keys & MASKON(INPUT_DOWN)) {
+    } else if (HASBIT(p->input.keys, INPUT_DOWN)) {
         p->physics.velocity.x -= sx * f;
         p->physics.velocity.y -= sy * f;
     }
 
-    if (p->input.keys & MASKON(INPUT_LEFT)) {
+    if (HASBIT(p->input.keys, INPUT_LEFT)) {
         p->physics.velocity.x += sy * f;
         p->physics.velocity.y -= sx * f;
-    } else if (p->input.keys & MASKON(INPUT_RIGHT)) {
+    } else if (HASBIT(p->input.keys, INPUT_RIGHT)) {
         p->physics.velocity.x -= sy * f;
         p->physics.velocity.y += sx * f;
     }
@@ -1161,12 +1161,12 @@ int player_move(Player * p, float fsynctics, int id) {
 
     player_coordsystem_adjust2(p);
 
-    if ((p->input.keys & MASKON(INPUT_UP))   ||
-        (p->input.keys & MASKON(INPUT_DOWN)) ||
-        (p->input.keys & MASKON(INPUT_LEFT)) ||
-        (p->input.keys & MASKON(INPUT_RIGHT))) {
-        if (window_time() - p->sound.feet_started > ((p->input.keys & MASKON(INPUT_SPRINT)) ? (0.5F / 1.3F) : 0.5F)
-           && (!(p->input.keys & MASKON(INPUT_CROUCH)) && !(p->input.keys & MASKON(INPUT_SNEAK)))
+    if (HASBIT(p->input.keys, INPUT_UP)   ||
+        HASBIT(p->input.keys, INPUT_DOWN) ||
+        HASBIT(p->input.keys, INPUT_LEFT) ||
+        HASBIT(p->input.keys, INPUT_RIGHT)) {
+        if (window_time() - p->sound.feet_started > (HASBIT(p->input.keys, INPUT_SPRINT) ? (0.5F / 1.3F) : 0.5F)
+           && (!HASBIT(p->input.keys, INPUT_CROUCH) && !HASBIT(p->input.keys, INPUT_SNEAK))
            && !p->physics.airborne
            && pow(p->physics.velocity.x, 2.0F) + pow(p->physics.velocity.z, 2.0F) > pow(0.125F, 2.0F)) {
             struct Sound_wav * footstep = (struct Sound_wav*[]) {
@@ -1182,7 +1182,8 @@ int player_move(Player * p, float fsynctics, int id) {
 
             p->sound.feet_started = window_time();
         }
-        if (window_time() - p->sound.feet_started_cycle > ((p->input.keys & MASKON(INPUT_SPRINT)) ? (0.5F / 1.3F) : 0.5F)) {
+
+        if (window_time() - p->sound.feet_started_cycle > (HASBIT(p->input.keys, INPUT_SPRINT) ? (0.5F / 1.3F) : 0.5F)) {
             p->sound.feet_started_cycle = window_time();
             p->sound.feet_cylce = !p->sound.feet_cylce;
         }
