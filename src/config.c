@@ -467,7 +467,7 @@ void config_reload() {
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
                  .max      = 1,
-                 .name     = "Invert y",
+                 .name     = "Invert Y",
                  .help     = "Invert vertical mouse movement",
                  .category = "Control"
              });
