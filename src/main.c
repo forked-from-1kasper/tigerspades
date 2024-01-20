@@ -595,12 +595,9 @@ void keys(struct window_instance * window, int key, int action, int mods) {
 
     if (action == WINDOW_PRESS) {
         if (config_key(key)->toggle) {
-            if (chat_input_mode == CHAT_NO_INPUT) {
+            if (chat_input_mode == CHAT_NO_INPUT)
                 window_pressed_keys[key] = !window_pressed_keys[key];
-            }
-        } else {
-            window_pressed_keys[key] = 1;
-        }
+        } else window_pressed_keys[key] = 1;
     }
 
     if (action == WINDOW_RELEASE && !config_key(key)->toggle)

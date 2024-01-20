@@ -2372,22 +2372,31 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                 memset(current, 0, sizeof(struct serverlist_news_entry));
 
                 for (int k = 0; k < news_entries; k++) {
-                    JSON_Object* s = json_array_get_object(news, k);
+                    JSON_Object * s = json_array_get_object(news, k);
                     if (json_object_get_string(s, "caption"))
                         strncpy(current->caption, json_object_get_string(s, "caption"), sizeof(current->caption) - 1);
+
                     if (json_object_get_string(s, "url"))
                         strncpy(current->url, json_object_get_string(s, "url"), sizeof(current->url) - 1);
+
                     current->tile_size = json_object_get_number(s, "tilesize");
                     current->color = json_object_get_number(s, "color");
+
                     if (json_object_get_string(s, "image")) {
                         char * img = (char*) json_object_get_string(s, "image");
-                        int size = base64_decode(img, strlen(img));
-                        unsigned char * buffer;
-                        int width, height;
-                        lodepng_decode32(&buffer, &width, &height, img, size);
-                        texture_create_buffer(&current->image, width, height, buffer, 1);
-                        texture_filter(&current->image, TEXTURE_FILTER_LINEAR);
+                        size_t imglen = strlen(img);
+
+                        if (imglen > 0) {
+                            int size = base64_decode(img, imglen);
+
+                            unsigned char * buffer; int width, height;
+                            lodepng_decode32(&buffer, &width, &height, img, size);
+
+                            texture_create_buffer(&current->image, width, height, buffer, 1);
+                            texture_filter(&current->image, TEXTURE_FILTER_LINEAR);
+                        }
                     }
+
                     current->next = (k < news_entries - 1) ? malloc(sizeof(struct serverlist_news_entry)) : NULL;
                     current = current->next;
                 }

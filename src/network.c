@@ -642,33 +642,44 @@ void read_PacketWeaponInput(void * data, int len) {
 
 void read_PacketSetTool(void * data, int len) {
     struct PacketSetTool * p = (struct PacketSetTool*) data;
-    if (p->player_id < PLAYERS_MAX && p->tool < 4) {
+    if (p->player_id < PLAYERS_MAX && p->tool < 4)
         players[p->player_id].held_item = p->tool;
-    }
+}
+
+void player_reset_toggleable_input() {
+    if (config_key(WINDOW_KEY_CROUCH)->toggle)
+        window_pressed_keys[WINDOW_KEY_CROUCH] = 0;
+
+    if (config_key(WINDOW_KEY_SPRINT)->toggle)
+        window_pressed_keys[WINDOW_KEY_SPRINT] = 0;
 }
 
 void read_PacketKillAction(void * data, int len) {
     struct PacketKillAction * p = (struct PacketKillAction*) data;
     if (p->player_id < PLAYERS_MAX && p->killer_id < PLAYERS_MAX && p->kill_type >= 0 && p->kill_type < 7) {
         if (p->player_id == local_player_id) {
-            local_player_death_time = window_time();
-            local_player_respawn_time = p->respawn_time;
+            player_reset_toggleable_input();
+
+            local_player_death_time       = window_time();
+            local_player_respawn_time     = p->respawn_time;
             local_player_respawn_cnt_last = 255;
             sound_create(SOUND_LOCAL, &sound_death, 0.0F, 0.0F, 0.0F);
 
             if (p->player_id != p->killer_id) {
                 local_player_last_damage_timer = local_player_death_time;
-                local_player_last_damage_x = players[p->killer_id].pos.x;
-                local_player_last_damage_y = players[p->killer_id].pos.y;
-                local_player_last_damage_z = players[p->killer_id].pos.z;
+                local_player_last_damage_x     = players[p->killer_id].pos.x;
+                local_player_last_damage_y     = players[p->killer_id].pos.y;
+                local_player_last_damage_z     = players[p->killer_id].pos.z;
+
                 cameracontroller_death_init(local_player_id, players[p->killer_id].pos.x, players[p->killer_id].pos.y,
                                             players[p->killer_id].pos.z);
             } else {
                 cameracontroller_death_init(local_player_id, 0, 0, 0);
             }
         }
-        players[p->player_id].alive = 0;
-        players[p->player_id].input.keys = 0;
+
+        players[p->player_id].alive         = 0;
+        players[p->player_id].input.keys    = 0;
         players[p->player_id].input.buttons = 0;
 
         if (p->player_id != p->killer_id)
@@ -694,6 +705,7 @@ void read_PacketKillAction(void * data, int len) {
             case KILLTYPE_TEAMCHANGE: sprintf(m, "%s changed teams", players[p->player_id].name); break;
             case KILLTYPE_CLASSCHANGE: sprintf(m, "%s changed weapons", players[p->player_id].name); break;
         }
+
         if (p->killer_id == local_player_id || p->player_id == local_player_id) {
             chat_add(1, Red, m, UTF8);
         } else {

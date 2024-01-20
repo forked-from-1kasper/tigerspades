@@ -36,7 +36,7 @@ static int base64_map(char c) {
 }
 
 // works in place
-int base64_decode(char* data, int len) {
+int base64_decode(char * data, int len) {
     assert(data && len > 0);
 
     int buffer = 0;
@@ -57,30 +57,30 @@ int base64_decode(char* data, int len) {
     return out_index;
 }
 
-int int_cmp(void* first_key, void* second_key, size_t key_size) {
+int int_cmp(void * first_key, void * second_key, size_t key_size) {
     assert(first_key && second_key);
 
-    return (*(uint32_t*)first_key) != (*(uint32_t*)second_key);
+    return (*(uint32_t*) first_key) != (*(uint32_t*) second_key);
 }
 
-size_t int_hash(void* raw_key, size_t key_size) {
+size_t int_hash(void * raw_key, size_t key_size) {
     assert(raw_key);
 
-    uint32_t x = *(uint32_t*)raw_key;
+    uint32_t x = *(uint32_t*) raw_key;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = (x >> 16) ^ x;
     return x;
 }
 
-void ht_iterate_remove(HashTable* ht, void* user, bool (*callback)(void* key, void* value, void* user)) {
+void ht_iterate_remove(HashTable * ht, void * user, bool (*callback)(void * key, void * value, void * user)) {
     assert(ht && callback);
 
     bool removed = false;
 
     for (size_t chain = 0; chain < ht->capacity; chain++) {
-        HTNode* node = ht->nodes[chain];
-        HTNode* prev = NULL;
+        HTNode * node = ht->nodes[chain];
+        HTNode * prev = NULL;
 
         while (node) {
             if (callback(node->key, node->value, user)) {
@@ -90,7 +90,7 @@ void ht_iterate_remove(HashTable* ht, void* user, bool (*callback)(void* key, vo
                     ht->nodes[chain] = node->next;
                 }
 
-                HTNode* del = node;
+                HTNode * del = node;
                 node = node->next;
 
                 _ht_destroy_node(del);
@@ -108,7 +108,7 @@ void ht_iterate_remove(HashTable* ht, void* user, bool (*callback)(void* key, vo
         _ht_adjust_capacity(ht);
 }
 
-bool ht_iterate(HashTable* ht, void* user, bool (*callback)(void* key, void* value, void* user)) {
+bool ht_iterate(HashTable * ht, void * user, bool (*callback)(void * key, void * value, void * user)) {
     assert(ht && callback);
 
     for (size_t chain = 0; chain < ht->capacity; chain++) {

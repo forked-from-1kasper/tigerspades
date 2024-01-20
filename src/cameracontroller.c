@@ -35,13 +35,14 @@ float cameracontroller_death_velocity_x, cameracontroller_death_velocity_y, came
 
 void cameracontroller_death_init(int player, float x, float y, float z) {
     camera_mode = CAMERAMODE_DEATH;
+
     float len = len3D(camera_x - x, camera_y - y, camera_z - z);
     cameracontroller_death_velocity_x = (camera_x - x) / len * 3;
     cameracontroller_death_velocity_y = (camera_y - y) / len * 3;
     cameracontroller_death_velocity_z = (camera_z - z) / len * 3;
 
     cameracontroller_bodyview_player = player;
-    cameracontroller_bodyview_zoom = 0.0F;
+    cameracontroller_bodyview_zoom   = 0.0F;
 }
 
 void cameracontroller_death(float dt) {

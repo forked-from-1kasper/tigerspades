@@ -120,7 +120,7 @@ int player_can_spectate(Player * p) {
 }
 
 float player_swing_func(float x) {
-    x -= (int)x;
+    x -= (int) x;
     return (x < 0.5F) ? (x * 4.0F - 1.0F) : (3.0F - x * 4.0F);
 }
 
@@ -134,28 +134,28 @@ float * player_tool_func(const Player * p) {
     switch (p->held_item) {
         case TOOL_SPADE: {
             float t = window_time() - p->spade_use_timer;
-            if (p->spade_use_type == 1 && t > 0.2F) {
-                return ret;
-            }
-            if (p->spade_use_type == 2 && t > 1.0F) {
-                return ret;
-            }
+            if (p->spade_use_type == 1 && t > 0.2F) return ret;
+            if (p->spade_use_type == 2 && t > 1.0F) return ret;
+
             if (p == &players[local_player_id] && camera_mode == CAMERAMODE_FPS) {
                 if (p->spade_use_type == 1) {
                     ret[0] = player_spade_func(t) * 90.0F;
                     return ret;
                 }
+
                 if (p->spade_use_type == 2) {
                     if (t <= 0.4F) {
                         ret[0] = 60.0F - player_spade_func(t / 2.0F) * 60.0F;
                         ret[1] = -t / 0.4F * 22.5F;
                         return ret;
                     }
+
                     if (t <= 0.7F) {
                         ret[0] = 60.0F;
                         ret[1] = -22.5F;
                         return ret;
                     }
+
                     if (t <= 1.0F) {
                         ret[0] = player_spade_func((t - 0.7F) / 5 / 0.3F) * 60.0F;
                         ret[1] = (t - 0.7F) / 0.4F * 22.5F - 22.5F;
@@ -239,11 +239,11 @@ float player_height2(const Player * p) {
 
 float player_section_height(int section) {
     switch (section) {
-        case HITTYPE_HEAD:  return +1.0F;
-        case HITTYPE_TORSO: return +0.0F;
+        case HITTYPE_HEAD:  return +1.00F;
+        case HITTYPE_TORSO: return +0.00F;
         case HITTYPE_ARMS:  return +0.25F;
-        case HITTYPE_LEGS:  return -1.0F;
-        default:            return +0.0F;
+        case HITTYPE_LEGS:  return -1.00F;
+        default:            return +0.00F;
     }
 }
 
