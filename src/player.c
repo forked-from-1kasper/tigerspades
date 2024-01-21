@@ -1169,7 +1169,7 @@ int player_move(Player * p, float fsynctics, int id) {
            && (!HASBIT(p->input.keys, INPUT_CROUCH) && !HASBIT(p->input.keys, INPUT_SNEAK))
            && !p->physics.airborne
            && pow(p->physics.velocity.x, 2.0F) + pow(p->physics.velocity.z, 2.0F) > pow(0.125F, 2.0F)) {
-            struct Sound_wav * footstep = (struct Sound_wav*[]) {
+            WAV * footstep = (WAV*[]) {
                 &sound_footstep1, &sound_footstep2, &sound_footstep3, &sound_footstep4,
                 &sound_wade1,      &sound_wade2,    &sound_wade3,     &sound_wade4,
             }[(rand() % 4) + (p->physics.wade ? 4 : 0)];

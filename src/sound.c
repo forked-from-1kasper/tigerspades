@@ -39,65 +39,54 @@
     #include <dr_wav.h>
 #endif
 
-struct Sound_source {
+typedef struct {
     ALuint openal_handle;
     char local;
     int stick_to_player;
-};
+} SoundSource;
 
-struct entity_system sound_sources;
+EntitySystem sound_sources;
 
-struct Sound_wav sound_footstep1;
-struct Sound_wav sound_footstep2;
-struct Sound_wav sound_footstep3;
-struct Sound_wav sound_footstep4;
+WAV sound_footstep1, sound_footstep2, sound_footstep3, sound_footstep4;
+WAV sound_wade1, sound_wade2, sound_wade3, sound_wade4;
+WAV sound_jump, sound_jump_water;
+WAV sound_land, sound_land_water;
 
-struct Sound_wav sound_wade1;
-struct Sound_wav sound_wade2;
-struct Sound_wav sound_wade3;
-struct Sound_wav sound_wade4;
+WAV sound_hurt_fall;
 
-struct Sound_wav sound_jump;
-struct Sound_wav sound_jump_water;
+WAV sound_explode;
+WAV sound_explode_water;
+WAV sound_grenade_bounce;
+WAV sound_grenade_pin;
 
-struct Sound_wav sound_land;
-struct Sound_wav sound_land_water;
+WAV sound_pickup;
+WAV sound_horn;
 
-struct Sound_wav sound_hurt_fall;
+WAV sound_rifle_shoot;
+WAV sound_rifle_reload;
+WAV sound_smg_shoot;
+WAV sound_smg_reload;
+WAV sound_shotgun_shoot;
+WAV sound_shotgun_reload;
+WAV sound_shotgun_cock;
 
-struct Sound_wav sound_explode;
-struct Sound_wav sound_explode_water;
-struct Sound_wav sound_grenade_bounce;
-struct Sound_wav sound_grenade_pin;
+WAV sound_hitground;
+WAV sound_hitplayer;
+WAV sound_build;
 
-struct Sound_wav sound_pickup;
-struct Sound_wav sound_horn;
+WAV sound_spade_woosh;
+WAV sound_spade_whack;
 
-struct Sound_wav sound_rifle_shoot;
-struct Sound_wav sound_rifle_reload;
-struct Sound_wav sound_smg_shoot;
-struct Sound_wav sound_smg_reload;
-struct Sound_wav sound_shotgun_shoot;
-struct Sound_wav sound_shotgun_reload;
-struct Sound_wav sound_shotgun_cock;
+WAV sound_death;
+WAV sound_beep1;
+WAV sound_beep2;
+WAV sound_switch;
+WAV sound_empty;
+WAV sound_intro;
 
-struct Sound_wav sound_hitground;
-struct Sound_wav sound_hitplayer;
-struct Sound_wav sound_build;
-
-struct Sound_wav sound_spade_woosh;
-struct Sound_wav sound_spade_whack;
-
-struct Sound_wav sound_death;
-struct Sound_wav sound_beep1;
-struct Sound_wav sound_beep2;
-struct Sound_wav sound_switch;
-struct Sound_wav sound_empty;
-struct Sound_wav sound_intro;
-
-struct Sound_wav sound_debris;
-struct Sound_wav sound_bounce;
-struct Sound_wav sound_impact;
+WAV sound_debris;
+WAV sound_bounce;
+WAV sound_impact;
 
 void sound_volume(float vol) {
 #ifdef USE_SOUND
@@ -106,13 +95,13 @@ void sound_volume(float vol) {
 #endif
 }
 
-static void sound_createEx(enum sound_space option, struct Sound_wav * w, float x, float y, float z, float vx, float vy,
+static void sound_createEx(enum sound_space option, WAV * w, float x, float y, float z, float vx, float vy,
                            float vz, int player) {
 #ifdef USE_SOUND
     if (!sound_enabled)
         return;
 
-    struct Sound_source s = (struct Sound_source) {
+    SoundSource s = (SoundSource) {
         .local = option == SOUND_LOCAL,
         .stick_to_player = player,
     };
@@ -144,15 +133,15 @@ static void sound_createEx(enum sound_space option, struct Sound_wav * w, float 
 #endif
 }
 
-void sound_create_sticky(struct Sound_wav * w, Player * player, int player_id) {
+void sound_create_sticky(WAV * w, Player * player, int player_id) {
     sound_createEx(SOUND_WORLD, w, player->pos.x, player->pos.y, player->pos.z, 0.0F, 0.0F, 0.0F, player_id);
 }
 
-void sound_create(enum sound_space option, struct Sound_wav * w, float x, float y, float z) {
+void sound_create(enum sound_space option, WAV * w, float x, float y, float z) {
     sound_createEx(option, w, x, y, z, 0.0F, 0.0F, 0.0F, -1);
 }
 
-void sound_velocity(struct Sound_source * s, float vx, float vy, float vz) {
+void sound_velocity(SoundSource * s, float vx, float vy, float vz) {
 #ifdef USE_SOUND
     if (!sound_enabled || s->local)
         return;
@@ -160,7 +149,7 @@ void sound_velocity(struct Sound_source * s, float vx, float vy, float vz) {
 #endif
 }
 
-void sound_position(struct Sound_source * s, float x, float y, float z) {
+void sound_position(SoundSource * s, float x, float y, float z) {
 #ifdef USE_SOUND
     if (!sound_enabled || s->local)
         return;
@@ -171,7 +160,7 @@ void sound_position(struct Sound_source * s, float x, float y, float z) {
 
 #ifdef USE_SOUND
 static bool sound_update_single(void * obj, void * user) {
-    struct Sound_source* s = (struct Sound_source*) obj;
+    SoundSource* s = (SoundSource*) obj;
 
     int source_state;
     alGetSourcei(s->openal_handle, AL_SOURCE_STATE, &source_state);
@@ -215,7 +204,7 @@ void sound_update() {
 #endif
 }
 
-void sound_load(struct Sound_wav * wav, char * name, float min, float max) {
+void sound_load(WAV * wav, char * name, float min, float max) {
 #ifdef USE_SOUND
     if (!sound_enabled)
         return;
@@ -247,7 +236,7 @@ void sound_load(struct Sound_wav * wav, char * name, float min, float max) {
 
 void sound_init() {
 #ifdef USE_SOUND
-    entitysys_create(&sound_sources, sizeof(struct Sound_source), 256);
+    entitysys_create(&sound_sources, sizeof(SoundSource), 256);
 
     ALCdevice * device = alcOpenDevice(NULL);
 

@@ -43,7 +43,7 @@ void weapon_update() {
         if (players[local_player_id].weapon == WEAPON_SHOTGUN) {
             if (window_time() - weapon_reload_start >= 0.5F) {
 
-                struct Sound_wav * snd;
+                WAV * snd;
                 if (local_player_ammo < 6 && local_player_ammo_reserved > 0) {
                     local_player_ammo++;
                     local_player_ammo_reserved--;
@@ -113,7 +113,7 @@ float weapon_delay(int gun) {
     }
 }
 
-struct Sound_wav * weapon_sound(int gun) {
+WAV * weapon_sound(int gun) {
     switch (gun) {
         case WEAPON_RIFLE:   return &sound_rifle_shoot;
         case WEAPON_SMG:     return &sound_smg_shoot;
@@ -122,7 +122,7 @@ struct Sound_wav * weapon_sound(int gun) {
     }
 }
 
-struct Sound_wav * weapon_sound_reload(int gun) {
+WAV * weapon_sound_reload(int gun) {
     switch (gun) {
         case WEAPON_RIFLE:   return &sound_rifle_reload;
         case WEAPON_SMG:     return &sound_smg_reload;

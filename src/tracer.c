@@ -32,7 +32,7 @@
 #include <BetterSpades/sound.h>
 #include <BetterSpades/entitysystem.h>
 
-struct entity_system tracers;
+EntitySystem tracers;
 
 void tracer_pvelocity(float * o, Player * p) {
     o[X] = o[X] * 256.0F / 32.0F + p->physics.velocity.x;
@@ -40,16 +40,16 @@ void tracer_pvelocity(float * o, Player * p) {
     o[Z] = o[Z] * 256.0F / 32.0F + p->physics.velocity.z;
 }
 
-struct tracer_minimap_info {
-    int large;
+typedef struct {
+    int   large;
     float scalef;
     float minimap_x;
     float minimap_y;
-};
+} TracerMinimapInfo;
 
 static bool tracer_minimap_single(void * obj, void * user) {
-    struct Tracer * t = (struct Tracer *) obj;
-    struct tracer_minimap_info * info = (struct tracer_minimap_info *) user;
+    Tracer * t = (Tracer *) obj;
+    TracerMinimapInfo * info = (TracerMinimapInfo *) user;
 
     if (info->large) {
         float ang = -atan2(t->r.direction[Z], t->r.direction[X]) - HALFPI;
@@ -71,7 +71,7 @@ static bool tracer_minimap_single(void * obj, void * user) {
 
 void tracer_minimap(int large, float scalef, float minimap_x, float minimap_y) {
     entitysys_iterate(&tracers,
-                      &(struct tracer_minimap_info) {
+                      &(TracerMinimapInfo) {
                           .large     = large,
                           .scalef    = scalef,
                           .minimap_x = minimap_x,
@@ -81,7 +81,7 @@ void tracer_minimap(int large, float scalef, float minimap_x, float minimap_y) {
 }
 
 void tracer_add(int type, float x, float y, float z, float dx, float dy, float dz) {
-    struct Tracer t = (struct Tracer) {
+    Tracer t = (Tracer) {
         .type = type,
         .x = t.r.origin[X] = x + dx / 4.0F,
         .y = t.r.origin[Y] = y + dy / 4.0F,
@@ -99,7 +99,7 @@ void tracer_add(int type, float x, float y, float z, float dx, float dy, float d
 }
 
 static bool tracer_render_single(void * obj, void * user) {
-    struct Tracer * t = (struct Tracer*) obj;
+    Tracer * t = (Tracer*) obj;
 
     static kv6 * model_tracer[] = {&model_semi_tracer, &model_smg_tracer, &model_shotgun_tracer};
 
@@ -119,7 +119,7 @@ void tracer_render() {
 }
 
 static bool tracer_update_single(void * obj, void * user) {
-    struct Tracer * t = (struct Tracer*) obj;
+    Tracer * t = (Tracer*) obj;
     float dt = *(float*) user;
 
     float len = distance3D(t->x, t->y, t->z, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
@@ -144,5 +144,5 @@ void tracer_update(float dt) {
 }
 
 void tracer_init() {
-    entitysys_create(&tracers, sizeof(struct Tracer), PLAYERS_MAX);
+    entitysys_create(&tracers, sizeof(Tracer), PLAYERS_MAX);
 }

@@ -24,7 +24,7 @@
 
 #include <BetterSpades/entitysystem.h>
 
-void entitysys_create(struct entity_system* es, size_t object_size, size_t initial_size) {
+void entitysys_create(EntitySystem * es, size_t object_size, size_t initial_size) {
     assert(es != NULL && object_size > 0 && initial_size > 0);
 
     es->buffer = malloc(object_size * initial_size);
@@ -35,7 +35,7 @@ void entitysys_create(struct entity_system* es, size_t object_size, size_t initi
     pthread_mutex_init(&es->lock, NULL);
 }
 
-void entitysys_iterate(struct entity_system* es, void* user, bool (*callback)(void* object, void* user)) {
+void entitysys_iterate(EntitySystem * es, void* user, bool (*callback)(void* object, void* user)) {
     assert(es != NULL && callback != NULL);
 
     pthread_mutex_lock(&es->lock);
@@ -53,7 +53,7 @@ void entitysys_iterate(struct entity_system* es, void* user, bool (*callback)(vo
     pthread_mutex_unlock(&es->lock);
 }
 
-void entitysys_add(struct entity_system* es, void* object) {
+void entitysys_add(EntitySystem * es, void* object) {
     assert(es != NULL && object != NULL);
 
     pthread_mutex_lock(&es->lock);

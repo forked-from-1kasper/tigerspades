@@ -169,7 +169,7 @@ struct map_collapsing {
     Tesselator mesh_geometry;
 };
 
-struct entity_system map_collapsing_structures;
+EntitySystem map_collapsing_structures;
 
 static bool falling_blocks_meshing(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;

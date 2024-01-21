@@ -41,68 +41,68 @@ enum sound_space {
 
 extern int sound_enabled;
 
-struct Sound_wav {
+typedef struct {
     ALuint openal_buffer;
     float min, max;
-};
+} WAV;
 
-extern struct Sound_wav sound_footstep1;
-extern struct Sound_wav sound_footstep2;
-extern struct Sound_wav sound_footstep3;
-extern struct Sound_wav sound_footstep4;
+extern WAV sound_footstep1;
+extern WAV sound_footstep2;
+extern WAV sound_footstep3;
+extern WAV sound_footstep4;
 
-extern struct Sound_wav sound_wade1;
-extern struct Sound_wav sound_wade2;
-extern struct Sound_wav sound_wade3;
-extern struct Sound_wav sound_wade4;
+extern WAV sound_wade1;
+extern WAV sound_wade2;
+extern WAV sound_wade3;
+extern WAV sound_wade4;
 
-extern struct Sound_wav sound_jump;
-extern struct Sound_wav sound_jump_water;
+extern WAV sound_jump;
+extern WAV sound_jump_water;
 
-extern struct Sound_wav sound_land;
-extern struct Sound_wav sound_land_water;
+extern WAV sound_land;
+extern WAV sound_land_water;
 
-extern struct Sound_wav sound_hurt_fall;
+extern WAV sound_hurt_fall;
 
-extern struct Sound_wav sound_explode;
-extern struct Sound_wav sound_explode_water;
-extern struct Sound_wav sound_grenade_bounce;
-extern struct Sound_wav sound_grenade_pin;
+extern WAV sound_explode;
+extern WAV sound_explode_water;
+extern WAV sound_grenade_bounce;
+extern WAV sound_grenade_pin;
 
-extern struct Sound_wav sound_pickup;
-extern struct Sound_wav sound_horn;
+extern WAV sound_pickup;
+extern WAV sound_horn;
 
-extern struct Sound_wav sound_rifle_shoot;
-extern struct Sound_wav sound_rifle_reload;
-extern struct Sound_wav sound_smg_shoot;
-extern struct Sound_wav sound_smg_reload;
-extern struct Sound_wav sound_shotgun_shoot;
-extern struct Sound_wav sound_shotgun_reload;
-extern struct Sound_wav sound_shotgun_cock;
+extern WAV sound_rifle_shoot;
+extern WAV sound_rifle_reload;
+extern WAV sound_smg_shoot;
+extern WAV sound_smg_reload;
+extern WAV sound_shotgun_shoot;
+extern WAV sound_shotgun_reload;
+extern WAV sound_shotgun_cock;
 
-extern struct Sound_wav sound_hitground;
-extern struct Sound_wav sound_hitplayer;
-extern struct Sound_wav sound_build;
+extern WAV sound_hitground;
+extern WAV sound_hitplayer;
+extern WAV sound_build;
 
-extern struct Sound_wav sound_spade_woosh;
-extern struct Sound_wav sound_spade_whack;
+extern WAV sound_spade_woosh;
+extern WAV sound_spade_whack;
 
-extern struct Sound_wav sound_death;
-extern struct Sound_wav sound_beep1;
-extern struct Sound_wav sound_beep2;
-extern struct Sound_wav sound_switch;
-extern struct Sound_wav sound_empty;
-extern struct Sound_wav sound_intro;
+extern WAV sound_death;
+extern WAV sound_beep1;
+extern WAV sound_beep2;
+extern WAV sound_switch;
+extern WAV sound_empty;
+extern WAV sound_intro;
 
-extern struct Sound_wav sound_debris;
-extern struct Sound_wav sound_bounce;
-extern struct Sound_wav sound_impact;
+extern WAV sound_debris;
+extern WAV sound_bounce;
+extern WAV sound_impact;
 
 void sound_volume(float vol);
-void sound_create_sticky(struct Sound_wav * w, Player * player, int player_id);
-void sound_create(enum sound_space option, struct Sound_wav * w, float x, float y, float z);
+void sound_create_sticky(WAV * w, Player * player, int player_id);
+void sound_create(enum sound_space option, WAV * w, float x, float y, float z);
 void sound_update(void);
-void sound_load(struct Sound_wav * wav, char* name, float min, float max);
+void sound_load(WAV * wav, char* name, float min, float max);
 void sound_init(void);
 
 #endif

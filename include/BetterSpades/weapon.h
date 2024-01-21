@@ -38,8 +38,8 @@ int weapon_ammo_reserved(int gun);
 kv6 * weapon_casing(int gun);
 kv6 * weapon_model(int gun);
 float weapon_recoil_anim(int gun);
-struct Sound_wav * weapon_sound(int gun);
-struct Sound_wav * weapon_sound_reload(int gun);
+WAV * weapon_sound(int gun);
+WAV * weapon_sound_reload(int gun);
 void weapon_spread(Player * p, float * d);
 void weapon_recoil(int gun, double * horiz_recoil, double * vert_recoil);
 

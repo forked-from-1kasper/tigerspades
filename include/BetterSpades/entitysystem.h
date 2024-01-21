@@ -24,18 +24,18 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-struct entity_system {
+typedef struct {
     void * buffer;
     size_t count;
     size_t length;
     size_t object_size;
     pthread_mutex_t lock;
-};
+} EntitySystem;
 
-void entitysys_create(struct entity_system * es, size_t object_size, size_t initial_size);
+void entitysys_create(EntitySystem *, size_t object_size, size_t initial_size);
 
-void entitysys_add(struct entity_system * es, void * object);
+void entitysys_add(EntitySystem *, void * object);
 
-void entitysys_iterate(struct entity_system * es, void * user, bool (*callback)(void * object, void * user));
+void entitysys_iterate(EntitySystem *, void * user, bool (*callback)(void * object, void * user));
 
 #endif

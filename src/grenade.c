@@ -28,7 +28,7 @@
 #include <BetterSpades/map.h>
 #include <BetterSpades/entitysystem.h>
 
-struct entity_system grenades;
+EntitySystem grenades;
 
 void grenade_init() {
     entitysys_create(&grenades, sizeof(Grenade), 32);

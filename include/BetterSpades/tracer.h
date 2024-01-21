@@ -24,13 +24,13 @@
 #include <BetterSpades/player.h>
 #include <BetterSpades/camera.h>
 
-struct Tracer {
+typedef struct {
     struct Camera_HitType hit;
     float x, y, z;
     Ray r;
     int type;
     float created;
-};
+} Tracer;
 
 void tracer_minimap(int large, float scalef, float minimap_x, float minimap_y);
 void tracer_pvelocity(float * o, Player * p);

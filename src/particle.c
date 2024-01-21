@@ -33,7 +33,7 @@
 #include <BetterSpades/tesselator.h>
 #include <BetterSpades/entitysystem.h>
 
-struct entity_system particles;
+EntitySystem particles;
 Tesselator particle_tesselator;
 
 Projectiles projectiles = { .size = 0, .length = 0, .head = NULL };
