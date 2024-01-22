@@ -525,6 +525,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         );
 
         float p = (compressed_chunk_data_estimate > 0) ? ((float) compressed_chunk_data_offset / (float) compressed_chunk_data_estimate) : 0.0F;
+        p = clamp(0.0F, 1.0F, p);
+
         glColor3ub(68, 68, 68);
         texture_draw(&texture_white, (settings.window_width - 440.0F * scale) / 2.0F + 440.0F * scale * p,
                      settings.window_height * 0.25F, 440.0F * scale * (1.0F - p), 20.0F * scale);
@@ -532,6 +534,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         texture_draw(&texture_white, (settings.window_width - 440.0F * scale) / 2.0F, settings.window_height * 0.25F,
                      440.0F * scale * p, 20.0F * scale);
         glColor3ub(69, 69, 69);
+
         char str[128];
         sprintf(str, "Receiving %i KiB / %i KiB", compressed_chunk_data_offset / 1024, compressed_chunk_data_estimate / 1024);
         font_centered(settings.window_width / 2.0F, settings.window_height * 0.25F - 20.0F * scale, 2.0F * scale, str, UTF8);

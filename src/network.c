@@ -74,6 +74,7 @@ char network_custom_reason[17];
 const char * network_reason_disconnect(int code) {
     if (*network_custom_reason)
         return network_custom_reason;
+
     switch (code) {
         case 1:  return "Banned";
         case 2:  return "Connection limit";
@@ -429,9 +430,9 @@ void read_PacketExistingPlayer(void * data, int len) {
         player_reset(&players[p->player_id]);
         players[p->player_id].connected     = 1;
         players[p->player_id].alive         = 1;
-        players[p->player_id].team          = p->team;
-        players[p->player_id].weapon        = p->weapon;
-        players[p->player_id].held_item     = p->held_item;
+        players[p->player_id].team          = TEAM(p->team);
+        players[p->player_id].weapon        = WEAPON(p->weapon);
+        players[p->player_id].held_item     = TOOL(p->held_item);
         players[p->player_id].score         = letohs32(p->kills);
         players[p->player_id].block.r       = p->red;
         players[p->player_id].block.g       = p->green;
@@ -450,9 +451,9 @@ void read_PacketCreatePlayer(void * data, int len) {
         player_reset(&players[p->player_id]);
         players[p->player_id].connected = 1;
         players[p->player_id].alive     = 1;
-        players[p->player_id].team      = p->team;
+        players[p->player_id].team      = TEAM(p->team);
         players[p->player_id].held_item = TOOL_GUN;
-        players[p->player_id].weapon    = p->weapon;
+        players[p->player_id].weapon    = WEAPON(p->weapon);
         players[p->player_id].pos.x     = letohf(p->x);
         players[p->player_id].pos.y     = 63.0F - letohf(p->z);
         players[p->player_id].pos.z     = letohf(p->y);
@@ -643,7 +644,7 @@ void read_PacketWeaponInput(void * data, int len) {
 void read_PacketSetTool(void * data, int len) {
     struct PacketSetTool * p = (struct PacketSetTool*) data;
     if (p->player_id < PLAYERS_MAX && p->tool < 4)
-        players[p->player_id].held_item = p->tool;
+        players[p->player_id].held_item = TOOL(p->tool);
 }
 
 void player_reset_toggleable_input() {
@@ -772,7 +773,7 @@ void read_PacketChangeWeapon(void * data, int len) {
             return;
         }
 
-        players[p->player_id].weapon = p->weapon;
+        players[p->player_id].weapon = WEAPON(p->weapon);
     }
 }
 
@@ -822,7 +823,7 @@ void read_PacketMoveObject(void * data, int len) {
         gamestate.gamemode.tc.territory[p->object_id].x    = letohf(p->x);
         gamestate.gamemode.tc.territory[p->object_id].y    = letohf(p->y);
         gamestate.gamemode.tc.territory[p->object_id].z    = letohf(p->z);
-        gamestate.gamemode.tc.territory[p->object_id].team = p->team;
+        gamestate.gamemode.tc.territory[p->object_id].team = TEAM(p->team);
     }
 }
 
@@ -890,16 +891,19 @@ void read_PacketIntelPickup(void * data, int len) {
     if (gamestate.gamemode_type == GAMEMODE_CTF && p->player_id < PLAYERS_MAX) {
         char pickup_str[128];
         switch (players[p->player_id].team) {
-            case TEAM_1:
+            case TEAM_1: {
                 gamestate.gamemode.ctf.intels |= MASKON(TEAM_2_INTEL); // pickup opposing team’s intel
                 gamestate.gamemode.ctf.team_2_intel_location.held.player_id = p->player_id;
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_2.name);
                 break;
-            case TEAM_2:
+            }
+
+            case TEAM_2: {
                 gamestate.gamemode.ctf.intels |= MASKON(TEAM_1_INTEL);
                 gamestate.gamemode.ctf.team_1_intel_location.held.player_id = p->player_id;
                 sprintf(pickup_str, "%s has the %s Intel", players[p->player_id].name, gamestate.team_1.name);
                 break;
+            }
         }
 
         chat_add(0, Red, pickup_str, UTF8);
@@ -910,25 +914,26 @@ void read_PacketIntelPickup(void * data, int len) {
 void read_PacketTerritoryCapture(void * data, int len) {
     struct PacketTerritoryCapture * p = (struct PacketTerritoryCapture*) data;
     if (gamestate.gamemode_type == GAMEMODE_TC && p->tent < gamestate.gamemode.tc.territory_count) {
-        gamestate.gamemode.tc.territory[p->tent].team = p->team;
+        gamestate.gamemode.tc.territory[p->tent].team = TEAM(p->team);
         sound_create(SOUND_LOCAL, p->winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
         char x = (int) (gamestate.gamemode.tc.territory[p->tent].x / 64.0F) + 'A';
         char y = (int) (gamestate.gamemode.tc.territory[p->tent].y / 64.0F) + '1';
 
-        char capture_str[128];
-        char * team_n;
+        char * team_name = NULL;
 
         switch (p->team) {
-            case TEAM_1: team_n = gamestate.team_1.name; break;
-            case TEAM_2: team_n = gamestate.team_2.name; break;
+            case TEAM_1: team_name = gamestate.team_1.name; break;
+            case TEAM_2: team_name = gamestate.team_2.name; break;
         }
 
-        if (team_n) {
-            sprintf(capture_str, "%s have captured %c%c", team_n, x, y);
+        if (team_name != NULL) {
+            char capture_str[128];
+
+            sprintf(capture_str, "%s have captured %c%c", team_name, x, y);
             chat_add(0, Red, capture_str, UTF8);
 
             if (p->winning) {
-                sprintf(capture_str, "%s Team Wins!", team_n);
+                sprintf(capture_str, "%s Team Wins!", team_name);
                 chat_showpopup(capture_str, 5.0F, Red, UTF8);
             }
         }

@@ -293,9 +293,16 @@ struct PacketExistingPlayer {
     char name[17];
 };
 
-#define WEAPON_RIFLE   0
-#define WEAPON_SMG     1
-#define WEAPON_SHOTGUN 2
+typedef enum {
+    WEAPON_RIFLE   = 0,
+    WEAPON_SMG     = 1,
+    WEAPON_SHOTGUN = 2,
+    WEAPON_MIN     = WEAPON_RIFLE,
+    WEAPON_MAX     = WEAPON_SHOTGUN,
+    WEAPON_DEFAULT = WEAPON_RIFLE
+} Weapon;
+
+#define WEAPON(w) ((w) > WEAPON_MAX ? WEAPON_DEFAULT : (w))
 
 #define PACKET_CREATEPLAYER_ID 12
 struct PacketCreatePlayer {
@@ -344,10 +351,17 @@ struct PacketSetTool {
     unsigned char tool;
 };
 
-#define TOOL_SPADE   0
-#define TOOL_BLOCK   1
-#define TOOL_GUN     2
-#define TOOL_GRENADE 3
+typedef enum {
+    TOOL_SPADE   = 0,
+    TOOL_BLOCK   = 1,
+    TOOL_GUN     = 2,
+    TOOL_GRENADE = 3,
+    TOOL_MIN     = TOOL_SPADE,
+    TOOL_MAX     = TOOL_GRENADE,
+    TOOL_DEFAULT = TOOL_GUN
+} Tool;
+
+#define TOOL(t) (t > TOOL_MAX ? TOOL_DEFAULT : (t))
 
 #define PACKET_CHATMESSAGE_ID 17
 struct PacketChatMessage {

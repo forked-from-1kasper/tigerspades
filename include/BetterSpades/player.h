@@ -25,10 +25,15 @@
 #include <BetterSpades/aabb.h>
 #include <BetterSpades/network.h>
 
-#define PLAYERS_MAX    256 // just because 32 players are not enough
-#define TEAM_1         0
-#define TEAM_2         1
-#define TEAM_SPECTATOR 255
+#define PLAYERS_MAX 256 // just because 32 players are not enough
+
+enum {
+    TEAM_1          = 0,
+    TEAM_2          = 1,
+    TEAM_SPECTATOR  = 255
+};
+
+#define TEAM(t) (((t) == TEAM_1 || (t) == TEAM_2) ? (t) : TEAM_SPECTATOR)
 
 typedef struct {
     float x, y, z;
