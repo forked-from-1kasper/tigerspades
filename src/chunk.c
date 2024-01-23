@@ -567,8 +567,10 @@ void chunk_generate_naive(struct libvxl_chunk_copy * blocks, Tesselator * tess, 
 
         TrueColor color = readBGR(&blk->color);
 
-        float shade = solid_sunblock(blocks, x, y, z);
-        color.r *= shade; color.g *= shade; color.b *= shade;
+        if (settings.enable_shadows) {
+            float shade = solid_sunblock(blocks, x, y, z);
+            color.r *= shade; color.g *= shade; color.b *= shade;
+        }
 
         if (solid_array_isair(blocks, x, y, z - 1)) {
             if (ao) {

@@ -105,6 +105,7 @@ void config_save() {
     config_seti("client", "show_minimap",      settings.show_minimap);
     config_seti("client", "toggle_crouch",     settings.toggle_crouch);
     config_seti("client", "toggle_sprint",     settings.toggle_sprint);
+    config_seti("client", "enable_shadows",    settings.enable_shadows);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair * e = list_get(&config_keys, k);
@@ -215,6 +216,8 @@ static int config_read_key(void * user, const char * section, const char * name,
             settings.toggle_crouch = atoi(value);
         } else if (!strcmp(name, "toggle_sprint")) {
             settings.toggle_sprint = atoi(value);
+        } else if (!strcmp(name, "enable_shadows")) {
+            settings.enable_shadows = atoi(value);
         }
     }
 
@@ -697,6 +700,16 @@ void config_reload() {
                  .min      = 8,
                  .max      = 256,
                  .name     = "Projectile count",
+                 .category = "Debug"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.enable_shadows,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Useful for map development",
+                 .name     = "Map shadows",
                  .category = "Debug"
              });
 }

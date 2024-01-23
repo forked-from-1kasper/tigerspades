@@ -77,6 +77,7 @@ extern struct RENDER_OPTIONS {
     int show_minimap;
     int toggle_crouch;
     int toggle_sprint;
+    int enable_shadows;
 } settings, settings_tmp;
 
 extern List config_keys;

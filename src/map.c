@@ -66,7 +66,7 @@ int map_object_visible(float x, float y, float z) {
 
 int map_damage(int x, int y, int z, int damage) {
     uint32_t key = pos_key(x, y, z);
-    struct damaged_voxel* voxel = ht_lookup(&map_damaged_voxels, &key);
+    struct damaged_voxel * voxel = ht_lookup(&map_damaged_voxels, &key);
 
     if (voxel) {
         voxel->damage = min(damage + voxel->damage, 100);
@@ -453,14 +453,19 @@ void map_collapsing_update(float dt) {
 void map_update_physics(int x, int y, int z) {
     if (x + 1 < map_size_x && !map_isair(x + 1, y, z))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x + 1, .y = y, .z = z});
+
     if (x >= 1 && !map_isair(x - 1, y, z))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x - 1, .y = y, .z = z});
+
     if (z + 1 < map_size_z && !map_isair(x, y, z + 1))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y, .z = z + 1});
+
     if (z >= 1 && !map_isair(x, y, z - 1))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y, .z = z - 1});
+
     if (y >= 3 && !map_isair(x, y - 1, z)) // don't check ground layers
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y - 1, .z = z});
+
     if (y + 1 < map_size_y && !map_isair(x, y + 1, z))
         channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y + 1, .z = z});
 }
@@ -475,10 +480,10 @@ float map_sunblock(int x, int y, int z) {
             i -= dec;
         dec -= 2;
     }
-    return (float)i / 127.0F;
+    return (float) i / 127.0F;
 }
 
-void* falling_blocks_worker(void* user) {
+void * falling_blocks_worker(void * user) {
     while (1) {
         struct map_work_packet work;
         channel_await(&map_work_queue, &work);
