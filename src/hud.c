@@ -164,9 +164,10 @@ static void hud_ingame_render3D() {
             matrix_translate(matrix_model, (model_spade.xpiv - model_spade.xsiz / 2) * 0.05F,
                              (model_spade.zpiv - model_spade.zsiz / 2) * 0.05F,
                              (model_spade.ypiv - model_spade.ysiz / 2) * 0.05F);
-            if (players[local_player_id].held_item == TOOL_SPADE) {
+
+            if (players[local_player_id].held_item == TOOL_SPADE)
                 matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
-            }
+
             matrix_upload();
             kv6_render(&model_spade, players[local_player_id].team);
 
@@ -179,9 +180,10 @@ static void hud_ingame_render3D() {
                 matrix_translate(matrix_model, (model_block.xpiv - model_block.xsiz / 2) * 0.05F,
                                  (model_block.zpiv - model_block.zsiz / 2) * 0.05F,
                                  (model_block.ypiv - model_block.ysiz / 2) * 0.05F);
-                if (players[local_player_id].held_item == TOOL_BLOCK) {
+
+                if (players[local_player_id].held_item == TOOL_BLOCK)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
-                }
+
                 model_block.red   = players[local_player_id].block.r / 255.0F;
                 model_block.green = players[local_player_id].block.g / 255.0F;
                 model_block.blue  = players[local_player_id].block.b / 255.0F;
@@ -200,9 +202,10 @@ static void hud_ingame_render3D() {
                 matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
                 matrix_translate(matrix_model, (gun->xpiv - gun->xsiz / 2) * 0.05F, (gun->zpiv - gun->zsiz / 2) * 0.05F,
                                  (gun->ypiv - gun->ysiz / 2) * 0.05F);
-                if (players[local_player_id].held_item == TOOL_GUN) {
+
+                if (players[local_player_id].held_item == TOOL_GUN)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
-                }
+
                 matrix_upload();
                 kv6_render(gun, players[local_player_id].team);
             }
@@ -216,9 +219,10 @@ static void hud_ingame_render3D() {
                 matrix_translate(matrix_model, (model_grenade.xpiv - model_grenade.xsiz / 2) * 0.05F,
                                  (model_grenade.zpiv - model_grenade.zsiz / 2) * 0.05F,
                                  (model_grenade.ypiv - model_grenade.ysiz / 2) * 0.05F);
-                if (players[local_player_id].held_item == TOOL_GRENADE) {
+
+                if (players[local_player_id].held_item == TOOL_GRENADE)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
-                }
+
                 matrix_upload();
                 kv6_render(&model_grenade, players[local_player_id].team);
             }
@@ -308,6 +312,7 @@ static void hud_ingame_render3D() {
                 }
             }
         }
+
         if (gamestate.gamemode_type == GAMEMODE_TC) {
             for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
                 float l = pow(gamestate.gamemode.tc.territory[k].x - players[local_player_id].pos.x, 2.0F)
@@ -320,6 +325,7 @@ static void hud_ingame_render3D() {
                 }
             }
         }
+
         if (rotating_model) {
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, 0.0F,
@@ -1313,7 +1319,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
 
     if (button == WINDOW_MOUSE_RMB) {
         if (action == WINDOW_PRESS && players[local_player_id].held_item == TOOL_GUN
-           && !settings.hold_down_sights && !players[local_player_id].items_show) {
+            && !settings.hold_down_sights && !players[local_player_id].items_show) {
             players[local_player_id].input.buttons ^= MASKON(BUTTON_SECONDARY);
         }
 

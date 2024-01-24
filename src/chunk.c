@@ -45,24 +45,24 @@ struct channel chunk_work_queue;
 struct channel chunk_result_queue;
 pthread_mutex_t chunk_block_queue_lock;
 
-struct chunk_work_packet {
+typedef struct {
     size_t chunk_x;
     size_t chunk_y;
     Chunk * chunk;
-};
+} ChunkWorkPacket;
 
-struct chunk_result_packet {
+typedef struct {
     Chunk * chunk;
     int max_height;
     Tesselator tesselator;
     uint32_t * minimap_data;
-};
+} ChunkResultPacket;
 
-struct chunk_render_call {
+typedef struct {
     Chunk * chunk;
     int mirror_x;
     int mirror_y;
-};
+} ChunkRenderCall;
 
 void chunk_init() {
     for (size_t x = 0; x < CHUNKS_PER_DIM; x++) {
@@ -75,9 +75,9 @@ void chunk_init() {
         }
     }
 
-    channel_create(&chunk_work_queue, sizeof(struct chunk_work_packet), CHUNKS_PER_DIM * CHUNKS_PER_DIM);
-    channel_create(&chunk_result_queue, sizeof(struct chunk_result_packet), CHUNKS_PER_DIM * CHUNKS_PER_DIM);
-    ht_setup(&chunk_block_queue, sizeof(Chunk*), sizeof(struct chunk_result_packet), 64);
+    channel_create(&chunk_work_queue, sizeof(ChunkWorkPacket), CHUNKS_PER_DIM * CHUNKS_PER_DIM);
+    channel_create(&chunk_result_queue, sizeof(ChunkResultPacket), CHUNKS_PER_DIM * CHUNKS_PER_DIM);
+    ht_setup(&chunk_block_queue, sizeof(Chunk *), sizeof(ChunkResultPacket), 64);
 
     pthread_mutex_init(&chunk_block_queue_lock, NULL);
 
@@ -91,15 +91,15 @@ void chunk_init() {
 }
 
 static int chunk_sort(const void* a, const void* b) {
-    struct chunk_render_call* aa = (struct chunk_render_call*)a;
-    struct chunk_render_call* bb = (struct chunk_render_call*)b;
+    ChunkRenderCall * aa = (ChunkRenderCall *) a;
+    ChunkRenderCall * bb = (ChunkRenderCall *) b;
     return distance2D(aa->chunk->x * CHUNK_SIZE + CHUNK_SIZE / 2, aa->chunk->y * CHUNK_SIZE + CHUNK_SIZE / 2, camera_x,
                       camera_z)
          - distance2D(bb->chunk->x * CHUNK_SIZE + CHUNK_SIZE / 2, bb->chunk->y * CHUNK_SIZE + CHUNK_SIZE / 2, camera_x,
                       camera_z);
 }
 
-void chunk_render(struct chunk_render_call* c) {
+void chunk_render(ChunkRenderCall * c) {
     if (c->chunk->created) {
         matrix_push(matrix_model);
         matrix_translate(matrix_model, c->mirror_x * map_size_x, 0.0F, c->mirror_y * map_size_z);
@@ -116,7 +116,7 @@ void chunk_render(struct chunk_render_call* c) {
 }
 
 void chunk_draw_visible() {
-    struct chunk_render_call chunks_draw[CHUNKS_PER_DIM * CHUNKS_PER_DIM * 2];
+    ChunkRenderCall chunks_draw[CHUNKS_PER_DIM * CHUNKS_PER_DIM * 2];
     int index = 0;
 
     int overshoot = (settings.render_distance + CHUNK_SIZE - 1) / CHUNK_SIZE + 1;
@@ -133,7 +133,7 @@ void chunk_draw_visible() {
 
                 if (camera_CubeInFrustum((x + 0.5F) * CHUNK_SIZE, 0.0F, (y + 0.5F) * CHUNK_SIZE, CHUNK_SIZE / 2,
                                         c->max_height))
-                    chunks_draw[index++] = (struct chunk_render_call) {
+                    chunks_draw[index++] = (ChunkRenderCall) {
                         .chunk = c,
                         .mirror_x = (x < 0) ? -1 : ((x >= CHUNKS_PER_DIM) ? 1 : 0),
                         .mirror_y = (y < 0) ? -1 : ((y >= CHUNKS_PER_DIM) ? 1 : 0),
@@ -143,13 +143,13 @@ void chunk_draw_visible() {
     }
 
     // sort all chunks to draw those in front first
-    qsort(chunks_draw, index, sizeof(struct chunk_render_call), chunk_sort);
+    qsort(chunks_draw, index, sizeof(ChunkRenderCall), chunk_sort);
 
     for (int k = 0; k < index; k++)
         chunk_render(chunks_draw + k);
 }
 
-static __attribute__((always_inline)) inline bool solid_array_isair(struct libvxl_chunk_copy* blocks, uint32_t x,
+static __attribute__((always_inline)) inline bool solid_array_isair(struct libvxl_chunk_copy * blocks, uint32_t x,
                                                                     int32_t y, uint32_t z) {
     if (y < 0)
         return false;
@@ -159,7 +159,7 @@ static __attribute__((always_inline)) inline bool solid_array_isair(struct libvx
     return !libvxl_copy_chunk_is_solid(blocks, x % map_size_x, z % map_size_z, map_size_y - 1 - y);
 }
 
-static __attribute__((always_inline)) inline float solid_sunblock(struct libvxl_chunk_copy* blocks, uint32_t x,
+static __attribute__((always_inline)) inline float solid_sunblock(struct libvxl_chunk_copy * blocks, uint32_t x,
                                                                   uint32_t y, uint32_t z) {
     int dec = 18;
     int i = 127;
@@ -177,13 +177,12 @@ void * chunk_generate(void * data) {
     pthread_detach(pthread_self());
 
     while (1) {
-        struct chunk_work_packet work;
+        ChunkWorkPacket work;
         channel_await(&chunk_work_queue, &work);
 
-        if (!work.chunk)
-            break;
+        if (!work.chunk) break;
 
-        struct chunk_result_packet result;
+        ChunkResultPacket result;
         result.chunk = work.chunk;
         result.minimap_data = malloc(CHUNK_SIZE * CHUNK_SIZE * sizeof(uint32_t));
         tesselator_create(&result.tesselator, VERTEX_INT, 0);
@@ -753,14 +752,14 @@ void chunk_update_all() {
     size_t drain = channel_size(&chunk_result_queue);
 
     if (drain > 0) {
-        struct chunk_result_packet results[drain];
+        ChunkResultPacket results[drain];
 
         for (size_t k = 0; k < drain; k++) {
             channel_await(&chunk_result_queue, results + k);
             results[k].chunk->updated = false;
         }
 
-        struct chunk_result_packet * result = results + drain - 1;
+        ChunkResultPacket * result = results + drain - 1;
 
         for (size_t k = 0; k < drain; k++, result--) {
             if (!result->chunk->updated) {
@@ -801,8 +800,8 @@ void chunk_rebuild_all() {
 
             for (size_t j = 0; j < sizeof(build) / sizeof(*build); j++) {
                 channel_put(&chunk_work_queue,
-                            &(struct chunk_work_packet) {
-                                .chunk = build[j],
+                            &(ChunkWorkPacket) {
+                                .chunk   = build[j],
                                 .chunk_x = build[j]->x,
                                 .chunk_y = build[j]->y,
                             });
@@ -816,7 +815,7 @@ void chunk_block_update(int x, int y, int z) {
 
     pthread_mutex_lock(&chunk_block_queue_lock);
     ht_insert(&chunk_block_queue, &c,
-              &(struct chunk_work_packet) {
+              &(ChunkWorkPacket) {
                   .chunk   = c,
                   .chunk_x = c->x,
                   .chunk_y = c->y,

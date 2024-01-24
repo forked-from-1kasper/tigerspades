@@ -152,8 +152,11 @@ void cameracontroller_fps(float dt) {
 
     SETBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY, button_map[0]);
 
-    if (players[local_player_id].held_item != TOOL_GUN || (settings.hold_down_sights && !players[local_player_id].items_show))
+    if (players[local_player_id].held_item != TOOL_GUN || settings.hold_down_sights)
         SETBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY, button_map[1]);
+
+    if (HASBIT(players[local_player_id].input.keys, INPUT_SPRINT) || players[local_player_id].items_show)
+        players[local_player_id].input.buttons &= MASKOFF(BUTTON_SECONDARY);
 
     if (chat_input_mode != CHAT_NO_INPUT) {
         players[local_player_id].input.keys    &= MASKOFF(INPUT_UP);
