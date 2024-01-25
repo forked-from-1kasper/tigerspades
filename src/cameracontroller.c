@@ -58,15 +58,14 @@ void cameracontroller_death(float dt) {
         camera_y += cameracontroller_death_velocity_y * dt;
         camera_z += cameracontroller_death_velocity_z * dt;
     } else {
-        cameracontroller_death_velocity_x *= 0.5F;
+        cameracontroller_death_velocity_x *= +0.5F;
         cameracontroller_death_velocity_y *= -0.5F;
-        cameracontroller_death_velocity_z *= 0.5F;
+        cameracontroller_death_velocity_z *= +0.5F;
 
-        if (len3D(cameracontroller_death_velocity_x, cameracontroller_death_velocity_y,
-                 cameracontroller_death_velocity_z)
-           < 0.05F) {
+        if (len3D(cameracontroller_death_velocity_x,
+                  cameracontroller_death_velocity_y,
+                  cameracontroller_death_velocity_z) < 0.05F)
             camera_mode = CAMERAMODE_BODYVIEW;
-        }
     }
 }
 
@@ -97,8 +96,7 @@ void cameracontroller_fps(float dt) {
         cooldown = 1;
     }
 
-    if (cooldown)
-        player_on_held_item_change(players + local_player_id);
+    if (cooldown) player_on_held_item_change(players + local_player_id);
 
 #ifdef USE_TOUCH
     if (!local_player_ammo) {
@@ -167,12 +165,11 @@ void cameracontroller_fps(float dt) {
         players[local_player_id].input.buttons &= MASKOFF(BUTTON_PRIMARY);
     }
 
-    float lx = players[local_player_id].orientation_smooth.x * pow(0.7F, dt * 60.0F)
-        + (sin(camera_rot_x) * sin(camera_rot_y)) * (1.0F - pow(0.7F, dt * 60.0F));
-    float ly = players[local_player_id].orientation_smooth.y * pow(0.7F, dt * 60.0F)
-        + (cos(camera_rot_y)) * (1.0F - pow(0.7F, dt * 60.0F));
-    float lz = players[local_player_id].orientation_smooth.z * pow(0.7F, dt * 60.0F)
-        + (cos(camera_rot_x) * sin(camera_rot_y)) * (1.0F - pow(0.7F, dt * 60.0F));
+    float k = pow(0.7F, dt * 60.0F);
+
+    float lx = k * players[local_player_id].orientation_smooth.x + (1.0F - k) * sin(camera_rot_x) * sin(camera_rot_y);
+    float ly = k * players[local_player_id].orientation_smooth.y + (1.0F - k) * cos(camera_rot_y);
+    float lz = k * players[local_player_id].orientation_smooth.z + (1.0F - k) * cos(camera_rot_x) * sin(camera_rot_y);
 
     players[local_player_id].orientation_smooth.x = lx;
     players[local_player_id].orientation_smooth.y = ly;
@@ -205,31 +202,22 @@ void cameracontroller_spectator(float dt) {
             x += sin(camera_rot_x) * sin(camera_rot_y);
             y += cos(camera_rot_y);
             z += cos(camera_rot_x) * sin(camera_rot_y);
-        } else {
-            if (window_key_down(WINDOW_KEY_DOWN)) {
-                x -= sin(camera_rot_x) * sin(camera_rot_y);
-                y -= cos(camera_rot_y);
-                z -= cos(camera_rot_x) * sin(camera_rot_y);
-            }
+        } else if (window_key_down(WINDOW_KEY_DOWN)) {
+            x -= sin(camera_rot_x) * sin(camera_rot_y);
+            y -= cos(camera_rot_y);
+            z -= cos(camera_rot_x) * sin(camera_rot_y);
         }
 
         if (window_key_down(WINDOW_KEY_LEFT)) {
             x += sin(camera_rot_x + 1.57F);
             z += cos(camera_rot_x + 1.57F);
-        } else {
-            if (window_key_down(WINDOW_KEY_RIGHT)) {
-                x += sin(camera_rot_x - 1.57F);
-                z += cos(camera_rot_x - 1.57F);
-            }
+        } else if (window_key_down(WINDOW_KEY_RIGHT)) {
+            x += sin(camera_rot_x - 1.57F);
+            z += cos(camera_rot_x - 1.57F);
         }
 
-        if (window_key_down(WINDOW_KEY_SPACE)) {
-            y++;
-        } else {
-            if (window_key_down(WINDOW_KEY_CROUCH)) {
-                y--;
-            }
-        }
+        if (window_key_down(WINDOW_KEY_SPACE)) y++;
+        else if (window_key_down(WINDOW_KEY_CROUCH)) y--;
     }
 
     float len = sqrt(x * x + y * y + z * z);
@@ -239,15 +227,14 @@ void cameracontroller_spectator(float dt) {
         camera_movement_z = (z / len) * camera_speed * dt;
     }
 
-    if (abs(camera_movement_x) < 1.0F) {
+    if (abs(camera_movement_x) < 1.0F)
         camera_movement_x *= pow(0.0025F, dt);
-    }
-    if (abs(camera_movement_y) < 1.0F) {
+
+    if (abs(camera_movement_y) < 1.0F)
         camera_movement_y *= pow(0.0025F, dt);
-    }
-    if (abs(camera_movement_z) < 1.0F) {
+
+    if (abs(camera_movement_z) < 1.0F)
         camera_movement_z *= pow(0.0025F, dt);
-    }
 
     aabb_set_center(&camera, camera_x + camera_movement_x, camera_y - camera_eye_height, camera_z);
 

@@ -132,9 +132,14 @@ static bool damaged_voxel_update(void * key, void * value, void * user) {
 void map_damaged_voxels_render() {
     matrix_identity(matrix_model);
     matrix_upload();
-    // glEnable(GL_POLYGON_OFFSET_FILL);
-    // glPolygonOffset(0.0F,-100.0F);
-    glDepthFunc(GL_EQUAL);
+
+    if (settings.greedy_meshing) {
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(0.0F, -100.0F);
+    } else {
+        glDepthFunc(GL_EQUAL);
+    }
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -144,10 +149,14 @@ void map_damaged_voxels_render() {
 
     tesselator_draw(&map_damaged_tesselator, 1);
 
-    glDepthFunc(GL_LEQUAL);
     glDisable(GL_BLEND);
-    // glPolygonOffset(0.0F,0.0F);
-    // glDisable(GL_POLYGON_OFFSET_FILL);
+
+    if (settings.greedy_meshing) {
+        glPolygonOffset(0.0F, 0.0F);
+        glDisable(GL_POLYGON_OFFSET_FILL);
+    } else {
+        glDepthFunc(GL_LEQUAL);
+    }
 }
 
 struct map_work_packet {
@@ -172,10 +181,10 @@ struct map_collapsing {
 EntitySystem map_collapsing_structures;
 
 static bool falling_blocks_meshing(void * key, void * value, void * user) {
-    uint32_t pos = *(uint32_t*) key;
-    TrueColor color = *(TrueColor*) value;
-    struct map_collapsing * collapsing = ((struct map_collapsing**) user)[0];
-    Tesselator * tess = ((Tesselator**) user)[1];
+    uint32_t pos = *(uint32_t *) key;
+    TrueColor color = *(TrueColor *) value;
+    struct map_collapsing * collapsing = ((struct map_collapsing **) user)[0];
+    Tesselator * tess = ((Tesselator **) user)[1];
 
     int x2 = pos_keyx(pos);
     int y2 = pos_keyy(pos);
@@ -359,9 +368,9 @@ void map_collapsing_render() {
     glDisable(GL_BLEND);
 }
 
-static bool falling_blocks_collision(void * key, void * value, void* user) {
+static bool falling_blocks_collision(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;
-    struct map_collapsing* collapsing = ((struct map_collapsing**)user)[0];
+    struct map_collapsing * collapsing = ((struct map_collapsing**) user)[0];
     float dt = *(((float**)user)[1]);
 
     vec4 v = {pos_keyx(pos) + collapsing->v.x * dt * 32.0F - collapsing->p2.x + 0.5F,
@@ -664,12 +673,12 @@ int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, Point * cube_a
         } else {
             if (dx < dy) {
                 c.x += ixi;
-                if ((unsigned long)c.x >= 512)
+                if ((unsigned long) c.x >= 512)
                     return count;
                 dx += dxi;
             } else {
                 c.y += iyi;
-                if ((unsigned long)c.y >= 512)
+                if ((unsigned long) c.y >= 512)
                     return count;
                 dy += dyi;
             }
@@ -684,20 +693,20 @@ int map_placedblock_color(int color) {
     return color ^ (gkrand & 0x70707);
 }
 
-void map_vxl_load(void* v, size_t size) {
+void map_vxl_load(void*  v, size_t size) {
     pthread_rwlock_wrlock(&map_lock);
     libvxl_free(&map);
     libvxl_create(&map, 512, 512, 64, v, size);
     pthread_rwlock_unlock(&map_lock);
 }
 
-void map_save_file(const char* filename) {
+void map_save_file(const char * filename) {
     pthread_rwlock_rdlock(&map_lock);
     libvxl_writefile(&map, filename);
     pthread_rwlock_unlock(&map_lock);
 }
 
-void map_copy_blocks(struct libvxl_chunk_copy* copy, size_t x, size_t y) {
+void map_copy_blocks(struct libvxl_chunk_copy * copy, size_t x, size_t y) {
     pthread_rwlock_rdlock(&map_lock);
     libvxl_copy_chunk(&map, copy, x, y);
     pthread_rwlock_unlock(&map_lock);
