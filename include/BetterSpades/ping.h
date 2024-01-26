@@ -23,12 +23,12 @@
 #include <enet/enet.h>
 #include <parson.h>
 
-struct ping_entry {
+typedef struct {
     ENetAddress addr;
     char aos[64];
     float time_start;
     int trycount;
-};
+} PingEntry;
 
 void ping_init();
 void ping_deinit();

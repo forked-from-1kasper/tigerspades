@@ -112,7 +112,7 @@ bool ht_iterate(HashTable * ht, void * user, bool (*callback)(void * key, void *
     assert(ht && callback);
 
     for (size_t chain = 0; chain < ht->capacity; chain++) {
-        HTNode* node = ht->nodes[chain];
+        HTNode * node = ht->nodes[chain];
 
         while (node) {
             if (!callback(node->key, node->value, user))

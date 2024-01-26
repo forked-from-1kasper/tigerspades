@@ -176,7 +176,7 @@ static bool particle_render_single(void * obj, void * user) {
     Particle * p = (Particle*) obj;
     Tesselator * tess = (Tesselator*) user;
 
-    if (distance2D(camera_x, camera_z, p->x, p->z) > settings.render_distance * settings.render_distance)
+    if (distance2D(camera.pos.x, camera.pos.z, p->x, p->z) > settings.render_distance * settings.render_distance)
         return false;
 
     float size = p->size / 2.0F * (1.0F - ((float)(window_time() - p->fade) / 2.0F));

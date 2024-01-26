@@ -20,28 +20,25 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-enum camera_mode {
+typedef enum {
     CAMERAMODE_SELECTION,
     CAMERAMODE_FPS,
     CAMERAMODE_SPECTATOR,
     CAMERAMODE_BODYVIEW,
     CAMERAMODE_DEATH,
-};
+} CameraMode;
+
+typedef struct {
+    CameraMode mode; Position pos; Velocity v, movement;
+    float size, height, eye_height, speed;
+    struct { float x, y; } rot;
+} Camera;
 
 #define CAMERA_DEFAULT_FOV 70.0F
 #define CAMERA_MAX_FOV 100.0F
 
-extern enum camera_mode camera_mode;
-
 extern float frustum[6][4];
-extern float camera_rot_x, camera_rot_y;
-extern float camera_x, camera_y, camera_z;
-extern float camera_vx, camera_vy, camera_vz;
-extern float camera_size;
-extern float camera_height;
-extern float camera_eye_height;
-extern float camera_movement_x, camera_movement_y, camera_movement_z;
-extern float camera_speed;
+extern Camera camera;
 
 struct Camera_HitType {
     char type;

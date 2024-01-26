@@ -24,7 +24,7 @@ extern int cameracontroller_bodyview_mode;
 extern int cameracontroller_bodyview_player;
 extern float cameracontroller_bodyview_zoom;
 
-void cameracontroller_death_init(int player, float x, float y, float z);
+void cameracontroller_death_init(int player, Position);
 
 void cameracontroller_fps(float dt);
 void cameracontroller_spectator(float dt);

@@ -102,14 +102,14 @@ static void printJoinMsg(int team, char * name) {
 
 void network_join_game(unsigned char team, unsigned char weapon) {
     struct PacketExistingPlayer contained;
-    contained.player_id = local_player_id;
+    contained.player_id = local_player.id;
     contained.team      = team;
     contained.weapon    = weapon;
     contained.held_item = TOOL_GUN;
     contained.kills     = 0;
-    contained.blue      = players[local_player_id].block.b;
-    contained.green     = players[local_player_id].block.g;
-    contained.red       = players[local_player_id].block.r;
+    contained.blue      = players[local_player.id].block.b;
+    contained.green     = players[local_player.id].block.g;
+    contained.red       = players[local_player.id].block.r;
 
     encodeMagic(contained.name, settings.name, strlen(settings.name), sizeof(contained.name));
     network_send(PACKET_EXISTINGPLAYER_ID, &contained, sizeof(contained) - sizeof(contained.name) + strlen(contained.name) + 1);
@@ -177,7 +177,7 @@ void read_PacketChatMessage(void * data, int len) {
     switch (p->chat_type) {
         case CHAT_SYSTEM: color.r = 255; break;
         case CHAT_TEAM: {
-            switch (players[p->player_id].connected ? players[p->player_id].team : players[local_player_id].team) {
+            switch (players[p->player_id].connected ? players[p->player_id].team : players[local_player.id].team) {
                 case TEAM_1: color.r = gamestate.team_1.red; color.g = gamestate.team_1.green; color.b = gamestate.team_1.blue; break;
                 case TEAM_2: color.r = gamestate.team_2.red; color.g = gamestate.team_2.green; color.b = gamestate.team_2.blue; break;
                 default: break;
@@ -350,15 +350,15 @@ void read_PacketStateData(void * data, int len) {
     fog_color[1] = p->fog_green / 255.0F;
     fog_color[2] = p->fog_blue  / 255.0F;
 
-    local_player_id       = p->player_id;
-    local_player_health   = 100;
-    local_player_blocks   = 50;
-    local_player_grenades = 3;
+    local_player.id       = p->player_id;
+    local_player.health   = 100;
+    local_player.blocks   = 50;
+    local_player.grenades = 3;
     weapon_set(false);
 
-    players[local_player_id].block.r = 111;
-    players[local_player_id].block.g = 111;
-    players[local_player_id].block.b = 111;
+    players[local_player.id].block.r = 111;
+    players[local_player.id].block.g = 111;
+    players[local_player.id].block.b = 111;
 
     if (default_team >= 0 && default_gun >= 0) {
         network_join_game(default_team, default_gun);
@@ -372,7 +372,7 @@ void read_PacketStateData(void * data, int len) {
         screen_current = SCREEN_TEAM_SELECT;
     }
 
-    camera_mode          = CAMERAMODE_SELECTION;
+    camera.mode          = CAMERAMODE_SELECTION;
     network_map_transfer = 0;
     chat_popup_duration  = 0;
 
@@ -469,21 +469,21 @@ void read_PacketCreatePlayer(void * data, int len) {
         players[p->player_id].ammo          = weapon_ammo(p->weapon);
         players[p->player_id].ammo_reserved = weapon_ammo_reserved(p->weapon);
 
-        if (p->player_id == local_player_id) {
+        if (p->player_id == local_player.id) {
             if (p->team == TEAM_SPECTATOR) {
-                camera_x = letohf(p->x);
-                camera_y = 63.0F - letohf(p->z);
-                camera_z = letohf(p->y);
+                camera.pos.x = letohf(p->x);
+                camera.pos.y = 63.0F - letohf(p->z);
+                camera.pos.z = letohf(p->y);
             }
 
-            camera_mode           = (p->team == TEAM_SPECTATOR) ? CAMERAMODE_SPECTATOR : CAMERAMODE_FPS;
-            camera_rot_x          = (p->team == TEAM_1) ? 0.5F * PI : 1.5F * PI;
-            camera_rot_y          = 0.5F * PI;
-            network_logged_in     = 1;
-            local_player_health   = 100;
-            local_player_blocks   = 50;
-            local_player_grenades = 3;
-            local_player_lasttool = TOOL_GUN;
+            camera.mode            = (p->team == TEAM_SPECTATOR) ? CAMERAMODE_SPECTATOR : CAMERAMODE_FPS;
+            camera.rot.x           = (p->team == TEAM_1) ? 0.5F * PI : 1.5F * PI;
+            camera.rot.y           = 0.5F * PI;
+            network_logged_in      = 1;
+            local_player.health    = 100;
+            local_player.blocks    = 50;
+            local_player.grenades  = 3;
+            local_player.last_tool = TOOL_GUN;
 
             weapon_set(false);
         }
@@ -547,7 +547,7 @@ void read_PacketMapStart(void * data, int len) {
 
     trajectories_reset();
 
-    player_init(); camera_mode = CAMERAMODE_SELECTION;
+    player_init(); camera.mode = CAMERAMODE_SELECTION;
 }
 
 void read_PacketWorldUpdate(void * data, int len) {
@@ -560,7 +560,7 @@ void read_PacketWorldUpdate(void * data, int len) {
                 struct PacketWorldUpdate075 * p
                     = (struct PacketWorldUpdate075*) (data + k * sizeof(struct PacketWorldUpdate075));
                 float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
-                if (players[k].connected && players[k].alive && k != local_player_id) {
+                if (players[k].connected && players[k].alive && k != local_player.id) {
                     if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
                        > 0.1F * 0.1F) {
                         players[k].pos.x = x;
@@ -579,7 +579,7 @@ void read_PacketWorldUpdate(void * data, int len) {
                         = (struct PacketWorldUpdate076*) (data + k * sizeof(struct PacketWorldUpdate076));
                     float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                     if (players[p->player_id].connected && players[p->player_id].alive
-                       && p->player_id != local_player_id) {
+                       && p->player_id != local_player.id) {
                         if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
                            > 0.1F * 0.1F) {
                             players[p->player_id].pos.x = x;
@@ -598,16 +598,16 @@ void read_PacketWorldUpdate(void * data, int len) {
 
 void read_PacketPositionData(void * data, int len) {
     struct PacketPositionData * p = (struct PacketPositionData*) data;
-    players[local_player_id].pos.x = letohf(p->x);
-    players[local_player_id].pos.y = 63.0F - letohf(p->z);
-    players[local_player_id].pos.z = letohf(p->y);
+    players[local_player.id].pos.x = letohf(p->x);
+    players[local_player.id].pos.y = 63.0F - letohf(p->z);
+    players[local_player.id].pos.z = letohf(p->y);
 }
 
 void read_PacketOrientationData(void * data, int len) {
     struct PacketOrientationData * p = (struct PacketOrientationData*) data;
-    players[local_player_id].orientation.x = letohf(p->x);
-    players[local_player_id].orientation.y = -letohf(p->z);
-    players[local_player_id].orientation.z = letohf(p->y);
+    players[local_player.id].orientation.x = letohf(p->x);
+    players[local_player.id].orientation.y = -letohf(p->z);
+    players[local_player.id].orientation.z = letohf(p->y);
 }
 
 void read_PacketSetColor(void * data, int len) {
@@ -622,7 +622,7 @@ void read_PacketSetColor(void * data, int len) {
 void read_PacketInputData(void * data, int len) {
     struct PacketInputData * p = (struct PacketInputData*) data;
     if (p->player_id < PLAYERS_MAX) {
-        if (p->player_id != local_player_id)
+        if (p->player_id != local_player.id)
             players[p->player_id].input.keys = p->keys;
 
         players[p->player_id].physics.jump = HASBIT(p->keys, INPUT_JUMP) > 0;
@@ -631,7 +631,7 @@ void read_PacketInputData(void * data, int len) {
 
 void read_PacketWeaponInput(void * data, int len) {
     struct PacketWeaponInput * p = (struct PacketWeaponInput*) data;
-    if (p->player_id < PLAYERS_MAX && p->player_id != local_player_id) {
+    if (p->player_id < PLAYERS_MAX && p->player_id != local_player.id) {
         players[p->player_id].input.buttons = p->input;
 
         if (HASBIT(p->input, BUTTON_PRIMARY))
@@ -658,24 +658,21 @@ void player_reset_toggleable_input() {
 void read_PacketKillAction(void * data, int len) {
     struct PacketKillAction * p = (struct PacketKillAction*) data;
     if (p->player_id < PLAYERS_MAX && p->killer_id < PLAYERS_MAX && p->kill_type >= 0 && p->kill_type < 7) {
-        if (p->player_id == local_player_id) {
+        if (p->player_id == local_player.id) {
             player_reset_toggleable_input();
 
-            local_player_death_time       = window_time();
-            local_player_respawn_time     = p->respawn_time;
-            local_player_respawn_cnt_last = 255;
+            local_player.death_time       = window_time();
+            local_player.respawn_time     = p->respawn_time;
+            local_player.respawn_cnt_last = 255;
             sound_create(SOUND_LOCAL, &sound_death, 0.0F, 0.0F, 0.0F);
 
             if (p->player_id != p->killer_id) {
-                local_player_last_damage_timer = local_player_death_time;
-                local_player_last_damage_x     = players[p->killer_id].pos.x;
-                local_player_last_damage_y     = players[p->killer_id].pos.y;
-                local_player_last_damage_z     = players[p->killer_id].pos.z;
+                local_player.last_damage_timer = local_player.death_time;
+                local_player.last_damage       = players[p->killer_id].pos;
 
-                cameracontroller_death_init(local_player_id, players[p->killer_id].pos.x, players[p->killer_id].pos.y,
-                                            players[p->killer_id].pos.z);
+                cameracontroller_death_init(local_player.id, players[p->killer_id].pos);
             } else {
-                cameracontroller_death_init(local_player_id, 0, 0, 0);
+                cameracontroller_death_init(local_player.id, (Position) {0.0F, 0.0F, 0.0F});
             }
         }
 
@@ -707,7 +704,7 @@ void read_PacketKillAction(void * data, int len) {
             case KILLTYPE_CLASSCHANGE: sprintf(m, "%s changed weapons", players[p->player_id].name); break;
         }
 
-        if (p->killer_id == local_player_id || p->player_id == local_player_id) {
+        if (p->killer_id == local_player.id || p->player_id == local_player.id) {
             chat_add(1, Red, m, UTF8);
         } else {
             switch (players[p->killer_id].team) {
@@ -745,22 +742,23 @@ void read_PacketGrenade(void * data, int len) {
 
 void read_PacketSetHP(void * data, int len) {
     struct PacketSetHP * p = (struct PacketSetHP*) data;
-    local_player_health = p->hp;
+    local_player.health = p->hp;
+
     if (p->type == DAMAGE_SOURCE_GUN) {
-        local_player_last_damage_timer = window_time();
+        local_player.last_damage_timer = window_time();
         sound_create(SOUND_LOCAL, &sound_hitplayer, 0.0F, 0.0F, 0.0F);
     }
 
-    local_player_last_damage_x = letohf(p->x);
-    local_player_last_damage_y = 63.0F - letohf(p->z);
-    local_player_last_damage_z = letohf(p->y);
+    local_player.last_damage.x = letohf(p->x);
+    local_player.last_damage.y = 63.0F - letohf(p->z);
+    local_player.last_damage.z = letohf(p->y);
 }
 
 void read_PacketRestock(void * data, int len) {
     struct PacketRestock * p = (struct PacketRestock*) data;
-    local_player_health   = 100;
-    local_player_blocks   = 50;
-    local_player_grenades = 3;
+    local_player.health   = 100;
+    local_player.blocks   = 50;
+    local_player.grenades = 3;
     weapon_set(true);
     sound_create(SOUND_LOCAL, &sound_switch, 0.0F, 0.0F, 0.0F);
 }
@@ -768,7 +766,7 @@ void read_PacketRestock(void * data, int len) {
 void read_PacketChangeWeapon(void * data, int len) {
     struct PacketChangeWeapon * p = (struct PacketChangeWeapon*) data;
     if (p->player_id < PLAYERS_MAX) {
-        if (p->player_id == local_player_id) {
+        if (p->player_id == local_player.id) {
             log_warn("Unexpected ChangeWeaponPacket");
             return;
         }
@@ -779,9 +777,9 @@ void read_PacketChangeWeapon(void * data, int len) {
 
 void read_PacketWeaponReload(void * data, int len) {
     struct PacketWeaponReload * p = (struct PacketWeaponReload*) data;
-    if (p->player_id == local_player_id) {
-        local_player_ammo = p->ammo;
-        local_player_ammo_reserved = p->reserved;
+    if (p->player_id == local_player.id) {
+        local_player.ammo          = p->ammo;
+        local_player.ammo_reserved = p->reserved;
     } else {
         sound_create_sticky(weapon_sound_reload(players[p->player_id].weapon), players + p->player_id, p->player_id);
         // dont use values from packet which somehow are never correct
@@ -1019,12 +1017,12 @@ void read_PacketPlayerProperties(void * data, int len) {
         players[p->player_id].ammo_reserved = p->ammo_reserved;
         players[p->player_id].score         = letohu32(p->score);
 
-        if (p->player_id == local_player_id) {
-            local_player_health        = p->health;
-            local_player_blocks        = p->blocks;
-            local_player_grenades      = p->grenades;
-            local_player_ammo          = p->ammo_clip;
-            local_player_ammo_reserved = p->ammo_reserved;
+        if (p->player_id == local_player.id) {
+            local_player.health        = p->health;
+            local_player.blocks        = p->blocks;
+            local_player.grenades      = p->grenades;
+            local_player.ammo          = p->ammo_clip;
+            local_player.ammo_reserved = p->ammo_reserved;
         }
     }
 }
@@ -1053,10 +1051,10 @@ void read_PacketBulletTrace(void * data, int len) {
 
 void network_updateColor() {
     struct PacketSetColor c;
-    c.player_id = local_player_id;
-    c.red       = players[local_player_id].block.r;
-    c.green     = players[local_player_id].block.g;
-    c.blue      = players[local_player_id].block.b;
+    c.player_id = local_player.id;
+    c.red       = players[local_player.id].block.r;
+    c.green     = players[local_player.id].block.g;
+    c.blue      = players[local_player.id].block.b;
     network_send(PACKET_SETCOLOR_ID, &c, sizeof(c));
 }
 
@@ -1240,61 +1238,61 @@ int network_update() {
             }
         }
 
-        if (network_logged_in && players[local_player_id].team != TEAM_SPECTATOR && players[local_player_id].alive) {
-            if (players[local_player_id].input.keys != network_keys_last) {
+        if (network_logged_in && players[local_player.id].team != TEAM_SPECTATOR && players[local_player.id].alive) {
+            if (players[local_player.id].input.keys != network_keys_last) {
                 struct PacketInputData in;
-                in.player_id = local_player_id;
-                in.keys      = players[local_player_id].input.keys;
+                in.player_id = local_player.id;
+                in.keys      = players[local_player.id].input.keys;
                 network_send(PACKET_INPUTDATA_ID, &in, sizeof(in));
 
-                network_keys_last = players[local_player_id].input.keys;
+                network_keys_last = players[local_player.id].input.keys;
             }
 
-            if ((players[local_player_id].input.buttons != network_buttons_last) &&
-               !HASBIT(players[local_player_id].input.keys, INPUT_SPRINT)) {
+            if ((players[local_player.id].input.buttons != network_buttons_last) &&
+               !HASBIT(players[local_player.id].input.keys, INPUT_SPRINT)) {
                 struct PacketWeaponInput in;
-                in.player_id = local_player_id;
-                in.input     = players[local_player_id].input.buttons;
+                in.player_id = local_player.id;
+                in.input     = players[local_player.id].input.buttons;
                 network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
 
-                network_buttons_last = players[local_player_id].input.buttons;
+                network_buttons_last = players[local_player.id].input.buttons;
             }
 
-            if (players[local_player_id].held_item != network_tool_last) {
+            if (players[local_player.id].held_item != network_tool_last) {
                 struct PacketSetTool t;
-                t.player_id = local_player_id;
-                t.tool      = players[local_player_id].held_item;
+                t.player_id = local_player.id;
+                t.tool      = players[local_player.id].held_item;
                 network_send(PACKET_SETTOOL_ID, &t, sizeof(t));
 
-                network_tool_last = players[local_player_id].held_item;
+                network_tool_last = players[local_player.id].held_item;
             }
 
             if (window_time() - network_pos_update > 1.0F
-               && distance3D(network_pos_last.x, network_pos_last.y, network_pos_last.z, players[local_player_id].pos.x,
-                             players[local_player_id].pos.y, players[local_player_id].pos.z)
+               && distance3D(network_pos_last.x, network_pos_last.y, network_pos_last.z, players[local_player.id].pos.x,
+                             players[local_player.id].pos.y, players[local_player.id].pos.z)
                    > 0.01F) {
                 network_pos_update = window_time();
-                network_pos_last   = players[local_player_id].pos;
+                network_pos_last   = players[local_player.id].pos;
 
                 struct PacketPositionData pos;
-                pos.x = htolef(players[local_player_id].pos.x);
-                pos.y = htolef(players[local_player_id].pos.z);
-                pos.z = htolef(63.0F - players[local_player_id].pos.y);
+                pos.x = htolef(players[local_player.id].pos.x);
+                pos.y = htolef(players[local_player.id].pos.z);
+                pos.z = htolef(63.0F - players[local_player.id].pos.y);
                 network_send(PACKET_POSITIONDATA_ID, &pos, sizeof(pos));
             }
 
             if (window_time() - network_orient_update > (1.0F / 120.0F)
                && angle3D(network_orient_last.x, network_orient_last.y, network_orient_last.z,
-                          players[local_player_id].orientation.x, players[local_player_id].orientation.y,
-                          players[local_player_id].orientation.z)
+                          players[local_player.id].orientation.x, players[local_player.id].orientation.y,
+                          players[local_player.id].orientation.z)
                    > 0.5F / 180.0F * PI) {
                 network_orient_update = window_time();
-                network_orient_last   = players[local_player_id].orientation;
+                network_orient_last   = players[local_player.id].orientation;
 
                 struct PacketOrientationData orient;
-                orient.x = htolef(players[local_player_id].orientation.x);
-                orient.y = htolef(players[local_player_id].orientation.z);
-                orient.z = htolef(-players[local_player_id].orientation.y);
+                orient.x = htolef(players[local_player.id].orientation.x);
+                orient.y = htolef(players[local_player.id].orientation.z);
+                orient.z = htolef(-players[local_player.id].orientation.y);
                 network_send(PACKET_ORIENTATIONDATA_ID, &orient, sizeof(orient));
             }
         }

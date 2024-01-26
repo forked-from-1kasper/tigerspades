@@ -34,13 +34,13 @@
 #include <BetterSpades/channel.h>
 #include <BetterSpades/utils.h>
 
-struct channel ping_queue;
+Channel ping_queue;
 ENetSocket sock, lan;
 pthread_t ping_thread;
 void (*ping_result)(void *, float time_delta, char * aos);
 
 void ping_init() {
-    channel_create(&ping_queue, sizeof(struct ping_entry), 64);
+    channel_create(&ping_queue, sizeof(PingEntry), 64);
 
     sock = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
     enet_socket_set_option(sock, ENET_SOCKOPT_NONBLOCK, 1);
@@ -72,7 +72,7 @@ static void ping_lan() {
 }
 
 static bool pings_retry(void * key, void * value, void * user) {
-    struct ping_entry * entry = (struct ping_entry*) value;
+    PingEntry * entry = (PingEntry *) value;
 
     if (window_time() - entry->time_start > 2.0F) { // timeout
         // try up to 3 times after first failed attempt
@@ -110,12 +110,12 @@ void * ping_update(void * data) {
     float ping_start = window_time();
 
     HashTable pings;
-    ht_setup(&pings, sizeof(uint64_t), sizeof(struct ping_entry), 64);
+    ht_setup(&pings, sizeof(uint64_t), sizeof(PingEntry), 64);
 
     while (1) {
         size_t drain = channel_size(&ping_queue);
         for (size_t k = 0; (k < drain) || (!pings.size && window_time() - ping_start >= 8.0F); k++) {
-            struct ping_entry entry;
+            PingEntry entry;
             channel_await(&ping_queue, &entry);
 
             uint64_t ID = IP_KEY(entry.addr);
@@ -132,7 +132,7 @@ void * ping_update(void * data) {
             uint64_t ID = IP_KEY(from);
 
             if (recvLength != 0) {
-                struct ping_entry * entry = ht_lookup(&pings, &ID);
+                PingEntry * entry = ht_lookup(&pings, &ID);
 
                 if (entry) {
                     if (recvLength > 0) { // received something!
@@ -180,7 +180,7 @@ void * ping_update(void * data) {
 }
 
 void ping_check(char * addr, int port, char * aos) {
-    struct ping_entry entry = {
+    PingEntry entry = {
         .trycount   = 0,
         .addr.port  = port,
         .time_start = window_time(),

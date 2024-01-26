@@ -31,22 +31,22 @@ float weapon_reload_start, weapon_last_shot;
 unsigned char weapon_reload_inprogress = 0;
 
 void weapon_update() {
-    float t, delay = weapon_delay(players[local_player_id].weapon);
+    float t, delay = weapon_delay(players[local_player.id].weapon);
     int bullets = weapon_can_reload();
-    switch (players[local_player_id].weapon) {
+    switch (players[local_player.id].weapon) {
         case WEAPON_RIFLE:   t = 2.5F;           break;
         case WEAPON_SMG:     t = 2.5F;           break;
         case WEAPON_SHOTGUN: t = 0.5F * bullets; break;
     }
 
     if (weapon_reload_inprogress) {
-        if (players[local_player_id].weapon == WEAPON_SHOTGUN) {
+        if (players[local_player.id].weapon == WEAPON_SHOTGUN) {
             if (window_time() - weapon_reload_start >= 0.5F) {
 
                 WAV * snd;
-                if (local_player_ammo < 6 && local_player_ammo_reserved > 0) {
-                    local_player_ammo++;
-                    local_player_ammo_reserved--;
+                if (local_player.ammo < 6 && local_player.ammo_reserved > 0) {
+                    local_player.ammo++;
+                    local_player.ammo_reserved--;
 
                     weapon_reload_start = window_time();
                     snd = &sound_shotgun_reload;
@@ -57,28 +57,26 @@ void weapon_update() {
 
                 sound_create(SOUND_LOCAL, snd, 0.0F, 0.0F, 0.0F);
             }
-        } else {
-            if (window_time() - weapon_reload_start >= t) {
-                local_player_ammo += bullets;
-                local_player_ammo_reserved -= bullets;
-                weapon_reload_inprogress = 0;
-            }
+        } else if (window_time() - weapon_reload_start >= t) {
+            local_player.ammo += bullets;
+            local_player.ammo_reserved -= bullets;
+            weapon_reload_inprogress = 0;
         }
 
-        if (players[local_player_id].held_item == TOOL_GUN) {
-            players[local_player_id].item_disabled = weapon_reload_inprogress ? window_time() : 0;
-            players[local_player_id].items_show_start = window_time();
-            players[local_player_id].items_show = 1;
+        if (players[local_player.id].held_item == TOOL_GUN) {
+            players[local_player.id].item_disabled = weapon_reload_inprogress ? window_time() : 0;
+            players[local_player.id].items_show_start = window_time();
+            players[local_player.id].items_show = 1;
         }
     } else {
-        if (screen_current == SCREEN_NONE && window_time() - players[local_player_id].item_disabled >= 0.5F) {
-            if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) &&
-               (players[local_player_id].held_item == TOOL_GUN) &&
-               (local_player_ammo > 0) &&
+        if (screen_current == SCREEN_NONE && window_time() - players[local_player.id].item_disabled >= 0.5F) {
+            if (HASBIT(players[local_player.id].input.buttons, BUTTON_PRIMARY) &&
+               (players[local_player.id].held_item == TOOL_GUN) &&
+               (local_player.ammo > 0) &&
                (window_time() - weapon_last_shot >= delay)) {
                 weapon_shoot();
                 #if !(HACKS_ENABLED && HACK_NORELOAD)
-                local_player_ammo = max(local_player_ammo - 1, 0);
+                local_player.ammo = max(local_player.ammo - 1, 0);
                 #endif
                 weapon_last_shot = window_time();
             }
@@ -206,35 +204,38 @@ kv6 * weapon_model(int gun) {
 }
 
 void weapon_set(bool restock) {
-    if (!restock) local_player_ammo = weapon_ammo(players[local_player_id].weapon);
+    if (!restock) local_player.ammo = weapon_ammo(players[local_player.id].weapon);
 
-    local_player_ammo_reserved = weapon_ammo_reserved(players[local_player_id].weapon);
+    local_player.ammo_reserved = weapon_ammo_reserved(players[local_player.id].weapon);
     weapon_reload_inprogress = 0;
 }
 
 void weapon_reload() {
-    if (local_player_ammo_reserved == 0 || weapon_reload_inprogress || !weapon_can_reload())
+    if (local_player.ammo_reserved == 0 || weapon_reload_inprogress || !weapon_can_reload())
         return;
 
     weapon_reload_start = window_time();
     weapon_reload_inprogress = 1;
 
-    sound_create(SOUND_LOCAL, weapon_sound_reload(players[local_player_id].weapon), players[local_player_id].pos.x,
-                 players[local_player_id].pos.y, players[local_player_id].pos.z);
+    sound_create(SOUND_LOCAL, weapon_sound_reload(players[local_player.id].weapon),
+        players[local_player.id].pos.x,
+        players[local_player.id].pos.y,
+        players[local_player.id].pos.z
+    );
 
     struct PacketWeaponReload reloadp;
-    reloadp.player_id = local_player_id;
-    reloadp.ammo      = local_player_ammo;
-    reloadp.reserved  = local_player_ammo_reserved;
+    reloadp.player_id = local_player.id;
+    reloadp.ammo      = local_player.ammo;
+    reloadp.reserved  = local_player.ammo_reserved;
     network_send(PACKET_WEAPONRELOAD_ID, &reloadp, sizeof(reloadp));
 }
 
 void weapon_reload_abort() {
-    if (weapon_reload_inprogress && players[local_player_id].weapon == WEAPON_SHOTGUN) {
-        weapon_reload_inprogress = 0;
-        players[local_player_id].items_show = 0;
-        players[local_player_id].item_showup = 0;
-        players[local_player_id].item_disabled = 0;
+    if (weapon_reload_inprogress && players[local_player.id].weapon == WEAPON_SHOTGUN) {
+        weapon_reload_inprogress               = 0;
+        players[local_player.id].items_show    = 0;
+        players[local_player.id].item_showup   = 0;
+        players[local_player.id].item_disabled = 0;
     }
 }
 
@@ -243,41 +244,46 @@ int weapon_reloading() {
 }
 
 int weapon_can_reload() {
-    int mag_size = weapon_ammo(players[local_player_id].weapon);
-    return max(min(min(local_player_ammo_reserved, mag_size), mag_size - local_player_ammo), 0);
+    int mag_size = weapon_ammo(players[local_player.id].weapon);
+    return max(min(min(local_player.ammo_reserved, mag_size), mag_size - local_player.ammo), 0);
 }
+
+#define WEAPON_ROUNDS(w) ((w) == WEAPON_SHOTGUN ? 8 : 1)
 
 void weapon_shoot() {
     // see this for reference:
     // https://pastebin.com/raw/TMjKSTXG
     // http://paste.quacknet.org/view/a3ea2743
 
-    for (int i = 0; i < ((players[local_player_id].weapon == WEAPON_SHOTGUN) ? 8 : 1); i++) {
-        float o[3] = {players[local_player_id].orientation.x, players[local_player_id].orientation.y,
-                      players[local_player_id].orientation.z};
+    for (int i = 0; i < WEAPON_ROUNDS(players[local_player.id].weapon); i++) {
+        float o[3] = {
+            players[local_player.id].orientation.x,
+            players[local_player.id].orientation.y,
+            players[local_player.id].orientation.z
+        };
 
-        weapon_spread(&players[local_player_id], o);
+        weapon_spread(&players[local_player.id], o);
 
         struct Camera_HitType hit;
-        camera_hit(&hit, local_player_id, players[local_player_id].physics.eye.x,
-                   players[local_player_id].physics.eye.y + player_height(&players[local_player_id]),
-                   players[local_player_id].physics.eye.z, o[0], o[1], o[2], 128.0F);
+        camera_hit(&hit, local_player.id, players[local_player.id].physics.eye.x,
+                   players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),
+                   players[local_player.id].physics.eye.z, o[X], o[Y], o[Z], 128.0F);
 
         #if !(HACKS_ENABLED && HACK_NORELOAD)
-        if (players[local_player_id].input.buttons != network_buttons_last) {
+        if (players[local_player.id].input.buttons != network_buttons_last) {
             struct PacketWeaponInput in;
-            in.player_id = local_player_id;
-            in.input     = players[local_player_id].input.buttons;
+            in.player_id = local_player.id;
+            in.input     = players[local_player.id].input.buttons;
             network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
 
-            network_buttons_last = players[local_player_id].input.buttons;
+            network_buttons_last = players[local_player.id].input.buttons;
         }
         #endif
 
         struct PacketOrientationData orient;
-        orient.x = htolef(players[local_player_id].orientation.x);
-        orient.y = htolef(players[local_player_id].orientation.z);
-        orient.z = htolef(-players[local_player_id].orientation.y);
+        orient.x = htolef(players[local_player.id].orientation.x);
+        orient.y = htolef(players[local_player.id].orientation.z);
+        orient.z = htolef(-players[local_player.id].orientation.y);
         network_send(PACKET_ORIENTATIONDATA_ID, &orient, sizeof(orient));
 
         if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
@@ -303,11 +309,11 @@ void weapon_shoot() {
                 break;
             }
             case CAMERA_HITTYPE_BLOCK:
-                map_damage(hit.x, hit.y, hit.z, weapon_block_damage(players[local_player_id].weapon));
+                map_damage(hit.x, hit.y, hit.z, weapon_block_damage(players[local_player.id].weapon));
                 if (map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
                     struct PacketBlockAction blk;
                     blk.action_type = ACTION_DESTROY;
-                    blk.player_id   = local_player_id;
+                    blk.player_id   = local_player.id;
                     blk.x           = htoles32(hit.x);
                     blk.y           = htoles32(hit.z);
                     blk.z           = htoles32(63 - hit.y);
@@ -320,14 +326,14 @@ void weapon_shoot() {
                 break;
         }
 
-        tracer_pvelocity(o, &players[local_player_id]);
-        tracer_add(players[local_player_id].weapon, players[local_player_id].physics.eye.x,
-                   players[local_player_id].physics.eye.y + player_height(&players[local_player_id]),
-                   players[local_player_id].physics.eye.z, o[0], o[1], o[2]);
+        tracer_pvelocity(o, &players[local_player.id]);
+        tracer_add(players[local_player.id].weapon, players[local_player.id].physics.eye.x,
+                   players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),
+                   players[local_player.id].physics.eye.z, o[0], o[1], o[2]);
     }
 
     double horiz_recoil, vert_recoil;
-    weapon_recoil(players[local_player_id].weapon, &horiz_recoil, &vert_recoil);
+    weapon_recoil(players[local_player.id].weapon, &horiz_recoil, &vert_recoil);
 
     long triangle_wave = (long) (window_time() * 1000) & 511;
     horiz_recoil *= ((double) triangle_wave) - 255.5;
@@ -336,38 +342,36 @@ void weapon_shoot() {
         horiz_recoil *= -1.0;
     }
 
-    if ((HASBIT(players[local_player_id].input.keys, INPUT_UP)   ||
-         HASBIT(players[local_player_id].input.keys, INPUT_DOWN) ||
-         HASBIT(players[local_player_id].input.keys, INPUT_LEFT) ||
-         HASBIT(players[local_player_id].input.keys, INPUT_RIGHT)) &&
-        !HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY)) {
+    if ((HASBIT(players[local_player.id].input.keys, INPUT_UP)   ||
+         HASBIT(players[local_player.id].input.keys, INPUT_DOWN) ||
+         HASBIT(players[local_player.id].input.keys, INPUT_LEFT) ||
+         HASBIT(players[local_player.id].input.keys, INPUT_RIGHT)) &&
+        !HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY)) {
         vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     }
 
-    if (players[local_player_id].physics.airborne) {
+    if (players[local_player.id].physics.airborne) {
         vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
-    } else {
-        if (HASBIT(players[local_player_id].input.keys, INPUT_CROUCH)) {
-            vert_recoil  *= 0.5;
-            horiz_recoil *= 0.5;
-        }
+    } else if (HASBIT(players[local_player.id].input.keys, INPUT_CROUCH)) {
+        vert_recoil  *= 0.5;
+        horiz_recoil *= 0.5;
     }
 
     // converges to 0 for (+/-) 1.0, (only slowly, has no effect on usual orientation.y range)
     horiz_recoil *= sqrt(1.0F
-                         - players[local_player_id].orientation.y * players[local_player_id].orientation.y
-                             * players[local_player_id].orientation.y * players[local_player_id].orientation.y);
+                         - players[local_player.id].orientation.y * players[local_player.id].orientation.y
+                             * players[local_player.id].orientation.y * players[local_player.id].orientation.y);
 
 #if !(HACKS_ENABLED && HACK_NORECOIL)
-    camera_rot_x += horiz_recoil;
-    camera_rot_y -= vert_recoil;
+    camera.rot.x += horiz_recoil;
+    camera.rot.y -= vert_recoil;
 #endif
 
     camera_overflow_adjust();
 
-    sound_create(SOUND_LOCAL, weapon_sound(players[local_player_id].weapon), players[local_player_id].pos.x,
-                 players[local_player_id].pos.y, players[local_player_id].pos.z);
-    particle_create_casing(&players[local_player_id]);
+    sound_create(SOUND_LOCAL, weapon_sound(players[local_player.id].weapon), players[local_player.id].pos.x,
+                 players[local_player.id].pos.y, players[local_player.id].pos.z);
+    particle_create_casing(&players[local_player.id]);
 }

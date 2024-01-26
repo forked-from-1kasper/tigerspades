@@ -41,8 +41,7 @@
 Chunk chunks[CHUNKS_PER_DIM * CHUNKS_PER_DIM];
 
 HashTable chunk_block_queue;
-struct channel chunk_work_queue;
-struct channel chunk_result_queue;
+Channel chunk_work_queue, chunk_result_queue;
 pthread_mutex_t chunk_block_queue_lock;
 
 typedef struct {
@@ -90,13 +89,11 @@ void chunk_init() {
         pthread_create(threads + k, NULL, chunk_generate, NULL);
 }
 
-static int chunk_sort(const void* a, const void* b) {
+static int chunk_sort(const void * a, const void * b) {
     ChunkRenderCall * aa = (ChunkRenderCall *) a;
     ChunkRenderCall * bb = (ChunkRenderCall *) b;
-    return distance2D(aa->chunk->x * CHUNK_SIZE + CHUNK_SIZE / 2, aa->chunk->y * CHUNK_SIZE + CHUNK_SIZE / 2, camera_x,
-                      camera_z)
-         - distance2D(bb->chunk->x * CHUNK_SIZE + CHUNK_SIZE / 2, bb->chunk->y * CHUNK_SIZE + CHUNK_SIZE / 2, camera_x,
-                      camera_z);
+    return distance2D(aa->chunk->x * CHUNK_SIZE + CHUNK_SIZE / 2, aa->chunk->y * CHUNK_SIZE + CHUNK_SIZE / 2, camera.pos.x, camera.pos.z)
+         - distance2D(bb->chunk->x * CHUNK_SIZE + CHUNK_SIZE / 2, bb->chunk->y * CHUNK_SIZE + CHUNK_SIZE / 2, camera.pos.x, camera.pos.z);
 }
 
 void chunk_render(ChunkRenderCall * c) {
@@ -124,7 +121,7 @@ void chunk_draw_visible() {
     // go through all possible chunks and store all in range and view
     for (int y = -overshoot; y < CHUNKS_PER_DIM + overshoot; y++) {
         for (int x = -overshoot; x < CHUNKS_PER_DIM + overshoot; x++) {
-            if (distance2D((x + 0.5F) * CHUNK_SIZE, (y + 0.5F) * CHUNK_SIZE, camera_x, camera_z)
+            if (distance2D((x + 0.5F) * CHUNK_SIZE, (y + 0.5F) * CHUNK_SIZE, camera.pos.x, camera.pos.z)
                <= pow(settings.render_distance + 1.414F * CHUNK_SIZE, 2)) {
                 uint32_t tmp_x = ((uint32_t) x) % CHUNKS_PER_DIM;
                 uint32_t tmp_y = ((uint32_t) y) % CHUNKS_PER_DIM;

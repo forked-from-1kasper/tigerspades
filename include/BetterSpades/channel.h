@@ -24,28 +24,28 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-struct channel {
+typedef struct {
     size_t object_size;
     size_t initial_length;
     size_t length;
     size_t count;
     size_t loc_insert;
     size_t loc_remove;
-    void* queue;
+    void * queue;
     pthread_mutex_t lock;
     pthread_cond_t signal;
-};
+} Channel;
 
-bool channel_create(struct channel* ch, size_t object_size, size_t length);
+bool channel_create(Channel * ch, size_t object_size, size_t length);
 
-size_t channel_size(struct channel* ch);
+size_t channel_size(Channel * ch);
 
-void channel_destroy(struct channel* ch);
+void channel_destroy(Channel * ch);
 
-void channel_put(struct channel* ch, void* object);
+void channel_put(Channel * ch, void* object);
 
-void channel_await(struct channel* ch, void* object);
+void channel_await(Channel * ch, void* object);
 
-void channel_clear(struct channel* ch);
+void channel_clear(Channel * ch);
 
 #endif

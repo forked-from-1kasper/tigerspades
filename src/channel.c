@@ -24,7 +24,7 @@
 
 #include <BetterSpades/channel.h>
 
-static void channel_sanity_checks(struct channel* ch) {
+static void channel_sanity_checks(Channel * ch) {
     assert(ch != NULL);
 
     assert(ch->queue != NULL);
@@ -43,7 +43,7 @@ static void channel_sanity_checks(struct channel* ch) {
     }
 }
 
-bool channel_create(struct channel* ch, size_t object_size, size_t length) {
+bool channel_create(Channel * ch, size_t object_size, size_t length) {
     assert(ch != NULL && object_size > 0 && length > 0);
 
     ch->object_size = object_size;
@@ -71,7 +71,7 @@ bool channel_create(struct channel* ch, size_t object_size, size_t length) {
     return true;
 }
 
-size_t channel_size(struct channel* ch) {
+size_t channel_size(Channel * ch) {
     assert(ch != NULL);
 
     pthread_mutex_lock(&ch->lock);
@@ -80,7 +80,7 @@ size_t channel_size(struct channel* ch) {
     return res;
 }
 
-void channel_destroy(struct channel* ch) {
+void channel_destroy(Channel * ch) {
     assert(ch != NULL);
 
     free(ch->queue);
@@ -89,7 +89,7 @@ void channel_destroy(struct channel* ch) {
 }
 
 // call once buffer is full
-static void channel_grow(struct channel* ch) {
+static void channel_grow(Channel * ch) {
     assert(ch != NULL);
 
     size_t length = ch->length * 2;
@@ -112,7 +112,7 @@ static void channel_grow(struct channel* ch) {
 }
 
 // call once only 25% of elements left, we will halve the buffer, so its filled exactly by 50%
-static void channel_shrink(struct channel* ch) {
+static void channel_shrink(Channel * ch) {
     assert(ch != NULL);
 
     size_t length = ch->length / 2;
@@ -130,8 +130,8 @@ static void channel_shrink(struct channel* ch) {
         size_t object_count = ch->length - ch->loc_remove;
         size_t new_remove_loc = length - object_count;
 
-        memcpy((uint8_t*)ch->queue + new_remove_loc * ch->object_size,
-               (uint8_t*)ch->queue + ch->loc_remove * ch->object_size, object_count * ch->object_size);
+        memcpy((uint8_t*) ch->queue + new_remove_loc * ch->object_size,
+               (uint8_t*) ch->queue + ch->loc_remove * ch->object_size, object_count * ch->object_size);
 
         ch->loc_remove = new_remove_loc;
     }
@@ -144,7 +144,7 @@ static void channel_shrink(struct channel* ch) {
     channel_sanity_checks(ch);
 }
 
-void channel_put(struct channel* ch, void* object) {
+void channel_put(Channel * ch, void * object) {
     assert(ch != NULL && object != NULL);
 
     pthread_mutex_lock(&ch->lock);
@@ -153,7 +153,7 @@ void channel_put(struct channel* ch, void* object) {
     if (ch->count >= ch->length)
         channel_grow(ch);
 
-    memcpy((uint8_t*)ch->queue + ch->loc_insert * ch->object_size, object, ch->object_size);
+    memcpy((uint8_t*) ch->queue + ch->loc_insert * ch->object_size, object, ch->object_size);
     ch->loc_insert = (ch->loc_insert + 1) % ch->length;
     ch->count++;
 
@@ -163,7 +163,7 @@ void channel_put(struct channel* ch, void* object) {
     pthread_mutex_unlock(&ch->lock);
 }
 
-void channel_await(struct channel* ch, void* object) {
+void channel_await(Channel * ch, void * object) {
     assert(ch != NULL && object != NULL);
 
     pthread_mutex_lock(&ch->lock);
@@ -172,7 +172,7 @@ void channel_await(struct channel* ch, void* object) {
     while (!ch->count)
         pthread_cond_wait(&ch->signal, &ch->lock);
 
-    memcpy(object, (uint8_t*)ch->queue + ch->loc_remove * ch->object_size, ch->object_size);
+    memcpy(object, (uint8_t*) ch->queue + ch->loc_remove * ch->object_size, ch->object_size);
     ch->loc_remove = (ch->loc_remove + 1) % ch->length;
     ch->count--;
 
@@ -185,7 +185,7 @@ void channel_await(struct channel* ch, void* object) {
     pthread_mutex_unlock(&ch->lock);
 }
 
-void channel_clear(struct channel* ch) {
+void channel_clear(Channel * ch) {
     assert(ch != NULL);
 
     pthread_mutex_lock(&ch->lock);

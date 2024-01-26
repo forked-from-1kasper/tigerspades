@@ -159,14 +159,13 @@ void map_damaged_voxels_render() {
     }
 }
 
-struct map_work_packet {
+typedef struct {
     int x, y, z;
-};
+} MapWorkPacket;
 
-struct channel map_work_queue;
-struct channel map_result_queue;
+Channel map_work_queue, map_result_queue;
 
-struct map_collapsing {
+typedef struct {
     HashTable voxels;
     Velocity v;
     Position p;
@@ -176,14 +175,14 @@ struct map_collapsing {
     int rotation, has_displaylist;
     struct glx_displaylist displaylist;
     Tesselator mesh_geometry;
-};
+} MapCollapsing;
 
 EntitySystem map_collapsing_structures;
 
 static bool falling_blocks_meshing(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t *) key;
     TrueColor color = *(TrueColor *) value;
-    struct map_collapsing * collapsing = ((struct map_collapsing **) user)[0];
+    MapCollapsing * collapsing = ((MapCollapsing **) user)[0];
     Tesselator * tess = ((Tesselator **) user)[1];
 
     int x2 = pos_keyx(pos);
@@ -243,7 +242,7 @@ static bool falling_blocks_pivot(void * key, void * value, void * user) {
 
 static const int DIRECTION_MASK[][3] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 
-static bool map_update_physics_sub(struct map_collapsing * collapsing, int x, int y, int z) {
+static bool map_update_physics_sub(MapCollapsing * collapsing, int x, int y, int z) {
     if (y <= 1)
         return false;
 
@@ -321,8 +320,8 @@ static bool map_update_physics_sub(struct map_collapsing * collapsing, int x, in
 }
 
 /*int map_collapsing_cmp(const void* a, const void* b) {
-    struct map_collapsing* A = (struct map_collapsing*)a;
-    struct map_collapsing* B = (struct map_collapsing*)b;
+    MapCollapsing * A = (MapCollapsing*) a;
+    MapCollapsing * B = (MapCollapsing*) b;
     if (A->used && !B->used)
         return -1;
     if (!A->used && B->used)
@@ -332,7 +331,7 @@ static bool map_update_physics_sub(struct map_collapsing * collapsing, int x, in
 }*/
 
 static bool falling_blocks_render(void * obj, void * user) {
-    struct map_collapsing * collapsing = (struct map_collapsing*) obj;
+    MapCollapsing * collapsing = (MapCollapsing*) obj;
 
     matrix_identity(matrix_model);
     matrix_translate(matrix_model, collapsing->p.x, collapsing->p.y, collapsing->p.z);
@@ -356,7 +355,7 @@ static bool falling_blocks_render(void * obj, void * user) {
 }
 
 void map_collapsing_render() {
-    // qsort(map_collapsing_structures, 32, sizeof(struct map_collapsing), map_collapsing_cmp);
+    // qsort(map_collapsing_structures, 32, sizeof(MapCollapsing), map_collapsing_cmp);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -370,7 +369,7 @@ void map_collapsing_render() {
 
 static bool falling_blocks_collision(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;
-    struct map_collapsing * collapsing = ((struct map_collapsing**) user)[0];
+    MapCollapsing * collapsing = ((MapCollapsing**) user)[0];
     float dt = *(((float**)user)[1]);
 
     vec4 v = {pos_keyx(pos) + collapsing->v.x * dt * 32.0F - collapsing->p2.x + 0.5F,
@@ -385,7 +384,7 @@ static bool falling_blocks_collision(void * key, void * value, void * user) {
 static bool falling_blocks_particles(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;
     TrueColor color = *(TrueColor*) value;
-    struct map_collapsing * collapsing = (struct map_collapsing*) user;
+    MapCollapsing * collapsing = (MapCollapsing*) user;
 
     vec4 v = {pos_keyx(pos) - collapsing->p2.x + 0.5F, pos_keyy(pos) - collapsing->p2.y + 0.5F,
               pos_keyz(pos) - collapsing->p2.z + 0.5F, 1.0F};
@@ -396,7 +395,7 @@ static bool falling_blocks_particles(void * key, void * value, void * user) {
 }
 
 static bool falling_blocks_update(void * obj, void * user) {
-    struct map_collapsing * collapsing = (struct map_collapsing*) obj;
+    MapCollapsing * collapsing = (MapCollapsing*) obj;
     float dt = *(float*) user;
 
     collapsing->v.y -= dt;
@@ -448,7 +447,7 @@ void map_collapsing_update(float dt) {
     size_t drain = channel_size(&map_result_queue);
 
     for (size_t k = 0; k < drain; k++) {
-        struct map_collapsing res;
+        MapCollapsing res;
         channel_await(&map_result_queue, &res);
 
         sound_create(SOUND_WORLD, &sound_debris, res.p.x, res.p.y, res.p.z);
@@ -461,22 +460,22 @@ void map_collapsing_update(float dt) {
 
 void map_update_physics(int x, int y, int z) {
     if (x + 1 < map_size_x && !map_isair(x + 1, y, z))
-        channel_put(&map_work_queue, &(struct map_work_packet) {.x = x + 1, .y = y, .z = z});
+        channel_put(&map_work_queue, &(MapWorkPacket) {.x = x + 1, .y = y, .z = z});
 
     if (x >= 1 && !map_isair(x - 1, y, z))
-        channel_put(&map_work_queue, &(struct map_work_packet) {.x = x - 1, .y = y, .z = z});
+        channel_put(&map_work_queue, &(MapWorkPacket) {.x = x - 1, .y = y, .z = z});
 
     if (z + 1 < map_size_z && !map_isair(x, y, z + 1))
-        channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y, .z = z + 1});
+        channel_put(&map_work_queue, &(MapWorkPacket) {.x = x, .y = y, .z = z + 1});
 
     if (z >= 1 && !map_isair(x, y, z - 1))
-        channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y, .z = z - 1});
+        channel_put(&map_work_queue, &(MapWorkPacket) {.x = x, .y = y, .z = z - 1});
 
     if (y >= 3 && !map_isair(x, y - 1, z)) // don't check ground layers
-        channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y - 1, .z = z});
+        channel_put(&map_work_queue, &(MapWorkPacket) {.x = x, .y = y - 1, .z = z});
 
     if (y + 1 < map_size_y && !map_isair(x, y + 1, z))
-        channel_put(&map_work_queue, &(struct map_work_packet) {.x = x, .y = y + 1, .z = z});
+        channel_put(&map_work_queue, &(MapWorkPacket) {.x = x, .y = y + 1, .z = z});
 }
 
 // see this for details: https://github.com/infogulch/pyspades/blob/protocol075/pyspades/vxl_c.cpp#L380
@@ -494,10 +493,10 @@ float map_sunblock(int x, int y, int z) {
 
 void * falling_blocks_worker(void * user) {
     while (1) {
-        struct map_work_packet work;
+        MapWorkPacket work;
         channel_await(&map_work_queue, &work);
 
-        struct map_collapsing collapsing;
+        MapCollapsing collapsing;
         if (map_update_physics_sub(&collapsing, work.x, work.y, work.z))
             channel_put(&map_result_queue, &collapsing);
     }
@@ -514,10 +513,10 @@ void map_init() {
     map_damaged_voxels.compare = int_cmp;
     map_damaged_voxels.hash = int_hash;
 
-    entitysys_create(&map_collapsing_structures, sizeof(struct map_collapsing), 32);
+    entitysys_create(&map_collapsing_structures, sizeof(MapCollapsing), 32);
 
-    channel_create(&map_work_queue, sizeof(struct map_work_packet), 16);
-    channel_create(&map_result_queue, sizeof(struct map_collapsing), 16);
+    channel_create(&map_work_queue, sizeof(MapWorkPacket), 16);
+    channel_create(&map_result_queue, sizeof(MapCollapsing), 16);
 
     pthread_t worker;
     pthread_create(&worker, NULL, falling_blocks_worker, NULL);
@@ -693,7 +692,7 @@ int map_placedblock_color(int color) {
     return color ^ (gkrand & 0x70707);
 }
 
-void map_vxl_load(void*  v, size_t size) {
+void map_vxl_load(void * v, size_t size) {
     pthread_rwlock_wrlock(&map_lock);
     libvxl_free(&map);
     libvxl_create(&map, 512, 512, 64, v, size);

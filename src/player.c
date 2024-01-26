@@ -36,33 +36,29 @@
 #include <BetterSpades/window.h>
 #include <BetterSpades/particle.h>
 
-struct GameState gamestate;
+GameState gamestate;
 
-int button_map[3];
+MouseButtons button_map;
 
-unsigned char local_player_id = 0;
-unsigned char local_player_health = 100;
-unsigned char local_player_blocks = 50;
-unsigned char local_player_grenades = 3;
-unsigned char local_player_ammo, local_player_ammo_reserved;
-unsigned char local_player_respawn_time = 0;
-float local_player_death_time = 0.0F;
-unsigned char local_player_respawn_cnt_last = 255;
-unsigned char local_player_lasttool;
+LocalPlayer local_player = {
+    .id                = 0,
+    .health            = 100,
+    .blocks            = 50,
+    .grenades          = 3,
+    .ammo              = 0,
+    .ammo_reserved     = 0,
+    .respawn_time      = 0,
+    .respawn_cnt_last  = 255,
+    .death_time        = 0.0F,
+    .last_tool         = 0,
+    .last_damage_timer = -INFINITY,
+    .last_damage       = {0.0F, 0.0F, 0.0F},
+    .drag_active       = false,
+    .drag              = {0, 0, 0},
+    .color             = {3, 0},
+};
 
 int default_team = -1, default_gun = -1;
-
-float local_player_last_damage_timer;
-float local_player_last_damage_x;
-float local_player_last_damage_y;
-float local_player_last_damage_z;
-
-char local_player_drag_active = 0;
-int local_player_drag_x;
-int local_player_drag_y;
-int local_player_drag_z;
-
-int local_player_color_x = 3, local_player_color_y = 0;
 
 int player_intersection_type = -1;
 int player_intersection_player = 0;
@@ -115,8 +111,8 @@ void player_on_held_item_change(Player * p) {
 
 int player_can_spectate(Player * p) {
     return p->connected
-        && ((players[local_player_id].team != TEAM_SPECTATOR && p->team == players[local_player_id].team)
-            || (players[local_player_id].team == TEAM_SPECTATOR && p->team != TEAM_SPECTATOR));
+        && ((players[local_player.id].team != TEAM_SPECTATOR && p->team == players[local_player.id].team)
+            || (players[local_player.id].team == TEAM_SPECTATOR && p->team != TEAM_SPECTATOR));
 }
 
 float player_swing_func(float x) {
@@ -137,7 +133,7 @@ float * player_tool_func(const Player * p) {
             if (p->spade_use_type == 1 && t > 0.2F) return ret;
             if (p->spade_use_type == 2 && t > 1.0F) return ret;
 
-            if (p == &players[local_player_id] && camera_mode == CAMERAMODE_FPS) {
+            if (p == &players[local_player.id] && camera.mode == CAMERAMODE_FPS) {
                 if (p->spade_use_type == 1) {
                     ret[0] = player_spade_func(t) * 90.0F;
                     return ret;
@@ -175,7 +171,7 @@ float * player_tool_func(const Player * p) {
             }
         }
             // case TOOL_GRENADE:
-            /*if (p->input.buttons.lmb && p!=&players[local_player_id]) {
+            /*if (p->input.buttons.lmb && p!=&players[local_player.id]) {
                 ret[0] = max(-(window_time()-p->input.buttons.lmb_start)*35.0F,-35.0F);
                 return ret;
             } else {
@@ -188,15 +184,15 @@ float * player_tool_func(const Player * p) {
 float * player_tool_translate_func(Player * p) {
     static float ret[3];
     ret[0] = ret[1] = ret[2] = 0.0F;
-    if (p == &players[local_player_id] && camera_mode == CAMERAMODE_FPS) {
+    if (p == &players[local_player.id] && camera.mode == CAMERAMODE_FPS) {
         if (window_time() - p->item_showup < 0.5F) {
             return ret;
         }
         if (p->held_item == TOOL_GUN
-           && window_time() - weapon_last_shot < weapon_delay(players[local_player_id].weapon)) {
-            ret[2] = -(weapon_delay(players[local_player_id].weapon) - (window_time() - weapon_last_shot))
-                / weapon_delay(players[local_player_id].weapon) * weapon_recoil_anim(players[local_player_id].weapon)
-                * (local_player_ammo > 0);
+           && window_time() - weapon_last_shot < weapon_delay(players[local_player.id].weapon)) {
+            ret[2] = -(weapon_delay(players[local_player.id].weapon) - (window_time() - weapon_last_shot))
+                / weapon_delay(players[local_player.id].weapon) * weapon_recoil_anim(players[local_player.id].weapon)
+                * (local_player.ammo > 0);
             return ret;
         }
 
@@ -289,7 +285,7 @@ void player_update(float dt, int locked) {
             if (locked) {
                 player_move(&players[k], dt, k);
             } else {
-                if (k != local_player_id) {
+                if (k != local_player.id) {
                     // smooth out player orientation
                     players[k].orientation_smooth.x = players[k].orientation_smooth.x * pow(0.9F, dt * 60.0F)
                         + players[k].orientation.x * pow(0.1F, dt * 60.0F);
@@ -308,12 +304,13 @@ void player_render_all() {
     player_intersection_dist = FLT_MAX;
 
     Ray ray;
-    ray.origin[X] = camera_x;
-    ray.origin[Y] = camera_y;
-    ray.origin[Z] = camera_z;
-    ray.direction[X] = sin(camera_rot_x) * sin(camera_rot_y);
-    ray.direction[Y] = cos(camera_rot_y);
-    ray.direction[Z] = cos(camera_rot_x) * sin(camera_rot_y);
+    ray.origin[X] = camera.pos.x;
+    ray.origin[Y] = camera.pos.y;
+    ray.origin[Z] = camera.pos.z;
+
+    ray.direction[X] = sin(camera.rot.x) * sin(camera.rot.y);
+    ray.direction[Y] = cos(camera.rot.y);
+    ray.direction[Z] = cos(camera.rot.x) * sin(camera.rot.y);
 
     for (int k = 0; k < PLAYERS_MAX; k++) {
         if (!players[k].connected || players[k].team == TEAM_SPECTATOR)
@@ -329,6 +326,7 @@ void player_render_all() {
             if (players[k].spade_use_type == 2)
                 players[k].spade_use_timer = 0;
         }
+
         if (players[k].alive && players[k].held_item == TOOL_SPADE
            && (HASBIT(players[k].input.buttons, BUTTON_PRIMARY) ||
                HASBIT(players[k].input.buttons, BUTTON_SECONDARY))
@@ -344,18 +342,18 @@ void player_render_all() {
                     case CAMERA_HITTYPE_BLOCK:
                         sound_create(SOUND_WORLD, &sound_hitground, hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
 
-                        if (k == local_player_id)
+                        if (k == local_player.id)
                             map_damage(hit.x, hit.y, hit.z, 50);
 
-                        if (k == local_player_id && map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
+                        if (k == local_player.id && map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
                             struct PacketBlockAction blk;
                             blk.action_type = ACTION_DESTROY;
-                            blk.player_id = local_player_id;
+                            blk.player_id = local_player.id;
                             blk.x = htoles32(hit.x);
                             blk.y = htoles32(hit.z);
                             blk.z = htoles32(63 - hit.y);
                             network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
-                            local_player_blocks = min(local_player_blocks + 1, 50);
+                            local_player.blocks = min(local_player.blocks + 1, 50);
                             // read_PacketBlockAction(&blk,sizeof(blk));
                         } else {
                             particle_create(map_get(hit.x, hit.y, hit.z), hit.xb + 0.5F, hit.yb + 0.5F, hit.zb + 0.5F,
@@ -371,7 +369,7 @@ void player_render_all() {
                             players[hit.player_id].physics.eye.z,
                             3.5F, 1.0F, 8, 0.1F, 0.4F
                         );
-                        if (k == local_player_id) {
+                        if (k == local_player.id) {
                             struct PacketHit h;
                             h.player_id = hit.player_id;
                             h.hit_type = HITTYPE_SPADE;
@@ -391,10 +389,10 @@ void player_render_all() {
                     camera_hit_fromplayer(&hit, k, 4.0F);
                     if (hit.type == CAMERA_HITTYPE_BLOCK && hit.y > 1) {
                         sound_create(SOUND_WORLD, &sound_hitground, hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
-                        if (k == local_player_id) {
+                        if (k == local_player.id) {
                             struct PacketBlockAction blk;
                             blk.action_type = ACTION_SPADE;
-                            blk.player_id = local_player_id;
+                            blk.player_id = local_player.id;
                             blk.x = htoles32(hit.x);
                             blk.y = htoles32(hit.z);
                             blk.z = htoles32(63 - hit.y);
@@ -409,9 +407,9 @@ void player_render_all() {
                 players[k].spade_use_timer = window_time();
             }
         }
-        if (k != local_player_id) {
+        if (k != local_player.id) {
             if (camera_CubeInFrustum(players[k].pos.x, players[k].pos.y, players[k].pos.z, 1.0F, 2.0F)
-               && distance2D(players[k].pos.x, players[k].pos.z, camera_x, camera_z)
+               && distance2D(players[k].pos.x, players[k].pos.z, camera.pos.x, camera.pos.z)
                    <= pow(settings.render_distance + 2.0F, 2.0F)) {
                 Hit intersects = {0};
                 player_render(players + k, k);
@@ -477,55 +475,55 @@ static float foot_function(const Player * p) {
     return p->sound.feet_cylce ? f : -f;
 }
 
-struct hitbox {
+typedef struct {
     float pivot[3];
     int size[3];
     float scale;
-};
+} Hitbox;
 
-static const struct hitbox box_head = {
+static const Hitbox box_head = {
     .pivot = {2.5F, 2.5F, 0.5F},
-    .size = {6, 6, 6},
+    .size  = {6, 6, 6},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_torso = {
+static const Hitbox box_torso = {
     .pivot = {3.5F, 1.5F, 9.5F},
-    .size = {8, 4, 9},
+    .size  = {8, 4, 9},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_torsoc = {
+static const Hitbox box_torsoc = {
     .pivot = {3.5F, 6.5F, 6.5F},
-    .size = {8, 8, 7},
+    .size  = {8, 8, 7},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_arm_left = {
+static const Hitbox box_arm_left = {
     .pivot = {5.5F, -0.5F, 5.5F},
-    .size = {2, 9, 6},
+    .size  = {2, 9, 6},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_arm_right = {
+static const Hitbox box_arm_right = {
     .pivot = {-3.5F, 4.25F, 1.5F},
-    .size = {3, 14, 2},
+    .size  = {3, 14, 2},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_leg = {
+static const Hitbox box_leg = {
     .pivot = {1.0F, 1.5F, 12.0F},
-    .size = {3, 5, 12},
+    .size  = {3, 5, 12},
     .scale = 0.1F,
 };
 
-static const struct hitbox box_legc = {
+static const Hitbox box_legc = {
     .pivot = {1.0F, 1.5F, 7.0F},
-    .size = {3, 7, 8},
+    .size  = {3, 7, 8},
     .scale = 0.1F,
 };
 
-static bool hitbox_intersection(mat4 model, const struct hitbox * box, Ray * r, float * distance) {
+static bool hitbox_intersection(mat4 model, const Hitbox * box, Ray * r, float * distance) {
     mat4 inv_model;
     glm_mat4_inv(model, inv_model);
 
@@ -555,8 +553,8 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     float oy = p->orientation_smooth.y / l;
     float oz = p->orientation_smooth.z / l;
 
-    const struct hitbox * torso = HASBIT(p->input.keys, INPUT_CROUCH) ? &box_torsoc : &box_torso;
-    const struct hitbox * leg   = HASBIT(p->input.keys, INPUT_CROUCH) ? &box_legc   : &box_leg;
+    const Hitbox * torso = HASBIT(p->input.keys, INPUT_CROUCH) ? &box_torsoc : &box_torso;
+    const Hitbox * leg   = HASBIT(p->input.keys, INPUT_CROUCH) ? &box_legc   : &box_leg;
 
     float height = player_height(p) - 0.25F;
 
@@ -652,15 +650,15 @@ void player_render(Player * p, int id) {
     kv6_calclight(p->pos.x, p->pos.y, p->pos.z);
 
 #if HACKS_ENABLED && HACK_ESP
-    if (id != local_player_id)
+    if (id != local_player.id)
 #else
-    if (camera_mode == CAMERAMODE_SPECTATOR && p->team != TEAM_SPECTATOR && !cameracontroller_bodyview_mode)
+    if (camera.mode == CAMERAMODE_SPECTATOR && p->team != TEAM_SPECTATOR && !cameracontroller_bodyview_mode)
 #endif
     {
         matrix_push(matrix_model);
         matrix_translate(matrix_model, p->pos.x, p->physics.eye.y + player_height(p) + 1.25F, p->pos.z);
-        matrix_rotate(matrix_model, camera_rot_x / PI * 180.0F + 180.0F, 0.0F, 1.0F, 0.0F);
-        matrix_rotate(matrix_model, -camera_rot_y / PI * 180.0F + 90.0F, 1.0F, 0.0F, 0.0F);
+        matrix_rotate(matrix_model, camera.rot.x / PI * 180.0F + 180.0F, 0.0F, 1.0F, 0.0F);
+        matrix_rotate(matrix_model, -camera.rot.y / PI * 180.0F + 90.0F, 1.0F, 0.0F, 0.0F);
         matrix_scale(matrix_model, 1.0F / 92.0F, 1.0F / 92.0F, 1.0F / 92.0F);
         matrix_upload();
 
@@ -686,7 +684,7 @@ void player_render(Player * p, int id) {
     float oz = p->orientation_smooth.z / l;
 
     if (!p->alive) {
-        if (id != local_player_id || camera_mode != CAMERAMODE_DEATH) {
+        if (id != local_player.id || camera.mode != CAMERAMODE_DEATH) {
             matrix_push(matrix_model);
             matrix_translate(matrix_model, p->pos.x, p->pos.y + 0.25F, p->pos.z);
             matrix_pointAt(matrix_model, ox, 0.0F, oz);
@@ -707,7 +705,7 @@ void player_render(Player * p, int id) {
     kv6 * leg   = HASBIT(p->input.keys, INPUT_CROUCH) ? &model_playerlegc   : &model_playerleg;
     float height = player_height(p);
 
-    if (id != local_player_id)
+    if (id != local_player.id)
         height -= 0.25F;
 
     float len = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.z, 2.0F));
@@ -719,11 +717,11 @@ void player_render(Player * p, int id) {
     a /= 0.25F;
     b /= 0.25F;
 
-    int render_body = (id != local_player_id || !p->alive || camera_mode != CAMERAMODE_FPS)
-        && !((camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR)
+    int render_body = (id != local_player.id || !p->alive || camera.mode != CAMERAMODE_FPS)
+        && !((camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR)
              && cameracontroller_bodyview_mode && cameracontroller_bodyview_player == id);
-    int render_fpv = (id == local_player_id && camera_mode == CAMERAMODE_FPS)
-        || ((camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR)
+    int render_fpv = (id == local_player.id && camera.mode == CAMERAMODE_FPS)
+        || ((camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR)
             && cameracontroller_bodyview_mode && cameracontroller_bodyview_player == id);
 
     if (render_body) {
@@ -832,7 +830,7 @@ void player_render(Player * p, int id) {
     if (render_fpv && window_time() - p->item_showup < 0.5F)
         matrix_rotate(matrix_model, 45.0F - (window_time() - p->item_showup) * 90.0F, 1.0F, 0.0F, 0.0F);
 
-    if (!(p->held_item == TOOL_SPADE && render_fpv && camera_mode == CAMERAMODE_FPS)) {
+    if (!(p->held_item == TOOL_SPADE && render_fpv && camera.mode == CAMERAMODE_FPS)) {
         float * angles = player_tool_func(p);
         matrix_rotate(matrix_model, angles[0], 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, angles[1], 0.0F, 1.0F, 0.0F);
@@ -915,7 +913,7 @@ void player_reposition(Player * p) {
     float f = p->physics.lastclimb - window_time();
     if (f > -0.25F && !HASBIT(p->input.keys, INPUT_CROUCH)) {
         p->physics.eye.z += (f + 0.25F) / 0.25F;
-        if (&players[local_player_id] == p) {
+        if (&players[local_player.id] == p) {
             last_cy = 63.0F - p->physics.eye.z;
         }
     }
@@ -1067,19 +1065,20 @@ int player_move(Player * p, float fsynctics, int id) {
         aabb_set_center(&dead_bb, p->pos.x + p->physics.velocity.x * fsynctics * 32.0F,
                         p->pos.y + p->physics.velocity.y * fsynctics * 32.0F,
                         p->pos.z + p->physics.velocity.z * fsynctics * 32.0F);
+
         if (!aabb_intersection_terrain(&dead_bb, 0)) {
             p->pos.x += p->physics.velocity.x * fsynctics * 32.0F;
             p->pos.y += p->physics.velocity.y * fsynctics * 32.0F;
             p->pos.z += p->physics.velocity.z * fsynctics * 32.0F;
         } else {
-            p->physics.velocity.x *= 0.36F;
+            p->physics.velocity.x *= +0.36F;
             p->physics.velocity.y *= -0.36F;
-            p->physics.velocity.z *= 0.36F;
+            p->physics.velocity.z *= +0.36F;
         }
         return 0;
     }
 
-    int local = (id == local_player_id && camera_mode == CAMERAMODE_FPS);
+    int local = (id == local_player.id && camera.mode == CAMERAMODE_FPS);
 
     player_coordsystem_adjust1(p);
     float f, f2;
@@ -1212,7 +1211,7 @@ int player_uncrouch(Player * p) {
                 || player_clipbox(x2, y2, z2))) {
         p->pos.z -= 0.9F;
         p->physics.eye.z -= 0.9F;
-        if (&players[local_player_id] == p) {
+        if (&players[local_player.id] == p) {
             last_cy += 0.9F;
         }
         player_coordsystem_adjust2(p);

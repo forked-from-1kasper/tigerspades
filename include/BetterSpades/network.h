@@ -90,8 +90,10 @@ extern unsigned char network_keys_last;
 extern unsigned char network_buttons_last;
 extern unsigned char network_tool_last;
 
-#define VERSION_075 3
-#define VERSION_076 4
+enum {
+    VERSION_075 = 3,
+    VERSION_076 = 4
+};
 
 extern void * compressed_chunk_data;
 extern int compressed_chunk_data_size;
@@ -157,14 +159,16 @@ struct PacketInputData {
     unsigned char keys;
 };
 
-#define INPUT_UP     0
-#define INPUT_DOWN   1
-#define INPUT_LEFT   2
-#define INPUT_RIGHT  3
-#define INPUT_JUMP   4
-#define INPUT_CROUCH 5
-#define INPUT_SNEAK  6
-#define INPUT_SPRINT 7
+enum {
+    INPUT_UP     = 0,
+    INPUT_DOWN   = 1,
+    INPUT_LEFT   = 2,
+    INPUT_RIGHT  = 3,
+    INPUT_JUMP   = 4,
+    INPUT_CROUCH = 5,
+    INPUT_SNEAK  = 6,
+    INPUT_SPRINT = 7
+};
 
 #define PACKET_WEAPONINPUT_ID 4
 struct PacketWeaponInput {
@@ -172,8 +176,10 @@ struct PacketWeaponInput {
     unsigned char input;
 };
 
-#define BUTTON_PRIMARY   0
-#define BUTTON_SECONDARY 1
+enum {
+    BUTTON_PRIMARY   = 0,
+    BUTTON_SECONDARY = 1
+};
 
 #define PACKET_MOVEOBJECT_ID 11
 struct PacketMoveObject {
@@ -182,10 +188,12 @@ struct PacketMoveObject {
     float x, y, z;
 };
 
-#define TEAM_1_FLAG 0
-#define TEAM_2_FLAG 1
-#define TEAM_1_BASE 2
-#define TEAM_2_BASE 3
+enum {
+    TEAM_1_FLAG = 0,
+    TEAM_2_FLAG = 1,
+    TEAM_1_BASE = 2,
+    TEAM_2_BASE = 3
+};
 
 #define PACKET_INTELPICKUP_ID 24
 struct PacketIntelPickup {
@@ -227,11 +235,13 @@ struct PacketHit {
     unsigned char hit_type;
 };
 
-#define HITTYPE_TORSO 0
-#define HITTYPE_HEAD  1
-#define HITTYPE_ARMS  2
-#define HITTYPE_LEGS  3
-#define HITTYPE_SPADE 4
+enum {
+    HITTYPE_TORSO = 0,
+    HITTYPE_HEAD  = 1,
+    HITTYPE_ARMS  = 2,
+    HITTYPE_LEGS  = 3,
+    HITTYPE_SPADE = 4
+};
 
 #define PACKET_KILLACTION_ID 16
 struct PacketKillAction {
@@ -241,13 +251,15 @@ struct PacketKillAction {
     unsigned char respawn_time;
 };
 
-#define KILLTYPE_WEAPON      0
-#define KILLTYPE_HEADSHOT    1
-#define KILLTYPE_MELEE       2
-#define KILLTYPE_GRENADE     3
-#define KILLTYPE_FALL        4
-#define KILLTYPE_TEAMCHANGE  5
-#define KILLTYPE_CLASSCHANGE 6
+enum {
+    KILLTYPE_WEAPON      = 0,
+    KILLTYPE_HEADSHOT    = 1,
+    KILLTYPE_MELEE       = 2,
+    KILLTYPE_GRENADE     = 3,
+    KILLTYPE_FALL        = 4,
+    KILLTYPE_TEAMCHANGE  = 5,
+    KILLTYPE_CLASSCHANGE = 6
+};
 
 #define PACKET_RESTOCK_ID 26
 struct PacketRestock {
@@ -320,10 +332,12 @@ struct PacketBlockAction {
     int x, y, z;
 };
 
-#define ACTION_BUILD   0
-#define ACTION_DESTROY 1
-#define ACTION_SPADE   2
-#define ACTION_GRENADE 3
+enum {
+    ACTION_BUILD   = 0,
+    ACTION_DESTROY = 1,
+    ACTION_SPADE   = 2,
+    ACTION_GRENADE = 3
+};
 
 #define PACKET_BLOCKLINE_ID 14
 struct PacketBlockLine {
@@ -370,13 +384,15 @@ struct PacketChatMessage {
     unsigned char message[255];
 };
 
-#define CHAT_ALL     0
-#define CHAT_TEAM    1
-#define CHAT_SYSTEM  2
-#define CHAT_BIG     3
-#define CHAT_INFO    4
-#define CHAT_WARNING 5
-#define CHAT_ERROR   6
+enum {
+    CHAT_ALL     = 0,
+    CHAT_TEAM    = 1,
+    CHAT_SYSTEM  = 2,
+    CHAT_BIG     = 3,
+    CHAT_INFO    = 4,
+    CHAT_WARNING = 5,
+    CHAT_ERROR   = 6
+};
 
 #define PACKET_FOGCOLOR_ID 27
 struct PacketFogColor {
@@ -442,8 +458,10 @@ struct PacketStateData {
     } gamemode_data;
 };
 
-#define TEAM_1_INTEL 0
-#define TEAM_2_INTEL 1
+enum {
+    TEAM_1_INTEL = 0,
+    TEAM_2_INTEL = 1
+};
 
 #define PACKET_TERRITORYCAPTURE_ID 21
 struct PacketTerritoryCapture {

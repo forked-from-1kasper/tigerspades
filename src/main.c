@@ -229,32 +229,32 @@ void display() {
             glx_enable_sphericalfog();
             drawScene();
 
-            int render_fpv = (camera_mode == CAMERAMODE_FPS)
-                || ((camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR)
+            int render_fpv = (camera.mode == CAMERAMODE_FPS)
+                || ((camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR)
                     && cameracontroller_bodyview_mode);
-            int is_local = (camera_mode == CAMERAMODE_FPS) || (cameracontroller_bodyview_player == local_player_id);
-            int local_id = (camera_mode == CAMERAMODE_FPS) ? local_player_id : cameracontroller_bodyview_player;
+            int is_local = (camera.mode == CAMERAMODE_FPS) || (cameracontroller_bodyview_player == local_player.id);
+            int local_id = (camera.mode == CAMERAMODE_FPS) ? local_player.id : cameracontroller_bodyview_player;
 
-            if (players[local_player_id].items_show && window_time() - players[local_player_id].items_show_start >= 0.5F)
-                players[local_player_id].items_show = 0;
+            if (players[local_player.id].items_show && window_time() - players[local_player.id].items_show_start >= 0.5F)
+                players[local_player.id].items_show = 0;
 
-            if (camera_mode == CAMERAMODE_FPS) {
+            if (camera.mode == CAMERAMODE_FPS) {
                 weapon_update();
 
-                if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) &&
-                   (players[local_player_id].held_item == TOOL_BLOCK) &&
-                   (window_time() - players[local_player_id].item_showup >= 0.5F) &&
-                   (local_player_blocks > 0)) {
+                if (HASBIT(players[local_player.id].input.buttons, BUTTON_PRIMARY) &&
+                   (players[local_player.id].held_item == TOOL_BLOCK) &&
+                   (window_time() - players[local_player.id].item_showup >= 0.5F) &&
+                   (local_player.blocks > 0)) {
                     int * pos = camera_terrain_pick(0);
                     if (pos != NULL && pos[1] > 1
-                       && distance3D(camera_x, camera_y, camera_z, pos[0], pos[1], pos[2]) < 5.0F * 5.0F
-                       && !(pos[0] == (int)camera_x && pos[1] == (int)camera_y + 0 && pos[2] == (int)camera_z)
-                       && !(pos[0] == (int)camera_x && pos[1] == (int)camera_y - 1 && pos[2] == (int)camera_z)) {
-                        players[local_player_id].item_showup = window_time();
-                        local_player_blocks = max(local_player_blocks - 1, 0);
+                       && distance3D(camera.pos.x, camera.pos.y, camera.pos.z, pos[0], pos[1], pos[2]) < 5.0F * 5.0F
+                       && !(pos[0] == (int) camera.pos.x && pos[1] == (int) camera.pos.y + 0 && pos[2] == (int) camera.pos.z)
+                       && !(pos[0] == (int) camera.pos.x && pos[1] == (int) camera.pos.y - 1 && pos[2] == (int) camera.pos.z)) {
+                        players[local_player.id].item_showup = window_time();
+                        local_player.blocks = max(local_player.blocks - 1, 0);
 
                         struct PacketBlockAction blk;
-                        blk.player_id = local_player_id;
+                        blk.player_id = local_player.id;
                         blk.action_type = ACTION_BUILD;
                         blk.x = htoles32(pos[0]);
                         blk.y = htoles32(pos[2]);
@@ -264,19 +264,19 @@ void display() {
                     }
                 }
 
-                if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) &&
-                   (players[local_player_id].held_item == TOOL_GRENADE) &&
-                   (window_time() - players[local_player_id].start.lmb > 3.0F)) {
-                    local_player_grenades = max(local_player_grenades - 1, 0);
+                if (HASBIT(players[local_player.id].input.buttons, BUTTON_PRIMARY) &&
+                   (players[local_player.id].held_item == TOOL_GRENADE) &&
+                   (window_time() - players[local_player.id].start.lmb > 3.0F)) {
+                    local_player.grenades = max(local_player.grenades - 1, 0);
                     struct PacketGrenade g;
-                    g.player_id = local_player_id;
-                    g.x = htolef(players[local_player_id].pos.x);
-                    g.y = htolef(players[local_player_id].pos.z);
-                    g.z = htolef(63.0F - players[local_player_id].pos.y);
+                    g.player_id = local_player.id;
+                    g.x = htolef(players[local_player.id].pos.x);
+                    g.y = htolef(players[local_player.id].pos.z);
+                    g.z = htolef(63.0F - players[local_player.id].pos.y);
                     g.fuse_length = g.vx = g.vy = g.vz = 0.0F;
                     network_send(PACKET_GRENADE_ID, &g, sizeof(g));
                     read_PacketGrenade(&g, sizeof(g));
-                    players[local_player_id].start.lmb = window_time();
+                    players[local_player.id].start.lmb = window_time();
                 }
             }
 
@@ -288,14 +288,14 @@ void display() {
                             pos = camera_terrain_pick(0);
                         else
                             pos = camera_terrain_pickEx(
-                                0, camera_x, camera_y, camera_z, players[local_id].orientation_smooth.x,
+                                0, camera.pos.x, camera.pos.y, camera.pos.z, players[local_id].orientation_smooth.x,
                                 players[local_id].orientation_smooth.y, players[local_id].orientation_smooth.z);
                     }
                     break;
                 default: pos = NULL;
             }
             if (pos != NULL && pos[1] > 1
-               && (pow(pos[0] - camera_x, 2) + pow(pos[1] - camera_y, 2) + pow(pos[2] - camera_z, 2)) < 5 * 5) {
+               && (pow(pos[0] - camera.pos.x, 2) + pow(pos[1] - camera.pos.y, 2) + pow(pos[2] - camera.pos.z, 2)) < 5 * 5) {
                 matrix_upload();
                 glColor3f(1.0F, 0.0F, 0.0F);
                 glLineWidth(1.0F);
@@ -303,10 +303,10 @@ void display() {
                 glDepthMask(GL_FALSE);
                 Point cubes[64];
                 int amount = 0;
-                if (is_local && local_player_drag_active && HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY)
-                   && players[local_player_id].held_item == TOOL_BLOCK) {
-                    amount = map_cube_line(local_player_drag_x, local_player_drag_z, 63 - local_player_drag_y, pos[0],
-                                           pos[2], 63 - pos[1], cubes);
+                if (is_local && local_player.drag_active && HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY)
+                   && players[local_player.id].held_item == TOOL_BLOCK) {
+                    amount = map_cube_line(local_player.drag[X], local_player.drag[Z], 63 - local_player.drag[Y],
+                                           pos[0], pos[2], 63 - pos[1], cubes);
                 } else {
                     amount = 1;
                     cubes[0].x = pos[0];
@@ -317,7 +317,8 @@ void display() {
                     int tmp = cubes[amount - 1].y;
                     cubes[amount - 1].y = 63 - cubes[amount - 1].z;
                     cubes[amount - 1].z = tmp;
-                    if (amount <= (is_local ? local_player_blocks : 50))
+
+                    if (amount <= (is_local ? local_player.blocks : 50))
                         glColor3f(1.0F, 1.0F, 1.0F);
 
                     short vertices[72] = {cubes[amount - 1].x,       cubes[amount - 1].y,        cubes[amount - 1].z,
@@ -356,33 +357,33 @@ void display() {
                 glDepthMask(GL_TRUE);
             }
 
-            if (window_time() - players[local_player_id].item_disabled < 0.3F) {
-                players[local_player_id].item_showup = window_time();
-                if (HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY))
-                    players[local_player_id].start.lmb = window_time() + 0.5F;
-                if (HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY))
-                    players[local_player_id].start.rmb = window_time() + 0.5F;
+            if (window_time() - players[local_player.id].item_disabled < 0.3F) {
+                players[local_player.id].item_showup = window_time();
+                if (HASBIT(players[local_player.id].input.buttons, BUTTON_PRIMARY))
+                    players[local_player.id].start.lmb = window_time() + 0.5F;
+                if (HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY))
+                    players[local_player.id].start.rmb = window_time() + 0.5F;
             } else {
                 if (hud_active->render_localplayer) {
-                    float tmp2 = players[local_player_id].physics.eye.y;
-                    players[local_player_id].physics.eye.y = last_cy;
-                    if (camera_mode == CAMERAMODE_FPS)
+                    float tmp2 = players[local_player.id].physics.eye.y;
+                    players[local_player.id].physics.eye.y = last_cy;
+                    if (camera.mode == CAMERAMODE_FPS)
                         glDepthRange(0.0F, 0.05F);
                     matrix_push(matrix_projection);
                     matrix_translate(matrix_projection, 0.0F, -0.25F, 0.0F);
                     matrix_upload_p();
 #ifdef OPENGL_ES
-                    if (camera_mode == CAMERAMODE_FPS)
+                    if (camera.mode == CAMERAMODE_FPS)
                         glx_disable_sphericalfog();
 #endif
-                    player_render(&players[local_player_id], local_player_id);
+                    player_render(&players[local_player.id], local_player.id);
 #ifdef OPENGL_ES
-                    if (camera_mode == CAMERAMODE_FPS)
+                    if (camera.mode == CAMERAMODE_FPS)
                         glx_enable_sphericalfog();
 #endif
                     matrix_pop(matrix_projection);
                     glDepthRange(0.0F, 1.0F);
-                    players[local_player_id].physics.eye.y = tmp2;
+                    players[local_player.id].physics.eye.y = tmp2;
                 }
             }
 
@@ -394,7 +395,7 @@ void display() {
             map_collapsing_render();
             matrix_upload();
 
-            if (!map_isair(camera_x, camera_y, camera_z))
+            if (!map_isair(camera.pos.x, camera.pos.y, camera.pos.z))
                 glClear(GL_COLOR_BUFFER_BIT);
 
             glx_disable_sphericalfog();

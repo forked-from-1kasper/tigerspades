@@ -188,16 +188,16 @@ void sound_update() {
         return;
 
     float orientation[] = {
-        sin(camera_rot_x) * sin(camera_rot_y),
-        cos(camera_rot_y),
-        cos(camera_rot_x) * sin(camera_rot_y),
+        sin(camera.rot.x) * sin(camera.rot.y),
+        cos(camera.rot.y),
+        cos(camera.rot.x) * sin(camera.rot.y),
         0.0F,
         1.0F,
         0.0F,
     };
 
-    alListener3f(AL_POSITION, camera_x * SOUND_SCALE, camera_y * SOUND_SCALE, camera_z * SOUND_SCALE);
-    alListener3f(AL_VELOCITY, camera_vx * SOUND_SCALE, camera_vy * SOUND_SCALE, camera_vz * SOUND_SCALE);
+    alListener3f(AL_POSITION, camera.pos.x * SOUND_SCALE, camera.pos.y * SOUND_SCALE, camera.pos.z * SOUND_SCALE);
+    alListener3f(AL_VELOCITY, camera.v.x * SOUND_SCALE, camera.v.y * SOUND_SCALE, camera.v.z * SOUND_SCALE);
     alListenerfv(AL_ORIENTATION, orientation);
 
     entitysys_iterate(&sound_sources, NULL, sound_update_single);

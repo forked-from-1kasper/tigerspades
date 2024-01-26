@@ -36,23 +36,11 @@ enum {
 #define TEAM(t) (((t) == TEAM_1 || (t) == TEAM_2) ? (t) : TEAM_SPECTATOR)
 
 typedef struct {
-    float x, y, z;
-} Position;
-
-typedef struct {
-    float x, y, z;
-} Orientation;
-
-typedef struct {
-    float x, y, z;
-} Velocity;
-
-typedef struct {
     char name[11];
     unsigned char red, green, blue;
 } Team;
 
-extern struct GameState {
+typedef struct {
     Team team_1, team_2;
     unsigned char gamemode_type;
     union Gamemodes gamemode;
@@ -60,36 +48,28 @@ extern struct GameState {
         unsigned char team_capturing, tent;
         float progress, rate, update;
     } progressbar;
-} gamestate;
+} GameState;
 
-#define GAMEMODE_CTF 0
-#define GAMEMODE_TC 1
+extern GameState gamestate;
 
-extern int button_map[3];
+enum {
+    GAMEMODE_CTF = 0,
+    GAMEMODE_TC  = 1
+};
 
-extern unsigned char local_player_id;
-extern unsigned char local_player_health;
-extern unsigned char local_player_blocks;
-extern unsigned char local_player_grenades;
-extern unsigned char local_player_ammo, local_player_ammo_reserved;
-extern unsigned char local_player_respawn_time;
-extern float local_player_death_time;
-extern unsigned char local_player_respawn_cnt_last;
-extern unsigned char local_player_lasttool;
+typedef struct { bool lmb, mmb, rmb; } MouseButtons;
+extern MouseButtons button_map;
+
+typedef struct {
+    uint8_t id, health, blocks, grenades, ammo, ammo_reserved;
+    uint8_t last_tool, respawn_time, respawn_cnt_last;
+    float death_time, last_damage_timer; Position last_damage;
+    bool drag_active; int drag[3]; int color[2];
+} LocalPlayer;
+
+extern LocalPlayer local_player;
 
 extern int default_team, default_gun;
-
-extern float local_player_last_damage_timer;
-extern float local_player_last_damage_x;
-extern float local_player_last_damage_y;
-extern float local_player_last_damage_z;
-
-extern char local_player_drag_active;
-extern int local_player_drag_x;
-extern int local_player_drag_y;
-extern int local_player_drag_z;
-
-extern int local_player_color_x, local_player_color_y;
 
 extern int player_intersection_type;
 extern int player_intersection_player;

@@ -573,8 +573,8 @@ void kv6_render(kv6 * model, unsigned char team) {
             glUniform1f(glGetUniformLocation(kv6_program, "size"),
                         1.414F * near_plane_height * model->scale * (len_x + len_y + len_z) / 3.0F);
             glUniform3f(glGetUniformLocation(kv6_program, "fog"), fog_color[0], fog_color[1], fog_color[2]);
-            glUniform3f(glGetUniformLocation(kv6_program, "camera"), camera_x, camera_y, camera_z);
-            glUniformMatrix4fv(glGetUniformLocation(kv6_program, "model"), 1, 0, (float*)matrix_model);
+            glUniform3f(glGetUniformLocation(kv6_program, "camera"), camera.pos.x, camera.pos.y, camera.pos.z);
+            glUniformMatrix4fv(glGetUniformLocation(kv6_program, "model"), 1, 0, (float*) matrix_model);
         }
 #endif
         if (settings.multisamples)

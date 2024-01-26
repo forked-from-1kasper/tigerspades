@@ -29,23 +29,25 @@
 #include <BetterSpades/camera.h>
 #include <BetterSpades/config.h>
 
-enum camera_mode camera_mode = CAMERAMODE_SPECTATOR;
-
 float frustum[6][4];
-float camera_rot_x = 2.04F, camera_rot_y = 1.79F;
-float camera_x = 256.0F, camera_y = 60.0F, camera_z = 256.0F;
-float camera_vx, camera_vy, camera_vz;
-float camera_size = 0.8F;
-float camera_height = 0.8F;
-float camera_eye_height = 0.0F;
-float camera_movement_x = 0.0F, camera_movement_y = 0.0F, camera_movement_z = 0.0F;
-float camera_speed = 32.0F;
+
+Camera camera = {
+    .mode       = CAMERAMODE_SPECTATOR,
+    .pos        = {256.0F, 60.0F, 256.0F},
+    .v          = {0.0F, 0.0F, 0.0F},
+    .movement   = {0.0F, 0.0F, 0.0F},
+    .size       = 0.8F,
+    .height     = 0.8F,
+    .eye_height = 0.0F,
+    .speed      = 32.0F,
+    .rot        = {2.04F, 1.79F}
+};
 
 float camera_fov_scaled() {
-    int render_fpv = (camera_mode == CAMERAMODE_FPS)
-        || ((camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR)
+    int render_fpv = (camera.mode == CAMERAMODE_FPS)
+        || ((camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR)
             && cameracontroller_bodyview_mode);
-    int local_id = (camera_mode == CAMERAMODE_FPS) ? local_player_id : cameracontroller_bodyview_player;
+    int local_id = (camera.mode == CAMERAMODE_FPS) ? local_player.id : cameracontroller_bodyview_player;
 
     if (render_fpv && players[local_id].held_item == TOOL_GUN && HASBIT(players[local_id].input.buttons, BUTTON_SECONDARY)
        && !HASBIT(players[local_id].input.keys, INPUT_SPRINT) && players[local_id].alive)
@@ -55,25 +57,21 @@ float camera_fov_scaled() {
 }
 
 void camera_overflow_adjust() {
-    if (camera_rot_y < EPSILON) {
-        camera_rot_y = EPSILON;
-    }
+    if (camera.rot.y < EPSILON)
+        camera.rot.y = EPSILON;
 
-    if (camera_rot_y > 3.14F) {
-        camera_rot_y = 3.14F;
-    }
+    if (camera.rot.y > 3.14F)
+        camera.rot.y = 3.14F;
 
-    if (camera_rot_x > DOUBLEPI) {
-        camera_rot_x -= DOUBLEPI;
-    }
+    if (camera.rot.x > DOUBLEPI)
+        camera.rot.x -= DOUBLEPI;
 
-    if (camera_rot_x < 0.0F) {
-        camera_rot_x += DOUBLEPI;
-    }
+    if (camera.rot.x < 0.0F)
+        camera.rot.x += DOUBLEPI;
 }
 
 void camera_apply() {
-    switch (camera_mode) {
+    switch (camera.mode) {
         case CAMERAMODE_FPS:       cameracontroller_fps_render();       break;
         case CAMERAMODE_BODYVIEW:  cameracontroller_bodyview_render();  break;
         case CAMERAMODE_SPECTATOR: cameracontroller_spectator_render(); break;
@@ -83,7 +81,7 @@ void camera_apply() {
 }
 
 void camera_update(float dt) {
-    switch (camera_mode) {
+    switch (camera.mode) {
         case CAMERAMODE_FPS:       cameracontroller_fps(dt);       break;
         case CAMERAMODE_BODYVIEW:  cameracontroller_bodyview(dt);  break;
         case CAMERAMODE_SPECTATOR: cameracontroller_spectator(dt); break;
@@ -93,7 +91,7 @@ void camera_update(float dt) {
 }
 
 void camera_hit_fromplayer(struct Camera_HitType* hit, int player_id, float range) {
-    if (player_id != local_player_id) {
+    if (player_id != local_player.id) {
         camera_hit(hit, player_id, players[player_id].physics.eye.x,
                    players[player_id].physics.eye.y + player_height(&players[player_id]),
                    players[player_id].physics.eye.z, players[player_id].orientation.x, players[player_id].orientation.y,
@@ -101,8 +99,8 @@ void camera_hit_fromplayer(struct Camera_HitType* hit, int player_id, float rang
     } else {
         camera_hit(hit, player_id, players[player_id].physics.eye.x,
                    players[player_id].physics.eye.y + player_height(&players[player_id]),
-                   players[player_id].physics.eye.z, sin(camera_rot_x) * sin(camera_rot_y), cos(camera_rot_y),
-                   cos(camera_rot_x) * sin(camera_rot_y), range);
+                   players[player_id].physics.eye.z, sin(camera.rot.x) * sin(camera.rot.y), cos(camera.rot.y),
+                   cos(camera.rot.x) * sin(camera.rot.y), range);
     }
 }
 
@@ -122,7 +120,7 @@ void camera_hit_mask(struct Camera_HitType * hit, int exclude_player, float x, f
     hit->distance = FLT_MAX;
 
 #if HACKS_ENABLED && HACK_WALLHACK
-    if (players[local_player_id].held_item != TOOL_GUN) {
+    if (players[local_player.id].held_item != TOOL_GUN) {
 #endif
     int * pos = camera_terrain_pickEx(1, x, y, z, ray_x, ray_y, ray_z);
     if (pos != NULL && distance3D(x, y, z, pos[0], pos[1], pos[2]) <= range * range) {
@@ -169,8 +167,8 @@ void camera_hit_mask(struct Camera_HitType * hit, int exclude_player, float x, f
 }
 
 int * camera_terrain_pick(unsigned char mode) {
-    return camera_terrain_pickEx(mode, camera_x, camera_y, camera_z, sin(camera_rot_x) * sin(camera_rot_y),
-                                 cos(camera_rot_y), cos(camera_rot_x) * sin(camera_rot_y));
+    return camera_terrain_pickEx(mode, camera.pos.x, camera.pos.y, camera.pos.z, sin(camera.rot.x) * sin(camera.rot.y),
+                                 cos(camera.rot.y), cos(camera.rot.x) * sin(camera.rot.y));
 }
 
 // kindly borrowed from

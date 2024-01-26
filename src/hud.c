@@ -154,77 +154,77 @@ static void hud_ingame_render3D() {
     matrix_upload_p();
 
     if (!network_map_transfer) {
-        if (camera_mode == CAMERAMODE_FPS && players[local_player_id].items_show) {
-            players[local_player_id].input.buttons &= MASKOFF(BUTTON_SECONDARY);
+        if (camera.mode == CAMERAMODE_FPS && players[local_player.id].items_show) {
+            players[local_player.id].input.buttons &= MASKOFF(BUTTON_SECONDARY);
 
             matrix_identity(matrix_model);
-            matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player_id].held_item == TOOL_SPADE) * 0.5F,
+            matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player.id].held_item == TOOL_SPADE) * 0.5F,
                              -6.0F);
             matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
             matrix_translate(matrix_model, (model_spade.xpiv - model_spade.xsiz / 2) * 0.05F,
                              (model_spade.zpiv - model_spade.zsiz / 2) * 0.05F,
                              (model_spade.ypiv - model_spade.ysiz / 2) * 0.05F);
 
-            if (players[local_player_id].held_item == TOOL_SPADE)
+            if (players[local_player.id].held_item == TOOL_SPADE)
                 matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
 
             matrix_upload();
-            kv6_render(&model_spade, players[local_player_id].team);
+            kv6_render(&model_spade, players[local_player.id].team);
 
-            if (local_player_blocks > 0) {
+            if (local_player.blocks > 0) {
                 matrix_identity(matrix_model);
                 matrix_translate(matrix_model, -2.25F,
-                                 -1.5F - (players[local_player_id].held_item == TOOL_BLOCK) * 0.5F, -6.0F);
+                                 -1.5F - (players[local_player.id].held_item == TOOL_BLOCK) * 0.5F, -6.0F);
                 matrix_translate(matrix_model, 1.5F, 0.0F, 0.0F);
                 matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
                 matrix_translate(matrix_model, (model_block.xpiv - model_block.xsiz / 2) * 0.05F,
                                  (model_block.zpiv - model_block.zsiz / 2) * 0.05F,
                                  (model_block.ypiv - model_block.ysiz / 2) * 0.05F);
 
-                if (players[local_player_id].held_item == TOOL_BLOCK)
+                if (players[local_player.id].held_item == TOOL_BLOCK)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
 
-                model_block.red   = players[local_player_id].block.r / 255.0F;
-                model_block.green = players[local_player_id].block.g / 255.0F;
-                model_block.blue  = players[local_player_id].block.b / 255.0F;
+                model_block.red   = players[local_player.id].block.r / 255.0F;
+                model_block.green = players[local_player.id].block.g / 255.0F;
+                model_block.blue  = players[local_player.id].block.b / 255.0F;
                 matrix_upload();
 
-                kv6_render(&model_block, players[local_player_id].team);
+                kv6_render(&model_block, players[local_player.id].team);
             }
 
-            if (local_player_ammo + local_player_ammo_reserved > 0) {
-                kv6 * gun = weapon_model(players[local_player_id].weapon);
+            if (local_player.ammo + local_player.ammo_reserved > 0) {
+                kv6 * gun = weapon_model(players[local_player.id].weapon);
 
                 matrix_identity(matrix_model);
-                matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player_id].held_item == TOOL_GUN) * 0.5F,
+                matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player.id].held_item == TOOL_GUN) * 0.5F,
                                  -6.0F);
                 matrix_translate(matrix_model, 3.0F, 0.0F, 0.0F);
                 matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
                 matrix_translate(matrix_model, (gun->xpiv - gun->xsiz / 2) * 0.05F, (gun->zpiv - gun->zsiz / 2) * 0.05F,
                                  (gun->ypiv - gun->ysiz / 2) * 0.05F);
 
-                if (players[local_player_id].held_item == TOOL_GUN)
+                if (players[local_player.id].held_item == TOOL_GUN)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
 
                 matrix_upload();
-                kv6_render(gun, players[local_player_id].team);
+                kv6_render(gun, players[local_player.id].team);
             }
 
-            if (local_player_grenades > 0) {
+            if (local_player.grenades > 0) {
                 matrix_identity(matrix_model);
                 matrix_translate(matrix_model, -2.25F,
-                                 -1.5F - (players[local_player_id].held_item == TOOL_GRENADE) * 0.5F, -6.0F);
+                                 -1.5F - (players[local_player.id].held_item == TOOL_GRENADE) * 0.5F, -6.0F);
                 matrix_translate(matrix_model, 4.5F, 0.0F, 0.0F);
                 matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
                 matrix_translate(matrix_model, (model_grenade.xpiv - model_grenade.xsiz / 2) * 0.05F,
                                  (model_grenade.zpiv - model_grenade.zsiz / 2) * 0.05F,
                                  (model_grenade.ypiv - model_grenade.ysiz / 2) * 0.05F);
 
-                if (players[local_player_id].held_item == TOOL_GRENADE)
+                if (players[local_player.id].held_item == TOOL_GRENADE)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
 
                 matrix_upload();
-                kv6_render(&model_grenade, players[local_player_id].team);
+                kv6_render(&model_grenade, players[local_player.id].team);
             }
         }
 
@@ -292,10 +292,10 @@ static void hud_ingame_render3D() {
         kv6 * rotating_model = NULL;
         int rotating_model_team = TEAM_SPECTATOR;
         if (gamestate.gamemode_type == GAMEMODE_CTF) {
-            switch (players[local_player_id].team) {
+            switch (players[local_player.id].team) {
                 case TEAM_1: {
                     if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)
-                    && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player_id)) {
+                    && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player.id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_2;
                     }
@@ -304,7 +304,7 @@ static void hud_ingame_render3D() {
 
                 case TEAM_2: {
                     if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)
-                    && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player_id)) {
+                    && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player.id)) {
                         rotating_model = &model_intel;
                         rotating_model_team = TEAM_1;
                     }
@@ -315,9 +315,9 @@ static void hud_ingame_render3D() {
 
         if (gamestate.gamemode_type == GAMEMODE_TC) {
             for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
-                float l = pow(gamestate.gamemode.tc.territory[k].x - players[local_player_id].pos.x, 2.0F)
-                    + pow((63.0F - gamestate.gamemode.tc.territory[k].z) - players[local_player_id].pos.y, 2.0F)
-                    + pow(gamestate.gamemode.tc.territory[k].y - players[local_player_id].pos.z, 2.0F);
+                float l = pow(gamestate.gamemode.tc.territory[k].x - players[local_player.id].pos.x, 2.0F)
+                    + pow((63.0F - gamestate.gamemode.tc.territory[k].z) - players[local_player.id].pos.y, 2.0F)
+                    + pow(gamestate.gamemode.tc.territory[k].y - players[local_player.id].pos.z, 2.0F);
                 if (l <= 20.0F * 20.0F) {
                     rotating_model = &model_tent;
                     rotating_model_team = gamestate.gamemode.tc.territory[k].team;
@@ -463,9 +463,9 @@ static int hud_ingame_onscreencontrol(int index, char* str, int activate) {
 }
 
 static void hud_ingame_render(mu_Context * ctx, float scale) {
-    // window_mousemode(camera_mode==CAMERAMODE_SELECTION?WINDOW_CURSOR_ENABLED:WINDOW_CURSOR_DISABLED);
-    hud_active->render_localplayer = players[local_player_id].team != TEAM_SPECTATOR
-        && (screen_current == SCREEN_NONE || camera_mode != CAMERAMODE_FPS);
+    // window_mousemode(camera.mode==CAMERAMODE_SELECTION?WINDOW_CURSOR_ENABLED:WINDOW_CURSOR_DISABLED);
+    hud_active->render_localplayer = players[local_player.id].team != TEAM_SPECTATOR
+        && (screen_current == SCREEN_NONE || camera.mode != CAMERAMODE_FPS);
 
     if (window_key_down(WINDOW_KEY_NETWORKSTATS)) {
         if (network_map_transfer)
@@ -556,11 +556,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         if (screen_current == SCREEN_TEAM_SELECT) {
             glColor3f(1.0F, 0.0F, 0.0F);
             char join_str[48];
+
             sprintf(join_str, "Press 1 to join %s", gamestate.team_1.name);
             font_centered(settings.window_width / 4.0F, 61 * scale, 1.0F * scale, join_str, UTF8);
-            sprintf(join_str, "Press 2 to join %s", gamestate.team_2.name);
+
+            font_centered(settings.window_width / 2.0F, 61 * scale, 1.0F * scale, "Press 2 to spectate", UTF8);
+
+            sprintf(join_str, "Press 3 to join %s", gamestate.team_2.name);
             font_centered(settings.window_width / 4.0F * 3.0F, 61 * scale, 1.0F * scale, join_str, UTF8);
-            font_centered(settings.window_width / 2.0F, 61 * scale, 1.0F * scale, "Press 3 to spectate", UTF8);
             glColor3f(1.0F, 1.0F, 1.0F);
         }
 
@@ -572,7 +575,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             glColor3f(1.0F, 1.0F, 1.0F);
         }
 
-        if ((window_key_down(WINDOW_KEY_TAB) && chat_input_mode == CHAT_NO_INPUT) || camera_mode == CAMERAMODE_SELECTION) {
+        if ((window_key_down(WINDOW_KEY_TAB) && chat_input_mode == CHAT_NO_INPUT) || camera.mode == CAMERAMODE_SELECTION) {
             if (network_connected && network_logged_in) {
                 char ping_str[16];
                 sprintf(ping_str, "Ping: %i ms", network_ping());
@@ -640,7 +643,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     default:
                     case TEAM_SPECTATOR: mul = 2; break;
                 }
-                if (pt[k].id == local_player_id)
+                if (pt[k].id == local_player.id)
                     glColor3f(1.0F, 1.0F, 0.0F);
                 else if (!players[pt[k].id].alive)
                     glColor3f(0.6F, 0.6F, 0.6F);
@@ -671,12 +674,12 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             }
         }
 
-        int is_local = (camera_mode == CAMERAMODE_FPS) || (cameracontroller_bodyview_player == local_player_id);
-        int local_id = (camera_mode == CAMERAMODE_FPS) ? local_player_id : cameracontroller_bodyview_player;
+        int is_local = (camera.mode == CAMERAMODE_FPS) || (cameracontroller_bodyview_player == local_player.id);
+        int local_id = (camera.mode == CAMERAMODE_FPS) ? local_player.id : cameracontroller_bodyview_player;
 
-        if (camera_mode == CAMERAMODE_BODYVIEW
-           || (camera_mode == CAMERAMODE_SPECTATOR && cameracontroller_bodyview_mode)) {
-            if (cameracontroller_bodyview_player != local_player_id) {
+        if (camera.mode == CAMERAMODE_BODYVIEW
+           || (camera.mode == CAMERAMODE_SPECTATOR && cameracontroller_bodyview_mode)) {
+            if (cameracontroller_bodyview_player != local_player.id) {
                 font_select(FONT_SMALLFNT);
                 switch (players[cameracontroller_bodyview_player].team) {
                     case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
@@ -689,25 +692,25 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             glColor3f(1.0F, 1.0F, 0.0F);
             font_centered(settings.window_width / 2.0F, settings.window_height, 1.0F * scale,
                           "Click to switch players", UTF8);
-            if (window_time() - local_player_death_time <= local_player_respawn_time) {
+            if (window_time() - local_player.death_time <= local_player.respawn_time) {
                 glColor3f(1.0F, 0.0F, 0.0F);
-                int cnt = local_player_respawn_time - (int)(window_time() - local_player_death_time);
+                int cnt = local_player.respawn_time - (int)(window_time() - local_player.death_time);
                 char coin[16];
                 sprintf(coin, "Respawn in %i s", cnt);
                 font_centered(settings.window_width / 2.0F,
                               48.0F * scale * (cameracontroller_bodyview_mode ? 2.0F : 1.0F), 3.0F * scale, coin, UTF8);
-                if (local_player_respawn_cnt_last != cnt) {
+                if (local_player.respawn_cnt_last != cnt) {
                     if (cnt < 4) {
                         sound_create(SOUND_LOCAL, (cnt == 1) ? &sound_beep1 : &sound_beep2, 0.0F, 0.0F, 0.0F);
                     }
-                    local_player_respawn_cnt_last = cnt;
+                    local_player.respawn_cnt_last = cnt;
                 }
             }
             glColor3f(1.0F, 1.0F, 1.0F);
         }
 
-        if (camera_mode == CAMERAMODE_FPS
-           || ((camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR)
+        if (camera.mode == CAMERAMODE_FPS
+           || ((camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR)
                && cameracontroller_bodyview_mode)) {
             glColor3f(1.0F, 1.0F, 1.0F);
 
@@ -740,18 +743,18 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 );
             } else {
                 texture_draw(
-                    HASBIT(players[local_player_id].input.buttons, BUTTON_PRIMARY) ? &texture_crosshair2 : &texture_crosshair1,
+                    HASBIT(players[local_player.id].input.buttons, BUTTON_PRIMARY) ? &texture_crosshair2 : &texture_crosshair1,
                     (settings.window_width - 32) / 2.0F, (settings.window_height + 32) / 2.0F, 32, 32
                 );
             }
 
-            if (window_time() - local_player_last_damage_timer <= 0.5F && is_local) {
-                float ang = atan2(players[local_player_id].orientation.z, players[local_player_id].orientation.x)
-                          - atan2(camera_z - local_player_last_damage_z, camera_x - local_player_last_damage_x) + PI;
+            if (window_time() - local_player.last_damage_timer <= 0.5F && is_local) {
+                float ang = atan2(players[local_player.id].orientation.z, players[local_player.id].orientation.x)
+                          - atan2(camera.pos.z - local_player.last_damage.z, camera.pos.x - local_player.last_damage.x) + PI;
                 texture_draw_rotated(&texture_indicator, settings.window_width / 2.0F, settings.window_height / 2.0F, 200, 200, ang);
             }
 
-            int health = is_local ? (players[local_id].alive ? local_player_health : 0) : (players[local_id].alive ? 100 : 0);
+            int health = is_local ? (players[local_id].alive ? local_player.health : 0) : (players[local_id].alive ? 100 : 0);
 
             if (health <= 30)
                 glColor3f(1, 0, 0);
@@ -768,14 +771,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 default:
                 case TOOL_BLOCK: off = 64 * scale;
                 case TOOL_SPADE:
-                    sprintf(item_mini_str, "%i", is_local ? local_player_blocks : 50);
+                    sprintf(item_mini_str, "%i", is_local ? local_player.blocks : 50);
                     break;
                 case TOOL_GRENADE:
-                    sprintf(item_mini_str, "%i", is_local ? local_player_grenades : 3);
+                    sprintf(item_mini_str, "%i", is_local ? local_player.grenades : 3);
                     break;
                 case TOOL_GUN: {
-                    int ammo = is_local ? local_player_ammo : players[local_id].ammo;
-                    int ammo_reserve = is_local ? local_player_ammo_reserved : players[local_id].ammo_reserved;
+                    int ammo = is_local ? local_player.ammo : players[local_id].ammo;
+                    int ammo_reserve = is_local ? local_player.ammo_reserved : players[local_id].ammo_reserved;
                     sprintf(item_mini_str, "%02i/%02i", ammo, ammo_reserve);
 
                     if (ammo == 0) glColor3f(1.0F, 0.0F, 0.0F);
@@ -787,11 +790,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
             glColor3f(1.0F, 1.0F, 1.0F);
             if (players[local_id].held_item == TOOL_BLOCK) {
-                if (local_player_color_x >= 0 && local_player_color_y >= 0) {
+                if (local_player.color[X] >= 0 && local_player.color[Y] >= 0) {
                     unsigned char g = (((int) (window_time() * 4)) & 1) * 0xFF; glColor3ub(g, g, g);
                     texture_draw_empty(
-                        settings.window_width + (local_player_color_x * 8 - 65) * scale,
-                        (65 - local_player_color_y * 8) * scale, 8 * scale, 8 * scale
+                        settings.window_width + (local_player.color[X] * 8 - 65) * scale,
+                        (65 - local_player.color[Y] * 8) * scale, 8 * scale, 8 * scale
                     );
                 }
 
@@ -801,7 +804,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             }
         }
 
-        if (camera_mode != CAMERAMODE_SELECTION) {
+        if (camera.mode != CAMERAMODE_SELECTION) {
             int chat_y = 8 * 18.0F * scale;
 
             font_select(FONT_SMALLFNT);
@@ -907,12 +910,12 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                               1.0F),
                           0.0F);
             float l
-                = pow(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].x - players[local_player_id].pos.x,
+                = pow(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].x - players[local_player.id].pos.x,
                       2.0F)
                 + pow((63.0F - gamestate.gamemode.tc.territory[gamestate.progressbar.tent].z)
-                          - players[local_player_id].pos.y,
+                          - players[local_player.id].pos.y,
                       2.0F)
-                + pow(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].y - players[local_player_id].pos.z,
+                + pow(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].y - players[local_player.id].pos.z,
                       2.0F);
             if (p < 1.0F && l < 20.0F * 20.0F) {
                 switch (gamestate.gamemode.tc.territory[gamestate.progressbar.tent].team) {
@@ -933,7 +936,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         }
 
         // draw the minimap
-        if (camera_mode != CAMERAMODE_SELECTION) {
+        if (camera.mode != CAMERAMODE_SELECTION) {
             glColor3f(1.0F, 1.0F, 1.0F);
             // large
             if (window_key_down(WINDOW_KEY_MAP)) {
@@ -1006,10 +1009,10 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
                 for (int k = 0; k < PLAYERS_MAX; k++) {
                 #if HACKS_ENABLED && HACK_MAPHACK
-                    if (players[k].connected && players[k].alive && k != local_player_id)
+                    if (players[k].connected && players[k].alive && k != local_player.id)
                 #else
-                    if (players[k].connected && players[k].alive && k != local_player_id && players[k].team != TEAM_SPECTATOR
-                    && (players[k].team == players[local_player_id].team || camera_mode == CAMERAMODE_SPECTATOR))
+                    if (players[k].connected && players[k].alive && k != local_player.id && players[k].team != TEAM_SPECTATOR
+                    && (players[k].team == players[local_player.id].team || camera.mode == CAMERAMODE_SPECTATOR))
                 #endif
                     {
                         switch (players[k].team) {
@@ -1027,15 +1030,15 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 }
 
                 glColor3f(0.0F, 1.0F, 1.0F);
-                texture_draw_rotated(&texture_player, minimap_x + camera_x * scale, minimap_y - camera_z * scale,
-                                     16 * scale, 16 * scale, camera_rot_x + PI);
+                texture_draw_rotated(&texture_player, minimap_x + camera.pos.x * scale, minimap_y - camera.pos.z * scale,
+                                     16 * scale, 16 * scale, camera.rot.x + PI);
                 glColor3f(1.0F, 1.0F, 1.0F);
             } else if (settings.show_minimap) {
                 // minimized, top right
-                float view_x = camera_x - 64.0F; // min(max(camera_x-64.0F,0.0F),map_size_x+1-128.0F);
-                float view_z = camera_z - 64.0F; // min(max(camera_z-64.0F,0.0F),map_size_z+1-128.0F);
+                float view_x = camera.pos.x - 64.0F; // min(max(camera.pos.x-64.0F,0.0F),map_size_x+1-128.0F);
+                float view_z = camera.pos.z - 64.0F; // min(max(camera.pos.z-64.0F,0.0F),map_size_z+1-128.0F);
 
-                switch (players[local_player_id].team) {
+                switch (players[local_player.id].team) {
                     case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
                     case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
                     case TEAM_SPECTATOR:
@@ -1045,7 +1048,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 float minimap_x = settings.window_width - 143 * scale;
                 float minimap_y = settings.window_height - 15 * scale;
 
-                char sector_str[3] = {(int)(camera_x / 64.0F) + 'A', (int)(camera_z / 64.0F) + '1', 0};
+                char sector_str[3] = {(int)(camera.pos.x / 64.0F) + 'A', (int)(camera.pos.z / 64.0F) + '1', 0};
                 font_centered(minimap_x + 64 * scale, minimap_y - 129 * scale, 2.0F * scale, sector_str, UTF8);
 
                 glColor3ub(0, 0, 0);
@@ -1053,7 +1056,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 glColor3f(1.0F, 1.0F, 1.0F);
 
                 texture_draw_sector(&texture_minimap, minimap_x, minimap_y, 128 * scale,
-                                    128 * scale, (camera_x - 64.0F) / 512.0F, (camera_z - 64.0F) / 512.0F, 0.25F,
+                                    128 * scale, (camera.pos.x - 64.0F) / 512.0F, (camera.pos.z - 64.0F) / 512.0F, 0.25F,
                                     0.25F);
 
                 tracer_minimap(0, scale, view_x, view_z);
@@ -1127,12 +1130,12 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     if (players[k].connected && players[k].alive)
                 #else
                     if (players[k].connected && players[k].alive
-                       && (players[k].team == players[local_player_id].team
-                           || (camera_mode == CAMERAMODE_SPECTATOR
-                               && (k == local_player_id || players[k].team != TEAM_SPECTATOR))))
+                       && (players[k].team == players[local_player.id].team
+                           || (camera.mode == CAMERAMODE_SPECTATOR
+                               && (k == local_player.id || players[k].team != TEAM_SPECTATOR))))
                 #endif
                     {
-                        if (k == local_player_id) {
+                        if (k == local_player.id) {
                             glColor3ub(0, 255, 255);
                         } else {
                             switch (players[k].team) {
@@ -1144,11 +1147,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                                     break;
                             }
                         }
-                        float player_x = ((k == local_player_id) ? camera_x : players[k].pos.x) - view_x;
-                        float player_y = ((k == local_player_id) ? camera_z : players[k].pos.z) - view_z;
+                        float player_x = ((k == local_player.id) ? camera.pos.x : players[k].pos.x) - view_x;
+                        float player_y = ((k == local_player.id) ? camera.pos.z : players[k].pos.z) - view_z;
                         if (player_x > 0.0F && player_x < 128.0F && player_y > 0.0F && player_y < 128.0F) {
-                            float ang = (k == local_player_id) ?
-                                camera_rot_x + PI :
+                            float ang = (k == local_player.id) ?
+                                camera.rot.x + PI :
                                 -atan2(players[k].orientation.z, players[k].orientation.x) - HALFPI;
                             texture_draw_rotated(&texture_player,
                                                  minimap_x + player_x * scale,
@@ -1160,8 +1163,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         }
 
         if (player_intersection_type >= 0
-           && (players[local_player_id].team == TEAM_SPECTATOR ||
-               players[player_intersection_player].team == players[local_player_id].team)) {
+           && (players[local_player.id].team == TEAM_SPECTATOR ||
+               players[player_intersection_player].team == players[local_player.id].team)) {
             font_select(FONT_SMALLFNT);
 
             char * th[4] = {"torso", "head", "arms", "legs"}; char str[32];
@@ -1207,7 +1210,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
 #ifdef USE_TOUCH
     glColor3f(1.0F, 1.0F, 1.0F);
-    if (camera_mode == CAMERAMODE_FPS || camera_mode == CAMERAMODE_SPECTATOR) {
+    if (camera.mode == CAMERAMODE_FPS || camera.mode == CAMERAMODE_SPECTATOR) {
         texture_draw_rotated(&texture_ui_joystick, settings.window_height * 0.3F, settings.window_height * 0.3F,
                              settings.window_height * 0.4F, settings.window_height * 0.4F, 0.0F);
         texture_draw_rotated(&texture_ui_knob, settings.window_height * 0.3F, settings.window_height * 0.3F,
@@ -1245,24 +1248,24 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 }
 
 static void hud_ingame_scroll(double yoffset) {
-    if (camera_mode == CAMERAMODE_FPS && yoffset != 0.0F) {
-        int h = players[local_player_id].held_item;
-        if (!players[local_player_id].items_show)
-            local_player_lasttool = h;
+    if (camera.mode == CAMERAMODE_FPS && yoffset != 0.0F) {
+        int h = players[local_player.id].held_item;
+        if (!players[local_player.id].items_show)
+            local_player.last_tool = h;
         h += (yoffset < 0) ? 1 : -1;
         if (h < 0)
             h = 3;
-        if (h == TOOL_BLOCK && local_player_blocks == 0)
+        if (h == TOOL_BLOCK && local_player.blocks == 0)
             h += (yoffset < 0) ? 1 : -1;
-        if (h == TOOL_GUN && local_player_ammo + local_player_ammo_reserved == 0)
+        if (h == TOOL_GUN && local_player.ammo + local_player.ammo_reserved == 0)
             h += (yoffset < 0) ? 1 : -1;
-        if (h == TOOL_GRENADE && local_player_grenades == 0)
+        if (h == TOOL_GRENADE && local_player.grenades == 0)
             h += (yoffset < 0) ? 1 : -1;
         if (h > 3)
             h = 0;
-        players[local_player_id].held_item = h;
+        players[local_player.id].held_item = h;
         sound_create(SOUND_LOCAL, &sound_switch, 0.0F, 0.0F, 0.0F);
-        player_on_held_item_change(players + local_player_id);
+        player_on_held_item_change(players + local_player.id);
     }
 }
 
@@ -1292,16 +1295,16 @@ static void hud_ingame_mouselocation(double x, double y) {
     last_y = y;
 
     float s = 1.0F;
-    if (camera_mode == CAMERAMODE_FPS && players[local_player_id].held_item == TOOL_GUN &&
-        HASBIT(players[local_player_id].input.buttons, BUTTON_SECONDARY)) {
+    if (camera.mode == CAMERAMODE_FPS && players[local_player.id].held_item == TOOL_GUN &&
+        HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY)) {
         s = 0.5F;
     }
 
     if (settings.invert_y)
         dy *= -1.0F;
 
-    camera_rot_x -= dx * settings.mouse_sensitivity / 5.0F * (float) MOUSE_SENSITIVITY * s;
-    camera_rot_y += dy * settings.mouse_sensitivity / 5.0F * (float) MOUSE_SENSITIVITY * s;
+    camera.rot.x -= dx * settings.mouse_sensitivity / 5.0F * (float) MOUSE_SENSITIVITY * s;
+    camera.rot.y += dy * settings.mouse_sensitivity / 5.0F * (float) MOUSE_SENSITIVITY * s;
 
     camera_overflow_adjust();
 }
@@ -1314,63 +1317,62 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
         return;
     }
 
-    if (button == WINDOW_MOUSE_LMB)
-        button_map[0] = (action == WINDOW_PRESS);
+    if (button == WINDOW_MOUSE_LMB) button_map.lmb = (action == WINDOW_PRESS);
 
     if (button == WINDOW_MOUSE_RMB) {
-        if (action == WINDOW_PRESS && players[local_player_id].held_item == TOOL_GUN
-            && !settings.hold_down_sights && !players[local_player_id].items_show) {
-            players[local_player_id].input.buttons ^= MASKON(BUTTON_SECONDARY);
+        if (action == WINDOW_PRESS && players[local_player.id].held_item == TOOL_GUN
+            && !settings.hold_down_sights && !players[local_player.id].items_show) {
+            players[local_player.id].input.buttons ^= MASKON(BUTTON_SECONDARY);
         }
 
-        if (local_player_drag_active && action == WINDOW_RELEASE && players[local_player_id].held_item == TOOL_BLOCK) {
+        if (local_player.drag_active && action == WINDOW_RELEASE && players[local_player.id].held_item == TOOL_BLOCK) {
             int * pos = camera_terrain_pick(0);
             if (pos != NULL && pos[1] > 1
-               && (pow(pos[0] - camera_x, 2) + pow(pos[1] - camera_y, 2) + pow(pos[2] - camera_z, 2)) < 5 * 5) {
-                int amount = map_cube_line(local_player_drag_x, local_player_drag_z, 63 - local_player_drag_y, pos[0],
+               && (pow(pos[0] - camera.pos.x, 2) + pow(pos[1] - camera.pos.y, 2) + pow(pos[2] - camera.pos.z, 2)) < 5 * 5) {
+                int amount = map_cube_line(local_player.drag[X], local_player.drag[Z], 63 - local_player.drag[Y], pos[0],
                                            pos[2], 63 - pos[1], NULL);
-                if (amount <= local_player_blocks) {
+                if (amount <= local_player.blocks) {
                     struct PacketBlockLine line;
-                    line.player_id = local_player_id;
-                    line.sx = htoles32(local_player_drag_x);
-                    line.sy = htoles32(local_player_drag_z);
-                    line.sz = htoles32(63 - local_player_drag_y);
+                    line.player_id = local_player.id;
+                    line.sx = htoles32(local_player.drag[X]);
+                    line.sy = htoles32(local_player.drag[Z]);
+                    line.sz = htoles32(63 - local_player.drag[Y]);
                     line.ex = htoles32(pos[0]);
                     line.ey = htoles32(pos[2]);
                     line.ez = htoles32(63 - pos[1]);
                     network_send(PACKET_BLOCKLINE_ID, &line, sizeof(line));
-                    local_player_blocks -= amount;
+                    local_player.blocks -= amount;
                 }
-                players[local_player_id].item_showup = window_time();
+                players[local_player.id].item_showup = window_time();
             }
         }
-        local_player_drag_active = 0;
-        if (action == WINDOW_PRESS && players[local_player_id].held_item == TOOL_BLOCK
-           && window_time() - players[local_player_id].item_showup >= 0.5F) {
+        local_player.drag_active = 0;
+        if (action == WINDOW_PRESS && players[local_player.id].held_item == TOOL_BLOCK
+           && window_time() - players[local_player.id].item_showup >= 0.5F) {
             int * pos = camera_terrain_pick(0);
-            if (pos != NULL && pos[1] > 1 && distance3D(camera_x, camera_y, camera_z, pos[0], pos[1], pos[2]) < 5.0F * 5.0F) {
-                local_player_drag_active = 1;
-                local_player_drag_x = pos[0];
-                local_player_drag_y = pos[1];
-                local_player_drag_z = pos[2];
+
+            if (pos != NULL && pos[Y] > 1 && distance3D(camera.pos.x, camera.pos.y, camera.pos.z, pos[X], pos[Y], pos[Z]) < 5.0F * 5.0F) {
+                local_player.drag_active = 1;
+                local_player.drag[X] = pos[X];
+                local_player.drag[Y] = pos[Y];
+                local_player.drag[Z] = pos[Z];
             }
         }
-        button_map[1] = (action == WINDOW_PRESS);
+
+        button_map.rmb = (action == WINDOW_PRESS);
     }
 
-    if (button == WINDOW_MOUSE_MMB) {
-        button_map[2] = (action == WINDOW_PRESS);
-    }
+    if (button == WINDOW_MOUSE_MMB) button_map.mmb = (action == WINDOW_PRESS);
 
-    if (camera_mode == CAMERAMODE_BODYVIEW && button == WINDOW_MOUSE_MMB && action == WINDOW_PRESS) {
+    if (camera.mode == CAMERAMODE_BODYVIEW && button == WINDOW_MOUSE_MMB && action == WINDOW_PRESS) {
         float nearest_dist = FLT_MAX;
         int nearest_player = -1;
         for (int k = 0; k < PLAYERS_MAX; k++)
             if (player_can_spectate(&players[k]) && players[k].alive && k != cameracontroller_bodyview_player
-               && distance3D(camera_x, camera_y, camera_z, players[k].pos.x, players[k].pos.y, players[k].pos.z)
+               && distance3D(camera.pos.x, camera.pos.y, camera.pos.z, players[k].pos.x, players[k].pos.y, players[k].pos.z)
                    < nearest_dist) {
                 nearest_dist
-                    = distance3D(camera_x, camera_y, camera_z, players[k].pos.x, players[k].pos.y, players[k].pos.z);
+                    = distance3D(camera.pos.x, camera.pos.y, camera.pos.z, players[k].pos.x, players[k].pos.y, players[k].pos.z);
                 nearest_player = k;
             }
         if (nearest_player >= 0)
@@ -1378,9 +1380,9 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
     }
 
     if (button == WINDOW_MOUSE_RMB && action == WINDOW_PRESS) {
-        players[local_player_id].start.rmb = window_time();
-        if (camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR) {
-            if (camera_mode == CAMERAMODE_SPECTATOR)
+        players[local_player.id].start.rmb = window_time();
+        if (camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR) {
+            if (camera.mode == CAMERAMODE_SPECTATOR)
                 cameracontroller_bodyview_mode = 1;
             for (int k = 0; k < PLAYERS_MAX * 2; k++) {
                 cameracontroller_bodyview_player = (cameracontroller_bodyview_player + 1) % PLAYERS_MAX;
@@ -1391,32 +1393,32 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
     }
 
     if (button == WINDOW_MOUSE_LMB) {
-        if (camera_mode == CAMERAMODE_FPS && window_time() - players[local_player_id].item_showup >= 0.5F) {
-            if (players[local_player_id].held_item == TOOL_GRENADE && local_player_grenades > 0) {
+        if (camera.mode == CAMERAMODE_FPS && window_time() - players[local_player.id].item_showup >= 0.5F) {
+            if (players[local_player.id].held_item == TOOL_GRENADE && local_player.grenades > 0) {
                 if (action == WINDOW_RELEASE) {
-                    local_player_grenades = max(local_player_grenades - 1, 0);
+                    local_player.grenades = max(local_player.grenades - 1, 0);
 
                     struct PacketGrenade g;
-                    g.player_id   = local_player_id;
-                    g.fuse_length = htolef(max(3.0F - (window_time() - players[local_player_id].start.lmb), 0.0F));
+                    g.player_id   = local_player.id;
+                    g.fuse_length = htolef(max(3.0F - (window_time() - players[local_player.id].start.lmb), 0.0F));
 
-                    g.x = htolef(players[local_player_id].pos.x);
-                    g.y = htolef(players[local_player_id].pos.z);
-                    g.z = htolef(63.0F - players[local_player_id].pos.y);
+                    g.x = htolef(players[local_player.id].pos.x);
+                    g.y = htolef(players[local_player.id].pos.z);
+                    g.z = htolef(63.0F - players[local_player.id].pos.y);
 
                     g.vx = htolef((g.fuse_length == 0.0F) ?
                         0.0F :
-                              (players[local_player_id].orientation.x + players[local_player_id].physics.velocity.x));
+                              (players[local_player.id].orientation.x + players[local_player.id].physics.velocity.x));
                     g.vy = htolef((g.fuse_length == 0.0F) ?
                         0.0F :
-                              (players[local_player_id].orientation.z + players[local_player_id].physics.velocity.z));
+                              (players[local_player.id].orientation.z + players[local_player.id].physics.velocity.z));
                     g.vz = htolef((g.fuse_length == 0.0F) ?
                         0.0F :
-                              (-players[local_player_id].orientation.y - players[local_player_id].physics.velocity.y));
+                              (-players[local_player.id].orientation.y - players[local_player.id].physics.velocity.y));
 
                     network_send(PACKET_GRENADE_ID, &g, sizeof(g));
                     read_PacketGrenade(&g, sizeof(g)); // server won’t loop packet back
-                    players[local_player_id].item_showup = window_time();
+                    players[local_player.id].item_showup = window_time();
                 }
 
                 if (action == WINDOW_PRESS) {
@@ -1427,21 +1429,21 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
     }
 
     if (button == WINDOW_MOUSE_LMB && action == WINDOW_PRESS) {
-        players[local_player_id].start.lmb = window_time();
+        players[local_player.id].start.lmb = window_time();
 
-        if (camera_mode == CAMERAMODE_FPS) {
-            if (players[local_player_id].held_item == TOOL_GUN) {
+        if (camera.mode == CAMERAMODE_FPS) {
+            if (players[local_player.id].held_item == TOOL_GUN) {
                 if (weapon_reloading()) weapon_reload_abort();
 
-                if (local_player_ammo == 0 && window_time() - players[local_player_id].item_showup >= 0.5F) {
+                if (local_player.ammo == 0 && window_time() - players[local_player.id].item_showup >= 0.5F) {
                     sound_create(SOUND_LOCAL, &sound_empty, 0.0F, 0.0F, 0.0F);
                     chat_showpopup("RELOAD", 0.4F, Red, UTF8);
                 }
             }
         }
 
-        if (camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR) {
-            if (camera_mode == CAMERAMODE_SPECTATOR)
+        if (camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR) {
+            if (camera.mode == CAMERAMODE_SPECTATOR)
                 cameracontroller_bodyview_mode = 1;
             for (int k = 0; k < PLAYERS_MAX * 2; k++) {
                 cameracontroller_bodyview_player = (cameracontroller_bodyview_player - 1) % PLAYERS_MAX;
@@ -1468,7 +1470,7 @@ static int autocomplete_type_cmp(const void * a, const void * b) {
 
 void broadcast_chat(unsigned char chat_type, const char * message, size_t size) {
     struct PacketChatMessage contained;
-    contained.player_id = local_player_id;
+    contained.player_id = local_player.id;
     contained.chat_type = chat_type;
 
     size_t written = encodeMagic(contained.message, message, size, sizeof(contained.message));
@@ -1575,33 +1577,33 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
         } else if (action == WINDOW_PRESS) {
             if (!network_connected) {
                 if (key == WINDOW_KEY_F1) {
-                    camera_mode = CAMERAMODE_SELECTION;
+                    camera.mode = CAMERAMODE_SELECTION;
                 }
                 if (key == WINDOW_KEY_F2) {
-                    camera_mode = CAMERAMODE_FPS;
+                    camera.mode = CAMERAMODE_FPS;
                 }
                 if (key == WINDOW_KEY_F3) {
-                    camera_mode = CAMERAMODE_SPECTATOR;
+                    camera.mode = CAMERAMODE_SPECTATOR;
                 }
                 if (key == WINDOW_KEY_F4) {
-                    camera_mode = CAMERAMODE_BODYVIEW;
+                    camera.mode = CAMERAMODE_BODYVIEW;
                 }
                 if (key == WINDOW_KEY_SNEAK) {
-                    log_debug("%f,%f,%f,%f,%f", camera_x, camera_y, camera_z, camera_rot_x, camera_rot_y);
-                    players[local_player_id].pos.x = 256.0F;
-                    players[local_player_id].pos.y = 63.0F;
-                    players[local_player_id].pos.z = 256.0F;
+                    log_debug("%f,%f,%f,%f,%f", camera.pos.x, camera.pos.y, camera.pos.z, camera.rot.x, camera.rot.y);
+                    players[local_player.id].pos.x = 256.0F;
+                    players[local_player.id].pos.y = 63.0F;
+                    players[local_player.id].pos.z = 256.0F;
                 }
                 if (key == WINDOW_KEY_CROUCH) {
-                    players[local_player_id].alive = !players[local_player_id].alive;
+                    players[local_player.id].alive = !players[local_player.id].alive;
                 }
             }
 
             if (key == WINDOW_KEY_LASTTOOL) {
-                int tmp = players[local_player_id].held_item;
-                players[local_player_id].held_item = local_player_lasttool;
-                local_player_lasttool = tmp;
-                player_on_held_item_change(players + local_player_id);
+                int tmp = players[local_player.id].held_item;
+                players[local_player.id].held_item = local_player.last_tool;
+                local_player.last_tool = tmp;
+                player_on_held_item_change(players + local_player.id);
             }
 
             if (key == WINDOW_KEY_VOLUME_UP) {
@@ -1620,51 +1622,51 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
             }
 
             if ((key == WINDOW_KEY_CURSOR_UP || key == WINDOW_KEY_CURSOR_DOWN || key == WINDOW_KEY_CURSOR_LEFT || key == WINDOW_KEY_CURSOR_RIGHT)
-               && camera_mode == CAMERAMODE_FPS && players[local_player_id].held_item == TOOL_BLOCK) {
-                if (local_player_color_x < 0 || local_player_color_y < 0) {
-                    local_player_color_x = 3; local_player_color_y = 0;
+               && camera.mode == CAMERAMODE_FPS && players[local_player.id].held_item == TOOL_BLOCK) {
+                if (local_player.color[X] < 0 || local_player.color[Y] < 0) {
+                    local_player.color[X] = 3; local_player.color[Y] = 0;
                 } else {
                     switch (key) {
                         case WINDOW_KEY_CURSOR_LEFT: {
-                            local_player_color_x--;
-                            if (local_player_color_x < 0)
-                                local_player_color_x = 7;
+                            local_player.color[X]--;
+                            if (local_player.color[X] < 0)
+                                local_player.color[X] = 7;
                             break;
                         }
 
                         case WINDOW_KEY_CURSOR_RIGHT: {
-                            local_player_color_x++;
-                            if (local_player_color_x > 7)
-                                local_player_color_x = 0;
+                            local_player.color[X]++;
+                            if (local_player.color[X] > 7)
+                                local_player.color[X] = 0;
                             break;
                         }
 
                         case WINDOW_KEY_CURSOR_UP: {
-                            local_player_color_y--;
-                            if (local_player_color_y < 0)
-                                local_player_color_y = 7;
+                            local_player.color[Y]--;
+                            if (local_player.color[Y] < 0)
+                                local_player.color[Y] = 7;
                             break;
                         }
 
                         case WINDOW_KEY_CURSOR_DOWN: {
-                            local_player_color_y++;
-                            if (local_player_color_y > 7)
-                                local_player_color_y = 0;
+                            local_player.color[Y]++;
+                            if (local_player.color[Y] > 7)
+                                local_player.color[Y] = 0;
                             break;
                         }
                     }
                 }
 
-                players[local_player_id].block = texture_block_color(local_player_color_x, local_player_color_y);
+                players[local_player.id].block = texture_block_color(local_player.color[X], local_player.color[Y]);
                 network_updateColor();
             }
 
-            if (key == WINDOW_KEY_RELOAD && camera_mode == CAMERAMODE_FPS
-               && players[local_player_id].held_item == TOOL_GUN) {
+            if (key == WINDOW_KEY_RELOAD && camera.mode == CAMERAMODE_FPS
+               && players[local_player.id].held_item == TOOL_GUN) {
                 weapon_reload();
             }
 
-            if (key == WINDOW_KEY_SNEAK && (camera_mode == CAMERAMODE_BODYVIEW || camera_mode == CAMERAMODE_SPECTATOR)) {
+            if (key == WINDOW_KEY_SNEAK && (camera.mode == CAMERAMODE_BODYVIEW || camera.mode == CAMERAMODE_SPECTATOR)) {
                 cameracontroller_bodyview_mode = !cameracontroller_bodyview_mode;
             }
 
@@ -1679,34 +1681,34 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 }
             }
 
-            if (screen_current == SCREEN_NONE && camera_mode == CAMERAMODE_FPS) {
+            if (screen_current == SCREEN_NONE && camera.mode == CAMERAMODE_FPS) {
                 unsigned char tool_switch = 0;
                 switch (key) {
                     case WINDOW_KEY_TOOL1:
-                        if (players[local_player_id].held_item != TOOL_SPADE) {
-                            local_player_lasttool = players[local_player_id].held_item;
-                            players[local_player_id].held_item = TOOL_SPADE;
+                        if (players[local_player.id].held_item != TOOL_SPADE) {
+                            local_player.last_tool = players[local_player.id].held_item;
+                            players[local_player.id].held_item = TOOL_SPADE;
                             tool_switch = 1;
                         }
                         break;
                     case WINDOW_KEY_TOOL2:
-                        if (players[local_player_id].held_item != TOOL_BLOCK) {
-                            local_player_lasttool = players[local_player_id].held_item;
-                            players[local_player_id].held_item = TOOL_BLOCK;
+                        if (players[local_player.id].held_item != TOOL_BLOCK) {
+                            local_player.last_tool = players[local_player.id].held_item;
+                            players[local_player.id].held_item = TOOL_BLOCK;
                             tool_switch = 1;
                         }
                         break;
                     case WINDOW_KEY_TOOL3:
-                        if (players[local_player_id].held_item != TOOL_GUN) {
-                            local_player_lasttool = players[local_player_id].held_item;
-                            players[local_player_id].held_item = TOOL_GUN;
+                        if (players[local_player.id].held_item != TOOL_GUN) {
+                            local_player.last_tool = players[local_player.id].held_item;
+                            players[local_player.id].held_item = TOOL_GUN;
                             tool_switch = 1;
                         }
                         break;
                     case WINDOW_KEY_TOOL4:
-                        if (players[local_player_id].held_item != TOOL_GRENADE) {
-                            local_player_lasttool = players[local_player_id].held_item;
-                            players[local_player_id].held_item = TOOL_GRENADE;
+                        if (players[local_player.id].held_item != TOOL_GRENADE) {
+                            local_player.last_tool = players[local_player.id].held_item;
+                            players[local_player.id].held_item = TOOL_GRENADE;
                             tool_switch = 1;
                         }
                         break;
@@ -1714,7 +1716,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
 
                 if (tool_switch) {
                     sound_create(SOUND_LOCAL, &sound_switch, 0.0F, 0.0F, 0.0F);
-                    player_on_held_item_change(players + local_player_id);
+                    player_on_held_item_change(players + local_player.id);
                 }
             }
 
@@ -1734,15 +1736,15 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
             if (screen_current == SCREEN_TEAM_SELECT) {
                 switch (key) {
                     case WINDOW_KEY_SELECT1: new_team = TEAM_1;         break;
-                    case WINDOW_KEY_SELECT2: new_team = TEAM_2;         break;
-                    case WINDOW_KEY_SELECT3: new_team = TEAM_SPECTATOR; break;
+                    case WINDOW_KEY_SELECT2: new_team = TEAM_SPECTATOR; break;
+                    case WINDOW_KEY_SELECT3: new_team = TEAM_2;         break;
                     default:                 new_team = -1;             break;
                 }
 
                 if (new_team >= 0) {
                     if (network_logged_in) {
                         struct PacketChangeTeam p;
-                        p.player_id = local_player_id;
+                        p.player_id = local_player.id;
                         p.team      = new_team;
 
                         network_send(PACKET_CHANGETEAM_ID, &p, sizeof(p));
@@ -1781,7 +1783,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 if (new_gun >= 0) {
                     if (network_logged_in) {
                         struct PacketChangeWeapon p;
-                        p.player_id = local_player_id;
+                        p.player_id = local_player.id;
                         p.weapon    = new_gun;
 
                         network_send(PACKET_CHANGEWEAPON_ID, &p, sizeof(p));
@@ -1804,33 +1806,33 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 return;
             }
 
-            if (key == WINDOW_KEY_PICKCOLOR && players[local_player_id].held_item == TOOL_BLOCK) {
-                players[local_player_id].item_disabled = window_time();
-                players[local_player_id].items_show_start = window_time();
-                players[local_player_id].items_show = 1;
+            if (key == WINDOW_KEY_PICKCOLOR && players[local_player.id].held_item == TOOL_BLOCK) {
+                players[local_player.id].item_disabled = window_time();
+                players[local_player.id].items_show_start = window_time();
+                players[local_player.id].items_show = 1;
 
                 struct Camera_HitType hit;
-                camera_hit_fromplayer(&hit, local_player_id, 128.0F);
+                camera_hit_fromplayer(&hit, local_player.id, 128.0F);
 
-                local_player_color_x = local_player_color_y = -1;
+                local_player.color[X] = local_player.color[Y] = -1;
 
                 switch (hit.type) {
                     case CAMERA_HITTYPE_BLOCK: {
                         float dmg = (100.0F - map_damage_get(hit.x, hit.y, hit.z)) / 100.0F * 0.75F + 0.25F;
                         TrueColor color = map_get(hit.x, hit.y, hit.z);
-                        players[local_player_id].block.r = color.r * dmg;
-                        players[local_player_id].block.g = color.g * dmg;
-                        players[local_player_id].block.b = color.b * dmg;
+                        players[local_player.id].block.r = color.r * dmg;
+                        players[local_player.id].block.g = color.g * dmg;
+                        players[local_player.id].block.b = color.b * dmg;
                         break;
                     }
                     case CAMERA_HITTYPE_PLAYER:
-                        players[local_player_id].block = players[hit.player_id].block;
+                        players[local_player.id].block = players[hit.player_id].block;
                         break;
                     case CAMERA_HITTYPE_NONE:
                     default:
-                        players[local_player_id].block.r = fog_color[0] * 255;
-                        players[local_player_id].block.g = fog_color[1] * 255;
-                        players[local_player_id].block.b = fog_color[2] * 255;
+                        players[local_player.id].block.r = fog_color[0] * 255;
+                        players[local_player.id].block.g = fog_color[1] * 255;
+                        players[local_player.id].block.b = fog_color[2] * 255;
                         break;
                 }
 
@@ -1904,6 +1906,7 @@ static void hud_ingame_touch(void * finger, int action, float x, float y, float 
             hud_ingame_keyboard(WINDOW_KEY_TOOL3, WINDOW_PRESS, 0, 0);
         return;
     }
+
     if (screen_current == SCREEN_GUN_SELECT && action == TOUCH_UP) {
         if (x < settings.window_width / 3)
             hud_ingame_keyboard(WINDOW_KEY_TOOL1, WINDOW_PRESS, 0, 0);
@@ -1913,13 +1916,15 @@ static void hud_ingame_touch(void * finger, int action, float x, float y, float 
             hud_ingame_keyboard(WINDOW_KEY_TOOL2, WINDOW_PRESS, 0, 0);
         return;
     }
+
     if (screen_current == SCREEN_NONE) {
         if (action == TOUCH_DOWN && x > settings.window_width - settings.window_height * 0.25F
            && y < settings.window_height * 0.25F) {
             window_pressed_keys[WINDOW_KEY_MAP] = !window_pressed_keys[WINDOW_KEY_MAP];
             return;
         }
-        if ((camera_mode == CAMERAMODE_FPS || camera_mode == CAMERAMODE_SPECTATOR)
+
+        if ((camera.mode == CAMERAMODE_FPS || camera.mode == CAMERAMODE_SPECTATOR)
            && distance2D(f->start.x, f->start.y, settings.window_height * 0.3F, settings.window_height * 0.7F)
                < pow(settings.window_height * 0.15F, 2)) {
             float mx = max(min(x - settings.window_height * 0.3F, settings.window_height * 0.2F),
@@ -1958,16 +1963,18 @@ static void hud_ingame_touch(void * finger, int action, float x, float y, float 
             }
             return;
         }
-        if (camera_mode == CAMERAMODE_BODYVIEW && action == TOUCH_UP) {
+
+        if (camera.mode == CAMERAMODE_BODYVIEW && action == TOUCH_UP) {
             if (x < settings.window_width / 2)
                 hud_ingame_mouseclick(0, 0, WINDOW_MOUSE_LMB, WINDOW_PRESS, 0);
             if (x > settings.window_width / 2)
                 hud_ingame_mouseclick(0, 0, WINDOW_MOUSE_RMB, WINDOW_PRESS, 0);
             return;
         }
+
         if (1) {
-            camera_rot_x -= dx * 0.002F;
-            camera_rot_y += dy * 0.002F;
+            camera.rot.x -= dx * 0.002F;
+            camera.rot.y += dy * 0.002F;
             camera_overflow_adjust();
             return;
         }
@@ -2134,10 +2141,10 @@ static void server_c(char * address, char * name, Version version) {
         map_vxl_load(data, file_size(address));
         free(data);
         chunk_rebuild_all();
-        camera_mode = CAMERAMODE_FPS;
-        players[local_player_id].pos.x = map_size_x / 2.0F;
-        players[local_player_id].pos.y = map_size_y - 1.0F;
-        players[local_player_id].pos.z = map_size_z / 2.0F;
+        camera.mode = CAMERAMODE_FPS;
+        players[local_player.id].pos.x = map_size_x / 2.0F;
+        players[local_player.id].pos.y = map_size_y - 1.0F;
+        players[local_player.id].pos.z = map_size_z / 2.0F;
         window_title(address);
         hud_change(&hud_ingame);
     } else {

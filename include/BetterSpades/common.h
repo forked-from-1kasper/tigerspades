@@ -138,6 +138,18 @@ typedef enum {
 } Version;
 
 typedef struct {
+    float x, y, z;
+} Position;
+
+typedef struct {
+    float x, y, z;
+} Orientation;
+
+typedef struct {
+    float x, y, z;
+} Velocity;
+
+typedef struct {
     uint8_t r, g, b, a;
 } TrueColor;
 
