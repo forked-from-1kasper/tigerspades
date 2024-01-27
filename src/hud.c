@@ -2306,28 +2306,42 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
             for (int k = 0; k < server_count; k++) {
                 if (strstr(serverlist[k].name, serverlist_input) || strstr(serverlist[k].identifier, serverlist_input)
                  || strstr(serverlist[k].map, serverlist_input)  || strstr(serverlist[k].gamemode, serverlist_input)) {
+                    int f = ((serverlist[k].current && serverlist[k].current < serverlist[k].max)
+                             || serverlist[k].current < 0) ? 1 : 2;
+
                     if (serverlist[k].current >= 0)
                         sprintf(total_str, "%i/%i", serverlist[k].current, serverlist[k].max);
                     else
                         strcpy(total_str, "-");
 
-                    int f = ((serverlist[k].current && serverlist[k].current < serverlist[k].max)
-                             || serverlist[k].current < 0) ? 1 : 2;
-
                     mu_push_id(ctx, &serverlist[k].identifier, strlen(serverlist[k].identifier));
+
+                    bool join = false;
+
+                    float ratio = ((float) serverlist[k].current) / ((float) serverlist[k].max);
+
+                    if (ratio >= 1.0)
+                        mu_text_color(ctx, 255 / f, 0, 0);
+                    else if (ratio >= 0.75)
+                        mu_text_color(ctx, 255 / f, 255 / f, 0);
+                    else
+                        mu_text_color(ctx, 230 / f, 230 / f, 230 / f);
+
+                    if (mu_button_ex(ctx, total_str, 0, MU_OPT_NOFRAME | MU_OPT_ALIGNCENTER))
+                        join = true;
 
                     mu_text_color(ctx, 230 / f, 230 / f, 230 / f);
 
-                    bool join = false;
-                    if (mu_button_ex(ctx, total_str, 0, MU_OPT_NOFRAME | MU_OPT_ALIGNCENTER))
-                        join = true;
                     if (mu_button_ex(ctx, "", texture_flag_index(serverlist[k].country) + HUD_FLAG_INDEX_START,
                                     MU_OPT_NOFRAME))
                         join = true;
+
                     if (mu_button_ex(ctx, serverlist[k].name, 0, MU_OPT_NOFRAME))
                         join = true;
+
                     if (mu_button_ex(ctx, serverlist[k].map, 0, MU_OPT_NOFRAME))
                         join = true;
+
                     if (mu_button_ex(ctx, serverlist[k].gamemode, 0, MU_OPT_NOFRAME | MU_OPT_ALIGNCENTER))
                         join = true;
 
