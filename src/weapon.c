@@ -265,9 +265,12 @@ void weapon_shoot() {
         weapon_spread(&players[local_player.id], o);
 
         struct Camera_HitType hit;
-        camera_hit(&hit, local_player.id, players[local_player.id].physics.eye.x,
-                   players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),
-                   players[local_player.id].physics.eye.z, o[X], o[Y], o[Z], 128.0F);
+        camera_hit(&hit, local_player.id,
+            players[local_player.id].physics.eye.x,
+            players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),
+            players[local_player.id].physics.eye.z,
+            o[X], o[Y], o[Z], 128.0F
+        );
 
         #if !(HACKS_ENABLED && HACK_NORELOAD)
         if (players[local_player.id].input.buttons != network_buttons_last) {
@@ -308,7 +311,8 @@ void weapon_shoot() {
                 // printf("hit on %s (%i)\n", players[hit.player_id].name, h.hit_type);
                 break;
             }
-            case CAMERA_HITTYPE_BLOCK:
+
+            case CAMERA_HITTYPE_BLOCK: {
                 map_damage(hit.x, hit.y, hit.z, weapon_block_damage(players[local_player.id].weapon));
                 if (map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
                     struct PacketBlockAction blk;
@@ -324,6 +328,7 @@ void weapon_shoot() {
                                     1.0F, 4, 0.1F, 0.25F);
                 }
                 break;
+            }
         }
 
         tracer_pvelocity(o, &players[local_player.id]);

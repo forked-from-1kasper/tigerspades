@@ -58,11 +58,11 @@ void file_url(char * url) {
 
 int file_dir_exists(const char * path) {
 #ifndef USE_ANDROID_FILE
-    DIR* d = opendir(path);
+    DIR * d = opendir(path);
 #else
     char str[256];
     sprintf(str, "/sdcard/BetterSpades/%s", path);
-    DIR* d = opendir(str);
+    DIR * d = opendir(str);
 #endif
     if (d) {
         closedir(d);
@@ -89,7 +89,7 @@ int file_dir_create(const char * path) {
 
 int file_exists(const char * name) {
 #ifdef USE_ANDROID_FILE
-    void* f = file_open(name, "rb");
+    void * f = file_open(name, "rb");
     if (f == NULL)
         return 0;
     file_close(f);
@@ -101,27 +101,31 @@ int file_exists(const char * name) {
 
 int file_size(const char * name) {
 #ifdef USE_ANDROID_FILE
-    struct file_handle * f = (struct file_handle*) file_open(name, "rb");
-    if (!f)
-        return 0;
+    struct file_handle * f = (struct file_handle *) file_open(name, "rb");
+    if (!f) return 0;
+
     if (f->type == FILE_SDL) {
-        int size = SDL_RWsize((struct SDL_RWops*) f->internal);
+        int size = SDL_RWsize((struct SDL_RWops *) f->internal);
         file_close(f);
         return size;
     }
+
     if (f->type == FILE_STD) {
         fseek(f->internal, 0, SEEK_END);
         int size = ftell(f->internal);
         file_close(f);
         return size;
     }
+
     return 0;
 #else
     FILE * f = fopen(name, "rb");
     if (!f) return 0;
     fseek(f, 0, SEEK_END);
+
     int size = ftell(f);
     fclose(f);
+
     return size;
 #endif
 }
@@ -129,26 +133,30 @@ int file_size(const char * name) {
 unsigned char * file_load(const char * name) {
 #ifdef USE_ANDROID_FILE
     int size = file_size(name);
-    struct file_handle * f = (struct file_handle*) file_open(name, "rb");
-    if (!f)
-        return NULL;
+    struct file_handle * f = (struct file_handle *) file_open(name, "rb");
+    if (!f) return NULL;
+
     unsigned char * data = malloc(size + 1);
     CHECK_ALLOCATION_ERROR(data)
     data[size] = 0;
+
     if (f->type == FILE_SDL) {
         int offset = 0;
         while (1) {
-            int read = SDL_RWread((struct SDL_RWops*) f->internal, data + offset, 1, size - offset);
+            int read = SDL_RWread((struct SDL_RWops *) f->internal, data + offset, 1, size - offset);
             if (!read)
                 break;
             offset += read;
         }
-        SDL_RWclose((struct SDL_RWops*) f->internal);
+
+        SDL_RWclose((struct SDL_RWops *) f->internal);
+
         if (!offset) {
             free(data);
             return NULL;
         }
     }
+
     if (f->type == FILE_STD) {
         fread(data, size, 1, f->internal);
         fclose(f->internal);
@@ -157,27 +165,32 @@ unsigned char * file_load(const char * name) {
 #else
     FILE * f;
     f = fopen(name, "rb");
+
     if (!f) {
         log_fatal("ERROR: failed to open '%s', exiting", name);
         exit(1);
     }
+
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
     unsigned char * data = malloc(size + 1);
     CHECK_ALLOCATION_ERROR(data)
     data[size] = 0;
+
     fseek(f, 0, SEEK_SET);
     fread(data, size, 1, f);
     fclose(f);
+
     return data;
 #endif
 }
 
 void * file_open(const char * name, const char * mode) {
 #ifdef USE_ANDROID_FILE
-    struct file_handle* handle = malloc(sizeof(struct file_handle));
+    struct file_handle * handle = malloc(sizeof(struct file_handle));
     handle->internal = (strchr(mode, 'r') != NULL) ? SDL_RWFromFile(name, mode) : NULL;
     handle->type = FILE_SDL;
+
     if (!handle->internal) {
         char str[256];
         sprintf(str, "/sdcard/BetterSpades/%s", name);
@@ -185,10 +198,12 @@ void * file_open(const char * name, const char * mode) {
         handle->type = FILE_STD;
         // log_warn("open %s %i", str, handle->internal);
     }
+
     if (!handle->internal) {
         free(handle);
         return NULL;
     }
+
     return handle;
 #else
     return fopen(name, mode);
