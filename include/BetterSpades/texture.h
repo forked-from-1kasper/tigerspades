@@ -23,8 +23,8 @@
 #define TEXTURE_H
 
 typedef struct {
-    int width, height;
-    int texture_id;
+    unsigned int width, height;
+    GLuint texture_id;
     unsigned char * pixels;
 } Texture;
 
@@ -76,8 +76,8 @@ int texture_flag_index(const char * country);
 void texture_flag_offset(int index, float * u, float * v);
 void texture_filter(Texture * t, int filter);
 void texture_init(void);
-int texture_create(Texture * t, char * filename, GLuint filter);
-int texture_create_buffer(Texture * t, int width, int height, unsigned char * buff, int new);
+void texture_create(Texture * t, char * filename, GLuint filter);
+void texture_create_buffer(Texture * t, unsigned int width, unsigned int height, unsigned char * buff, int new);
 void texture_delete(Texture * t);
 void texture_draw(Texture * t, float x, float y, float w, float h);
 void texture_draw_sector(Texture * t, float x, float y, float w, float h, float u, float v, float us, float vs);

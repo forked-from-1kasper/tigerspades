@@ -40,6 +40,7 @@
 #include <BetterSpades/texture.h>
 #include <BetterSpades/chunk.h>
 #include <BetterSpades/config.h>
+#include <BetterSpades/unicode.h>
 
 void (*packets[256])(void * data, int len) = {NULL};
 
@@ -58,7 +59,7 @@ unsigned char network_keys_last    = 0;
 unsigned char network_buttons_last = 0;
 unsigned char network_tool_last    = 255;
 
-void * compressed_chunk_data;
+uint8_t * compressed_chunk_data;
 int compressed_chunk_data_size;
 int compressed_chunk_data_offset = 0;
 int compressed_chunk_data_estimate = 0;
@@ -131,8 +132,8 @@ void read_PacketMapChunk(void * data, int len) {
 void read_PacketChatMessage(void * data, int len) {
     struct PacketChatMessage * p = (struct PacketChatMessage*) data;
 
-    Codepage codepage = CP437; uint8_t * msg = p->message;
-    if (*msg == 0xFF) { msg++; codepage = UTF8; }
+    Codepage codepage = CP437; char * msg = (char *) p->message;
+    if (*((uint8_t *) msg) == 0xFF) { msg++; codepage = UTF8; }
 
     char n[32] = {0}; char m[256];
     switch (p->chat_type) {
@@ -556,9 +557,11 @@ void read_PacketWorldUpdate(void * data, int len) {
         int is_076 = (len % sizeof(struct PacketWorldUpdate076) == 0);
 
         if (is_075) {
+            struct PacketWorldUpdate075 * packets = (struct PacketWorldUpdate075 *) data;
+
             for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate075)); k++) { // supports up to 256 players
-                struct PacketWorldUpdate075 * p
-                    = (struct PacketWorldUpdate075*) (data + k * sizeof(struct PacketWorldUpdate075));
+                struct PacketWorldUpdate075 * p = packets + k;
+
                 float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                 if (players[k].connected && players[k].alive && k != local_player.id) {
                     if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
@@ -572,24 +575,25 @@ void read_PacketWorldUpdate(void * data, int len) {
                     players[k].orientation.z = letohf(p->oy);
                 }
             }
-        } else {
-            if (is_076) {
-                for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate076)); k++) {
-                    struct PacketWorldUpdate076 * p
-                        = (struct PacketWorldUpdate076*) (data + k * sizeof(struct PacketWorldUpdate076));
-                    float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
-                    if (players[p->player_id].connected && players[p->player_id].alive
-                       && p->player_id != local_player.id) {
-                        if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
-                           > 0.1F * 0.1F) {
-                            players[p->player_id].pos.x = x;
-                            players[p->player_id].pos.y = 63.0F - z;
-                            players[p->player_id].pos.z = y;
-                        }
-                        players[p->player_id].orientation.x = letohf(p->ox);
-                        players[p->player_id].orientation.y = -letohf(p->oz);
-                        players[p->player_id].orientation.z = letohf(p->oy);
+        } else if (is_076) {
+            struct PacketWorldUpdate076 * packets = (struct PacketWorldUpdate076 *) data;
+
+
+            for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate076)); k++) {
+                struct PacketWorldUpdate076 * p = packets + k;
+
+                float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
+                if (players[p->player_id].connected && players[p->player_id].alive
+                   && p->player_id != local_player.id) {
+                    if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
+                       > 0.1F * 0.1F) {
+                        players[p->player_id].pos.x = x;
+                        players[p->player_id].pos.y = 63.0F - z;
+                        players[p->player_id].pos.z = y;
                     }
+                    players[p->player_id].orientation.x = letohf(p->ox);
+                    players[p->player_id].orientation.y = -letohf(p->oz);
+                    players[p->player_id].orientation.z = letohf(p->oy);
                 }
             }
         }
@@ -1034,7 +1038,7 @@ void read_PacketBulletTrace(void * data, int len) {
 
     size_t index = p->index % projectiles.size;
 
-    Trajectory * t = projectiles.head + index * WIDTH(projectiles);
+    Trajectory * t = (Trajectory *) (projectiles.head + index * WIDTH(projectiles));
 
     if (p->origin) { t->index = p->index; t->begin = t->end = 0; }
     if (t->index != p->index) return;

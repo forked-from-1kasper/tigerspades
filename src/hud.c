@@ -1343,6 +1343,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                     network_send(PACKET_BLOCKLINE_ID, &line, sizeof(line));
                     local_player.blocks -= amount;
                 }
+
                 players[local_player.id].item_showup = window_time();
             }
         }
@@ -1473,7 +1474,7 @@ void broadcast_chat(unsigned char chat_type, const char * message, size_t size) 
     contained.player_id = local_player.id;
     contained.chat_type = chat_type;
 
-    size_t written = encodeMagic(contained.message, message, size, sizeof(contained.message));
+    size_t written = encodeMagic((char *) contained.message, message, size, sizeof(contained.message));
     network_send(PACKET_CHATMESSAGE_ID, &contained, sizeof(contained) - sizeof(contained.message) + written + 1);
 }
 
@@ -2413,14 +2414,14 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                     current->color = json_object_get_number(s, "color");
 
                     if (json_object_get_string(s, "image")) {
-                        char * img = (char*) json_object_get_string(s, "image");
+                        char * img = (char *) json_object_get_string(s, "image");
                         size_t imglen = strlen(img);
 
                         if (imglen > 0) {
                             int size = base64_decode(img, imglen);
 
-                            unsigned char * buffer; int width, height;
-                            lodepng_decode32(&buffer, &width, &height, img, size);
+                            unsigned char * buffer; unsigned int width, height;
+                            lodepng_decode32(&buffer, &width, &height, (uint8_t *) img, size);
 
                             texture_create_buffer(&current->image, width, height, buffer, 1);
                             texture_filter(&current->image, TEXTURE_FILTER_LINEAR);

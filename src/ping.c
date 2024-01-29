@@ -17,6 +17,8 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _XOPEN_SOURCE 600
+
 #include <enet/enet.h>
 #include <pthread.h>
 #include <math.h>
@@ -92,7 +94,8 @@ static bool pings_retry(void * key, void * value, void * user) {
 #define IP_KEY(addr) (((uint64_t) addr.host << 16) | (addr.port));
 
 Version json_get_game_version(const JSON_Object * obj) {
-    char * game_version = json_object_get_string(obj, "game_version");
+    const char * game_version = json_object_get_string(obj, "game_version");
+
     if (game_version != NULL) {
         if (strcmp(game_version, "0.75") == 0)
             return VER075;

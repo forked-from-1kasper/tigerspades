@@ -70,7 +70,7 @@ char chat[2][10][256] = {{{0}}}; // chat[0] is current input
 TrueColor chat_color[2][10];
 float chat_timer[2][10];
 
-void chat_add(int channel, TrueColor color, const uint8_t * msg, Codepage codepage) {
+void chat_add(int channel, TrueColor color, const char * msg, Codepage codepage) {
     for (int k = 9; k > 1; k--) {
         strcpy(chat[channel][k], chat[channel][k - 1]);
         chat_color[channel][k] = chat_color[channel][k - 1];
@@ -85,12 +85,12 @@ void chat_add(int channel, TrueColor color, const uint8_t * msg, Codepage codepa
         log_info("%s", msg);
 }
 
-char chat_popup[256] = {};
+char chat_popup[256] = {0};
 TrueColor chat_popup_color;
 float chat_popup_timer = 0.0F;
 float chat_popup_duration = 0.0F;
 
-void chat_showpopup(const uint8_t * msg, float duration, TrueColor color, Codepage codepage) {
+void chat_showpopup(const char * msg, float duration, TrueColor color, Codepage codepage) {
     reencode(chat_popup, msg, codepage, UTF8);
     chat_popup_timer    = window_time();
     chat_popup_duration = duration;
@@ -566,16 +566,12 @@ static int mu_key_translate(int key) {
 }
 
 void text_input(struct window_instance * window, const uint8_t * buff) {
-    if (hud_active->ctx)
-        mu_input_text(hud_active->ctx, buff);
+    if (hud_active->ctx) mu_input_text(hud_active->ctx, (const char *) buff);
 
-    if (chat_input_mode == CHAT_NO_INPUT)
-        return;
+    if (chat_input_mode == CHAT_NO_INPUT) return;
 
-    size_t size = strlen(buff);
-    int len = strlen(chat[0][0]);
-    if (len + size <= 128)
-        strcpy(&chat[0][0][len], buff);
+    size_t size = strlen((const char *) buff); int len = strlen(chat[0][0]);
+    if (len + size <= 128) strcpy(&chat[0][0][len], (const char *) buff);
 }
 
 void keys(struct window_instance * window, int key, int action, int mods) {

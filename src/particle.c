@@ -68,7 +68,7 @@ void trajectories_render_all() {
     if (projectiles.head == NULL || projectiles.size == 0 || projectiles.length == 0) return;
 
     for (size_t i = 0; i < projectiles.size; i++) {
-        Trajectory * t = projectiles.head + i * WIDTH(projectiles);
+        Trajectory * t = (Trajectory *) (projectiles.head + i * WIDTH(projectiles));
 
         if (t->end - t->begin == 0 || t->end - t->begin == 1) continue;
 

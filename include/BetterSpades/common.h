@@ -171,8 +171,8 @@ extern char chat_popup[256];
 extern float chat_popup_timer;
 extern float chat_popup_duration;
 extern TrueColor chat_popup_color;
-void chat_add(int channel, TrueColor, const uint8_t *, Codepage);
-void chat_showpopup(const uint8_t *, float duration, TrueColor, Codepage);
+void chat_add(int channel, TrueColor, const char *, Codepage);
+void chat_showpopup(const char *, float duration, TrueColor, Codepage);
 const char * reason_disconnect(int code);
 
 #define SCREEN_NONE        0

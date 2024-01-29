@@ -106,7 +106,7 @@ void texture_filter(Texture * t, int filter) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int texture_create(Texture * t, char * filename, GLuint filter) {
+void texture_create(Texture * t, char * filename, GLuint filter) {
     int sz = file_size(filename);
     void * data = file_load(filename);
     int error = lodepng_decode32(&t->pixels, &t->width, &t->height, data, sz);
@@ -114,7 +114,7 @@ int texture_create(Texture * t, char * filename, GLuint filter) {
 
     if (error) {
         log_warn("Could not load texture (%u): %s", error, lodepng_error_text(error));
-        return 0;
+        return;
     }
 
     texture_resize_pow2(t, 0);
@@ -131,7 +131,7 @@ int texture_create(Texture * t, char * filename, GLuint filter) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int texture_create_buffer(Texture * t, int width, int height, unsigned char * buff, int new) {
+void texture_create_buffer(Texture * t, unsigned int width, unsigned int height, unsigned char * buff, int new) {
     if (new) glGenTextures(1, &t->texture_id);
     t->width  = width;
     t->height = height;
@@ -148,8 +148,7 @@ int texture_create_buffer(Texture * t, int width, int height, unsigned char * bu
 }
 
 void texture_delete(Texture * t) {
-    if (t->pixels)
-        free(t->pixels);
+    if (t->pixels) free(t->pixels);
     glDeleteTextures(1, &t->texture_id);
 }
 
@@ -225,6 +224,10 @@ void texture_draw_empty_rotated(float x, float y, float w, float h, float angle)
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+static inline bool has_npot_textures() {
+    return strstr((const char *) glGetString(GL_EXTENSIONS), "ARB_texture_non_power_of_two") != NULL;
+}
+
 void texture_resize_pow2(Texture * t, int min_size) {
     if (!t->pixels) return;
 
@@ -233,7 +236,7 @@ void texture_resize_pow2(Texture * t, int min_size) {
     max_size = max(max_size, min_size);
 
     int w = 1, h = 1;
-    if (strstr(glGetString(GL_EXTENSIONS), "ARB_texture_non_power_of_two") != NULL) {
+    if (has_npot_textures()) {
         if (t->width <= max_size && t->height <= max_size)
             return;
         w = t->width;

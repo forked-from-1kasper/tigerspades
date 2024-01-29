@@ -405,7 +405,7 @@ void config_reload() {
 
     list_sort(&config_keys, config_key_cmp);
 
-    char * fin = file_load(config_filepath);
+    char * fin = (char *) file_load(config_filepath);
 
     if (fin) {
         ini_parse_string(fin, config_read_key, NULL);

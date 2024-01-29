@@ -95,7 +95,7 @@ enum {
     VERSION_076 = 4
 };
 
-extern void * compressed_chunk_data;
+extern uint8_t * compressed_chunk_data;
 extern int compressed_chunk_data_size;
 extern int compressed_chunk_data_offset;
 extern int compressed_chunk_data_estimate;

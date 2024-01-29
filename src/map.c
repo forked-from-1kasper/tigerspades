@@ -17,6 +17,8 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _XOPEN_SOURCE 600
+
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -523,11 +525,11 @@ void map_init() {
 }
 
 int map_height_at(int x, int z) {
-    int result[2];
+    uint32_t result[2];
     pthread_rwlock_rdlock(&map_lock);
     libvxl_map_gettop(&map, x, z, result);
     pthread_rwlock_unlock(&map_lock);
-    return map_size_y - 1 - result[1];
+    return map_size_y - 1 - ((int) result[1]);
 }
 
 bool map_isair(int x, int y, int z) {
@@ -554,11 +556,10 @@ void map_set(int x, int y, int z, TrueColor color) {
 
     uint32_t value; writeBGR(&value, color);
 
-    if (value == 0xFFFFFFFF) {
+    if (value == 0xFFFFFFFF)
         libvxl_map_setair(&map, x, z, map_size_y - 1 - y);
-    } else {
+    else
         libvxl_map_set(&map, x, z, map_size_y - 1 - y, value);
-    }
 
     pthread_rwlock_unlock(&map_lock);
 
@@ -699,7 +700,7 @@ void map_vxl_load(void * v, size_t size) {
     pthread_rwlock_unlock(&map_lock);
 }
 
-void map_save_file(const char * filename) {
+void map_save_file(char * filename) {
     pthread_rwlock_rdlock(&map_lock);
     libvxl_writefile(&map, filename);
     pthread_rwlock_unlock(&map_lock);

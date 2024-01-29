@@ -29,9 +29,9 @@ enum font_type {
 };
 
 void font_init(void);
-float font_length(int scale, char * text, Codepage);
-void font_render(float x, float y, int scale, uint8_t *, Codepage);
-void font_centered(float x, float y, int scale, uint8_t *, Codepage);
+float font_length(int scale, const char *, Codepage);
+void font_render(float x, float y, int scale, const char *, Codepage);
+void font_centered(float x, float y, int scale, const char *, Codepage);
 void font_select(enum font_type type);
 
 #endif

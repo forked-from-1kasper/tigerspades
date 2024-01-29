@@ -70,7 +70,7 @@ typedef struct {
     size_t    length;
     uint8_t   height;
     Subfont * special;
-    Subfont * subfonts[];
+    Subfont ** subfonts;
 } Font;
 
 GLuint upload_page(int texsize, const uint8_t * buff) {
@@ -167,8 +167,10 @@ static enum font_type font_current_type = FONT_FIXEDSYS;
 
 Subfont unifont, uvga;
 
-Font primary   = {.replacement = 0xFFFD, .length = 2, .height = 16, .special = &uvga,    .subfonts = {&uvga, &unifont}};
-Font secondary = {.replacement = 0xFFFD, .length = 1, .height = 16, .special = &unifont, .subfonts = {&unifont}};
+Subfont * primarySubfonts[] = {&uvga, &unifont}, * secondarySubfonts[] = {&unifont};
+
+Font primary   = {.replacement = 0xFFFD, .length = 2, .height = 16, .special = &uvga,    .subfonts = primarySubfonts};
+Font secondary = {.replacement = 0xFFFD, .length = 1, .height = 16, .special = &unifont, .subfonts = secondarySubfonts};
 
 Font * choose_font(enum font_type type) {
     switch (type) {
@@ -212,7 +214,7 @@ void clear_buffers(Font * font) {
     }
 }
 
-float font_length(int scale, char * text, Codepage codepage) {
+float font_length(int scale, const char * text, Codepage codepage) {
     Font * font = choose_font(font_current_type);
 
     float x = 0, length = 0;
@@ -222,7 +224,7 @@ float font_length(int scale, char * text, Codepage codepage) {
             length = fmax(length, x);
             x = 0; text++;
         } else {
-            uint32_t codepoint; text += decode(text, &codepoint, codepage);
+            uint32_t codepoint; text += decode((const uint8_t *) text, &codepoint, codepage);
             Glyph glyph; get_glyph(font, codepoint, &glyph); x += scale * glyph.stride * 8;
         }
     }
@@ -230,7 +232,7 @@ float font_length(int scale, char * text, Codepage codepage) {
     return fmax(length, x);
 }
 
-void font_render(float x, float y, int scale, uint8_t * text, Codepage codepage) {
+void font_render(float x, float y, int scale, const char * text, Codepage codepage) {
     Font * font = choose_font(font_current_type);
     clear_buffers(font);
 
@@ -242,7 +244,7 @@ void font_render(float x, float y, int scale, uint8_t * text, Codepage codepage)
             y0 += h;
             text++;
         } else {
-            uint32_t codepoint; text += decode(text, &codepoint, codepage);
+            uint32_t codepoint; text += decode((uint8_t *) text, &codepoint, codepage);
 
             Glyph glyph; Subfont * subfont = get_glyph(font, codepoint, &glyph);
             Buffer * buffer = &subfont->buffers[glyph.page];
@@ -301,6 +303,6 @@ void font_render(float x, float y, int scale, uint8_t * text, Codepage codepage)
     glMatrixMode(GL_MODELVIEW);
 }
 
-void font_centered(float x, float y, int h, uint8_t * text, Codepage codepage) {
+void font_centered(float x, float y, int h, const char * text, Codepage codepage) {
     font_render(x - font_length(h, text, codepage) / 2.0F, y, h, text, codepage);
 }

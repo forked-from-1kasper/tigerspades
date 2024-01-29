@@ -332,9 +332,12 @@ void weapon_shoot() {
         }
 
         tracer_pvelocity(o, &players[local_player.id]);
-        tracer_add(players[local_player.id].weapon, players[local_player.id].physics.eye.x,
-                   players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),
-                   players[local_player.id].physics.eye.z, o[0], o[1], o[2]);
+        tracer_add(
+            players[local_player.id].weapon, players[local_player.id].physics.eye.x,
+            players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),
+            players[local_player.id].physics.eye.z,
+            o[0], o[1], o[2]
+        );
     }
 
     double horiz_recoil, vert_recoil;
@@ -343,9 +346,8 @@ void weapon_shoot() {
     long triangle_wave = (long) (window_time() * 1000) & 511;
     horiz_recoil *= ((double) triangle_wave) - 255.5;
 
-    if (((long) (window_time() * 1000) & 1023) < 512) {
+    if (((long) (window_time() * 1000) & 1023) < 512)
         horiz_recoil *= -1.0;
-    }
 
     if ((HASBIT(players[local_player.id].input.keys, INPUT_UP)   ||
          HASBIT(players[local_player.id].input.keys, INPUT_DOWN) ||

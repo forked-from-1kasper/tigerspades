@@ -111,7 +111,7 @@ uint8_t encode(uint8_t * dest, uint32_t codepoint, Codepage codepage) {
     }
 }
 
-uint8_t decode(uint8_t * bytes, uint32_t * outptr, Codepage codepage) {
+uint8_t decode(const uint8_t * bytes, uint32_t * outptr, Codepage codepage) {
     *outptr = 0;
 
     switch (codepage) {
@@ -143,36 +143,36 @@ uint8_t decode(uint8_t * bytes, uint32_t * outptr, Codepage codepage) {
     }
 }
 
-void reencode(uint8_t * dest, const uint8_t * src, Codepage inpage, Codepage outpage) {
+void reencode(char * dest, const char * src, Codepage inpage, Codepage outpage) {
     while (*src) {
-        uint32_t codepoint; src += decode(src, &codepoint, inpage);
-        dest += encode(dest, codepoint, outpage);
+        uint32_t codepoint; src += decode((uint8_t *) src, &codepoint, inpage);
+        dest += encode((uint8_t *) dest, codepoint, outpage);
     }
 
     *dest = 0;
 }
 
-size_t encodeMagic(uint8_t * dest, const uint8_t * src, size_t insize, size_t outsize) {
-    bool ascii = true;
+bool isASCII(const uint8_t * data, size_t size) {
+    for (size_t i = 0; i < size; i++)
+        if (!OCT1(data[i]))
+            return false;
 
-    for (size_t i = 0; i < insize; i++) {
-        if (!OCT1(src[i])) {
-            ascii = false; break;
-        }
-    }
+    return true;
+}
 
-    if (ascii) {
+size_t encodeMagic(char * dest, const char * src, size_t insize, size_t outsize) {
+    if (isASCII((const uint8_t *) src, insize)) {
         strncpy(dest, src, outsize);
         return insize;
     } else {
-        dest[0] = 0xFF;
+        *((uint8_t *) dest) = 0xFF;
         strncpy(dest + 1, src, outsize - 1);
         return insize + 1;
     }
 }
 
-void decodeMagic(uint8_t * dest, const uint8_t * src, size_t size) {
-    if (src[0] == 0xFF) {
+void decodeMagic(char * dest, const char * src, size_t size) {
+    if (*((uint8_t *) src) == 0xFF) {
         strncpy(dest, src + 1, size);
         dest[size - 1] = 0;
     } else reencode(dest, src, CP437, UTF8);

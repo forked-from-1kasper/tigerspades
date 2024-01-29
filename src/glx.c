@@ -38,7 +38,7 @@ static int glx_major_ver() {
 #ifdef OPENGL_ES
     return 2;
 #else
-    return atoi(glGetString(GL_VERSION));
+    return atoi((const char *) glGetString(GL_VERSION));
 #endif
 }
 
