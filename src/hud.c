@@ -2106,6 +2106,8 @@ static void hud_serverlist_pingupdate(void * entry, float time_delta, char * aos
     pthread_mutex_unlock(&serverlist_lock);
 }
 
+bool offline = false;
+
 char serverlist_url[] = "http://services.buildandshoot.com/serverlist.json", newslist_url[] = "http://aos.party/bs/news/";
 
 static void hud_serverlist_init() {
@@ -2120,10 +2122,12 @@ static void hud_serverlist_init() {
     player_count = server_count = 0;
     pthread_mutex_unlock(&serverlist_lock);
 
-    request_serverlist = http_get(serverlist_url, NULL);
+    if (!offline) {
+        request_serverlist = http_get(serverlist_url, NULL);
 
-    if (!serverlist_news_exists)
-        request_news = http_get(newslist_url, NULL);
+        if (!serverlist_news_exists)
+            request_news = http_get(newslist_url, NULL);
+    }
 
     serverlist_con_established = request_serverlist != NULL;
     *serverlist_input = 0;
@@ -2373,6 +2377,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
             mu_layout_row(ctx, 1, (int[]) {-1}, 0);
             mu_button_ex(ctx, "Fetching servers...", 0, MU_OPT_NOFRAME | MU_OPT_ALIGNCENTER);
         }
+
         pthread_mutex_unlock(&serverlist_lock);
         mu_text_color_default(ctx);
         mu_end_panel(ctx);

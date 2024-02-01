@@ -817,6 +817,8 @@ int main(int argc, char ** argv) {
         } else MATCH(argv[i], "--config") {
             if (argc <= ++i) log_error("The “--config” option requires an argument.");
             else config_filepath = argv[i];
+        } else MATCH(argv[i], "--offline") {
+            offline = true;
         }
     }
 

@@ -66,6 +66,7 @@ extern HUD hud_controls;
 extern HUD * hud_active;
 extern struct window_instance * hud_window;
 
+extern bool offline;
 extern char serverlist_url[2048], newslist_url[2048];
 
 #define HUD_FLAG_INDEX_START 64
