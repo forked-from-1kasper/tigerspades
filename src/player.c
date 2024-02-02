@@ -346,7 +346,7 @@ void player_render_all() {
                             map_damage(hit.x, hit.y, hit.z, 50);
 
                         if (k == local_player.id && map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
-                            struct PacketBlockAction blk;
+                            PacketBlockAction blk;
                             blk.action_type = ACTION_DESTROY;
                             blk.player_id = local_player.id;
                             blk.x = htoles32(hit.x);
@@ -370,7 +370,7 @@ void player_render_all() {
                             3.5F, 1.0F, 8, 0.1F, 0.4F
                         );
                         if (k == local_player.id) {
-                            struct PacketHit h;
+                            PacketHit h;
                             h.player_id = hit.player_id;
                             h.hit_type = HITTYPE_SPADE;
                             network_send(PACKET_HIT_ID, &h, sizeof(h));
@@ -390,7 +390,7 @@ void player_render_all() {
                     if (hit.type == CAMERA_HITTYPE_BLOCK && hit.y > 1) {
                         sound_create(SOUND_WORLD, &sound_hitground, hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
                         if (k == local_player.id) {
-                            struct PacketBlockAction blk;
+                            PacketBlockAction blk;
                             blk.action_type = ACTION_SPADE;
                             blk.player_id = local_player.id;
                             blk.x = htoles32(hit.x);

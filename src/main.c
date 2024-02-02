@@ -253,7 +253,7 @@ void display() {
                         players[local_player.id].item_showup = window_time();
                         local_player.blocks = max(local_player.blocks - 1, 0);
 
-                        struct PacketBlockAction blk;
+                        PacketBlockAction blk;
                         blk.player_id = local_player.id;
                         blk.action_type = ACTION_BUILD;
                         blk.x = htoles32(pos[0]);
@@ -268,7 +268,7 @@ void display() {
                    (players[local_player.id].held_item == TOOL_GRENADE) &&
                    (window_time() - players[local_player.id].start.lmb > 3.0F)) {
                     local_player.grenades = max(local_player.grenades - 1, 0);
-                    struct PacketGrenade g;
+                    PacketGrenade g;
                     g.player_id = local_player.id;
                     g.x = htolef(players[local_player.id].pos.x);
                     g.y = htolef(players[local_player.id].pos.z);

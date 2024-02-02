@@ -111,53 +111,53 @@ extern float network_stats_last;
 #pragma pack(push, 1)
 
 #define PACKET_HANDSHAKEINIT_ID 31
-struct PacketHandshakeInit {
+typedef struct {
     int challenge;
-};
+} PacketHandshakeInit;
 
 #define PACKET_HANDSHAKERETURN_ID 32
-struct PacketHandshakeReturn {
+typedef struct {
     int challenge;
-};
+} PacketHandshakeReturn;
 
 #define PACKET_VERSIONGET_ID 33
 
 #define PACKET_VERSIONSEND_ID 34
-struct PacketVersionSend {
+typedef struct {
     unsigned char client;
     unsigned char major, minor, revision;
     char operatingsystem[64];
-};
+} PacketVersionSend;
 
 #define PACKET_MAPCHUNK_ID 19
 
 #define PACKET_POSITIONDATA_ID 0
-struct PacketPositionData {
+typedef struct {
     float x, y, z;
-};
+} PacketPositionData;
 
 #define PACKET_ORIENTATIONDATA_ID 1
-struct PacketOrientationData {
+typedef struct {
     float x, y, z;
-};
+} PacketOrientationData;
 
 #define PACKET_WORLDUPDATE_ID 2
-struct PacketWorldUpdate075 {
+typedef struct {
     float x, y, z;
     float ox, oy, oz;
-};
+} PacketWorldUpdate075;
 
-struct PacketWorldUpdate076 {
+typedef struct {
     unsigned char player_id;
     float x, y, z;
     float ox, oy, oz;
-};
+} PacketWorldUpdate076;
 
 #define PACKET_INPUTDATA_ID 3
-struct PacketInputData {
+typedef struct {
     unsigned char player_id;
     unsigned char keys;
-};
+} PacketInputData;
 
 enum {
     INPUT_UP     = 0,
@@ -171,10 +171,10 @@ enum {
 };
 
 #define PACKET_WEAPONINPUT_ID 4
-struct PacketWeaponInput {
+typedef struct {
     unsigned char player_id;
     unsigned char input;
-};
+} PacketWeaponInput;
 
 enum {
     BUTTON_PRIMARY   = 0,
@@ -182,11 +182,11 @@ enum {
 };
 
 #define PACKET_MOVEOBJECT_ID 11
-struct PacketMoveObject {
+typedef struct {
     unsigned char object_id;
     unsigned char team;
     float x, y, z;
-};
+} PacketMoveObject;
 
 enum {
     TEAM_1_FLAG = 0,
@@ -196,44 +196,46 @@ enum {
 };
 
 #define PACKET_INTELPICKUP_ID 24
-struct PacketIntelPickup {
+typedef struct {
     unsigned char player_id;
-};
+} PacketIntelPickup;
 
 #define PACKET_INTELCAPTURE_ID 23
-struct PacketIntelCapture {
+typedef struct {
     unsigned char player_id;
     unsigned char winning;
-};
+} PacketIntelCapture;
 
 #define PACKET_INTELDROP_ID 25
-struct PacketIntelDrop {
+typedef struct {
     unsigned char player_id;
     float x, y, z;
-};
+} PacketIntelDrop;
 
 #define PACKET_WEAPONRELOAD_ID 28
-struct PacketWeaponReload {
+typedef struct {
     unsigned char player_id;
     unsigned char ammo;
     unsigned char reserved;
-};
+} PacketWeaponReload;
 
 #define PACKET_SETHP_ID 5
-struct PacketSetHP {
+typedef struct {
     unsigned char hp;
     unsigned char type;
     float x, y, z;
-};
+} PacketSetHP;
 
-#define DAMAGE_SOURCE_FALL 0
-#define DAMAGE_SOURCE_GUN  1
+enum {
+    DAMAGE_SOURCE_FALL = 0,
+    DAMAGE_SOURCE_GUN  = 1
+};
 
 #define PACKET_HIT_ID 5
-struct PacketHit {
+typedef struct {
     unsigned char player_id;
     unsigned char hit_type;
-};
+} PacketHit;
 
 enum {
     HITTYPE_TORSO = 0,
@@ -244,12 +246,12 @@ enum {
 };
 
 #define PACKET_KILLACTION_ID 16
-struct PacketKillAction {
+typedef struct {
     unsigned char player_id;
     unsigned char killer_id;
     unsigned char kill_type;
     unsigned char respawn_time;
-};
+} PacketKillAction;
 
 enum {
     KILLTYPE_WEAPON      = 0,
@@ -262,40 +264,41 @@ enum {
 };
 
 #define PACKET_RESTOCK_ID 26
-struct PacketRestock {
+typedef struct {
     unsigned char player_id;
-};
+} PacketRestock;
 
 #define PACKET_GRENADE_ID 6
-struct PacketGrenade {
+typedef struct {
     unsigned char player_id;
     float fuse_length;
     float x, y, z;
     float vx, vy, vz;
-};
+} PacketGrenade;
 
 #define PACKET_MAPSTART_ID 18
-struct PacketMapStart075 {
+typedef struct {
     unsigned int map_size;
-};
-struct PacketMapStart076 {
+} PacketMapStart075;
+
+typedef struct {
     unsigned int map_size;
     unsigned int crc32;
     char map_name[64];
-};
+} PacketMapStart076;
 
 #define PACKET_MAPCACHED_ID 31
-struct PacketMapCached {
+typedef struct {
     unsigned char cached;
-};
+} PacketMapCached;
 
 #define PACKET_PLAYERLEFT_ID 20
-struct PacketPlayerLeft {
+typedef struct {
     unsigned char player_id;
-};
+} PacketPlayerLeft;
 
 #define PACKET_EXISTINGPLAYER_ID 9
-struct PacketExistingPlayer {
+typedef struct {
     unsigned char player_id;
     unsigned char team;
     unsigned char weapon;
@@ -303,7 +306,7 @@ struct PacketExistingPlayer {
     unsigned int  kills;
     unsigned char blue, green, red;
     char name[17];
-};
+} PacketExistingPlayer;
 
 typedef enum {
     WEAPON_RIFLE   = 0,
@@ -317,20 +320,20 @@ typedef enum {
 #define WEAPON(w) ((w) > WEAPON_MAX ? WEAPON_DEFAULT : (w))
 
 #define PACKET_CREATEPLAYER_ID 12
-struct PacketCreatePlayer {
+typedef struct {
     unsigned char player_id;
     unsigned char weapon;
     unsigned char team;
     float x, y, z;
     char name[17];
-};
+} PacketCreatePlayer;
 
 #define PACKET_BLOCKACTION_ID 13
-struct PacketBlockAction {
+typedef struct {
     unsigned char player_id;
     unsigned char action_type;
     int x, y, z;
-};
+} PacketBlockAction;
 
 enum {
     ACTION_BUILD   = 0,
@@ -340,30 +343,30 @@ enum {
 };
 
 #define PACKET_BLOCKLINE_ID 14
-struct PacketBlockLine {
+typedef struct {
     unsigned char player_id;
     int sx, sy, sz;
     int ex, ey, ez;
-};
+} PacketBlockLine;
 
 #define PACKET_SETCOLOR_ID 8
-struct PacketSetColor {
+typedef struct {
     unsigned char player_id;
     unsigned char blue, green, red;
-};
+} PacketSetColor;
 
 #define PACKET_SHORTPLAYERDATA_ID 10
-struct PacketShortPlayerData {
+typedef struct {
     unsigned char player_id;
     unsigned char team;
     unsigned char weapon;
-};
+} PacketShortPlayerData;
 
 #define PACKET_SETTOOL_ID 7
-struct PacketSetTool {
+typedef struct {
     unsigned char player_id;
     unsigned char tool;
-};
+} PacketSetTool;
 
 typedef enum {
     TOOL_SPADE   = 0,
@@ -378,11 +381,11 @@ typedef enum {
 #define TOOL(t) (t > TOOL_MAX ? TOOL_DEFAULT : (t))
 
 #define PACKET_CHATMESSAGE_ID 17
-struct PacketChatMessage {
+typedef struct {
     unsigned char player_id;
     unsigned char chat_type;
     unsigned char message[255];
-};
+} PacketChatMessage;
 
 enum {
     CHAT_ALL     = 0,
@@ -395,21 +398,21 @@ enum {
 };
 
 #define PACKET_FOGCOLOR_ID 27
-struct PacketFogColor {
+typedef struct {
     unsigned char alpha, blue, green, red;
-};
+} PacketFogColor;
 
 #define PACKET_CHANGETEAM_ID 29
-struct PacketChangeTeam {
+typedef struct {
     unsigned char player_id;
     unsigned char team;
-};
+} PacketChangeTeam;
 
 #define PACKET_CHANGEWEAPON_ID 30
-struct PacketChangeWeapon {
+typedef struct {
     unsigned char player_id;
     unsigned char weapon;
-};
+} PacketChangeWeapon;
 
 #define PACKET_STATEDATA_ID 15
 typedef struct {
@@ -417,7 +420,7 @@ typedef struct {
     unsigned char team;
 } Territory;
 
-struct PacketStateData {
+typedef struct {
     unsigned char player_id;
     unsigned char fog_blue, fog_green, fog_red;
     unsigned char team_1_blue, team_1_green, team_1_red;
@@ -456,7 +459,7 @@ struct PacketStateData {
             Territory territory[16];
         } tc;
     } gamemode_data;
-};
+} PacketStateData;
 
 enum {
     TEAM_1_INTEL = 0,
@@ -464,28 +467,30 @@ enum {
 };
 
 #define PACKET_TERRITORYCAPTURE_ID 21
-struct PacketTerritoryCapture {
+typedef struct {
     unsigned char tent, winning, team;
-};
+} PacketTerritoryCapture;
 
 #define PACKET_PROGRESSBAR_ID 22
-struct PacketProgressBar {
+typedef struct {
     unsigned char tent;
     unsigned char team_capturing;
     char rate;
     float progress;
-};
+} PacketProgressBar;
 
 #define PACKET_EXTINFO_ID 60
-struct PacketExtInfo {
-    unsigned char length;
-    struct PacketExtInfoEntry {
-        unsigned char id;
-        unsigned char version;
-    } entries[256];
-};
+typedef struct {
+    unsigned char id;
+    unsigned char version;
+} PacketExtInfoEntry;
 
-struct PacketPlayerProperties {
+typedef struct {
+    unsigned char length;
+    PacketExtInfoEntry entries[256];
+} PacketExtInfo;
+
+typedef struct {
     uint8_t  subID;
     uint8_t  player_id;
     uint8_t  health;
@@ -494,7 +499,7 @@ struct PacketPlayerProperties {
     uint8_t  ammo_clip;
     uint8_t  ammo_reserved;
     uint32_t score;
-};
+} PacketPlayerProperties;
 
 typedef struct {
     uint8_t index;

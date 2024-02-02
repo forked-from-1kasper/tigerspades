@@ -223,7 +223,7 @@ void weapon_reload() {
         players[local_player.id].pos.z
     );
 
-    struct PacketWeaponReload reloadp;
+    PacketWeaponReload reloadp;
     reloadp.player_id = local_player.id;
     reloadp.ammo      = local_player.ammo;
     reloadp.reserved  = local_player.ammo_reserved;
@@ -274,7 +274,7 @@ void weapon_shoot() {
 
         #if !(HACKS_ENABLED && HACK_NORELOAD)
         if (players[local_player.id].input.buttons != network_buttons_last) {
-            struct PacketWeaponInput in;
+            PacketWeaponInput in;
             in.player_id = local_player.id;
             in.input     = players[local_player.id].input.buttons;
             network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
@@ -283,7 +283,7 @@ void weapon_shoot() {
         }
         #endif
 
-        struct PacketOrientationData orient;
+        PacketOrientationData orient;
         orient.x = htolef(players[local_player.id].orientation.x);
         orient.y = htolef(players[local_player.id].orientation.z);
         orient.z = htolef(-players[local_player.id].orientation.y);
@@ -304,7 +304,7 @@ void weapon_shoot() {
                     3.5F, 1.0F, 8, 0.1F, 0.4F
                 );
 
-                struct PacketHit h;
+                PacketHit h;
                 h.player_id = hit.player_id;
                 h.hit_type  = hit.player_section;
                 network_send(PACKET_HIT_ID, &h, sizeof(h));
@@ -315,7 +315,7 @@ void weapon_shoot() {
             case CAMERA_HITTYPE_BLOCK: {
                 map_damage(hit.x, hit.y, hit.z, weapon_block_damage(players[local_player.id].weapon));
                 if (map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
-                    struct PacketBlockAction blk;
+                    PacketBlockAction blk;
                     blk.action_type = ACTION_DESTROY;
                     blk.player_id   = local_player.id;
                     blk.x           = htoles32(hit.x);

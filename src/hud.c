@@ -1332,7 +1332,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                 int amount = map_cube_line(local_player.drag[X], local_player.drag[Z], 63 - local_player.drag[Y], pos[0],
                                            pos[2], 63 - pos[1], NULL);
                 if (amount <= local_player.blocks) {
-                    struct PacketBlockLine line;
+                    PacketBlockLine line;
                     line.player_id = local_player.id;
                     line.sx = htoles32(local_player.drag[X]);
                     line.sy = htoles32(local_player.drag[Z]);
@@ -1399,7 +1399,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                 if (action == WINDOW_RELEASE) {
                     local_player.grenades = max(local_player.grenades - 1, 0);
 
-                    struct PacketGrenade g;
+                    PacketGrenade g;
                     g.player_id   = local_player.id;
                     g.fuse_length = htolef(max(3.0F - (window_time() - players[local_player.id].start.lmb), 0.0F));
 
@@ -1470,7 +1470,7 @@ static int autocomplete_type_cmp(const void * a, const void * b) {
 }
 
 void broadcast_chat(unsigned char chat_type, const char * message, size_t size) {
-    struct PacketChatMessage contained;
+    PacketChatMessage contained;
     contained.player_id = local_player.id;
     contained.chat_type = chat_type;
 
@@ -1744,7 +1744,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
 
                 if (new_team >= 0) {
                     if (network_logged_in) {
-                        struct PacketChangeTeam p;
+                        PacketChangeTeam p;
                         p.player_id = local_player.id;
                         p.team      = new_team;
 
@@ -1783,7 +1783,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
 
                 if (new_gun >= 0) {
                     if (network_logged_in) {
-                        struct PacketChangeWeapon p;
+                        PacketChangeWeapon p;
                         p.player_id = local_player.id;
                         p.weapon    = new_gun;
 

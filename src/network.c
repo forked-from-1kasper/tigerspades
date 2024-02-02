@@ -102,7 +102,7 @@ static void printJoinMsg(int team, char * name) {
 }
 
 void network_join_game(unsigned char team, unsigned char weapon) {
-    struct PacketExistingPlayer contained;
+    PacketExistingPlayer contained;
     contained.player_id = local_player.id;
     contained.team      = team;
     contained.weapon    = weapon;
@@ -130,7 +130,7 @@ void read_PacketMapChunk(void * data, int len) {
 }
 
 void read_PacketChatMessage(void * data, int len) {
-    struct PacketChatMessage * p = (struct PacketChatMessage*) data;
+    PacketChatMessage * p = (PacketChatMessage *) data;
 
     Codepage codepage = CP437; char * msg = (char *) p->message;
     if (*((uint8_t *) msg) == 0xFF) { msg++; codepage = UTF8; }
@@ -167,7 +167,7 @@ void read_PacketChatMessage(void * data, int len) {
     }
 
     size_t m_remaining = sizeof(m) - 1 - strlen(m);
-    size_t body_len = len - offsetof(struct PacketChatMessage, message);
+    size_t body_len = len - offsetof(PacketChatMessage, message);
     if (body_len > m_remaining) {
         body_len = m_remaining;
     }
@@ -194,7 +194,7 @@ void read_PacketChatMessage(void * data, int len) {
 
 TrueColor white = {0xFF, 0xFF, 0xFF, 0xFF};
 void read_PacketBlockAction(void * data, int len) {
-    struct PacketBlockAction * p = (struct PacketBlockAction*) data;
+    PacketBlockAction * p = (PacketBlockAction *) data;
 
     int x = letohs32(p->x), y = letohs32(p->y), z = letohs32(p->z);
 
@@ -256,7 +256,7 @@ void read_PacketBlockAction(void * data, int len) {
 }
 
 void read_PacketBlockLine(void * data, int len) {
-    struct PacketBlockLine * p = (struct PacketBlockLine*) data;
+    PacketBlockLine * p = (PacketBlockLine *) data;
     if (p->player_id >= PLAYERS_MAX) return;
 
     int sx = letohs32(p->sx), sy = letohs32(p->sy), sz = letohs32(p->sz);
@@ -286,7 +286,7 @@ void read_PacketBlockLine(void * data, int len) {
 }
 
 void read_PacketStateData(void * data, int len) {
-    struct PacketStateData * p = (struct PacketStateData*) data;
+    PacketStateData * p = (PacketStateData *) data;
 
     decodeMagic(gamestate.team_1.name, p->team_1_name, sizeof(gamestate.team_1.name));
 
@@ -416,14 +416,15 @@ void read_PacketStateData(void * data, int len) {
 }
 
 void read_PacketFogColor(void * data, int len) {
-    struct PacketFogColor * p = (struct PacketFogColor*) data;
+    PacketFogColor * p = (PacketFogColor *) data;
     fog_color[0] = p->red   / 255.0F;
     fog_color[1] = p->green / 255.0F;
     fog_color[2] = p->blue  / 255.0F;
 }
 
 void read_PacketExistingPlayer(void * data, int len) {
-    struct PacketExistingPlayer * p = (struct PacketExistingPlayer*) data;
+    PacketExistingPlayer * p = (PacketExistingPlayer *) data;
+
     if (p->player_id < PLAYERS_MAX) {
         decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
         if (!players[p->player_id].connected) printJoinMsg(p->team, players[p->player_id].name);
@@ -444,7 +445,7 @@ void read_PacketExistingPlayer(void * data, int len) {
 }
 
 void read_PacketCreatePlayer(void * data, int len) {
-    struct PacketCreatePlayer * p = (struct PacketCreatePlayer*) data;
+    PacketCreatePlayer * p = (PacketCreatePlayer *) data;
     if (p->player_id < PLAYERS_MAX) {
         decodeMagic(players[p->player_id].name, p->name, sizeof(players[p->player_id].name));
         if (!players[p->player_id].connected) printJoinMsg(p->team, players[p->player_id].name);
@@ -492,7 +493,7 @@ void read_PacketCreatePlayer(void * data, int len) {
 }
 
 void read_PacketPlayerLeft(void * data, int len) {
-    struct PacketPlayerLeft * p = (struct PacketPlayerLeft*) data;
+    PacketPlayerLeft * p = (PacketPlayerLeft *) data;
     if (p->player_id < PLAYERS_MAX) {
         players[p->player_id].connected = 0;
         players[p->player_id].alive = 0;
@@ -513,11 +514,11 @@ void read_PacketMapStart(void * data, int len) {
     network_map_transfer = 1;
     network_map_cached = 0;
 
-    if (len == sizeof(struct PacketMapStart075)) {
-        struct PacketMapStart075 * p = (struct PacketMapStart075*) data;
+    if (len == sizeof(PacketMapStart075)) {
+        PacketMapStart075 * p = (PacketMapStart075 *) data;
         compressed_chunk_data_estimate = letohu32(p->map_size);
     } else {
-        struct PacketMapStart076 * p = (struct PacketMapStart076*) data;
+        PacketMapStart076 * p = (PacketMapStart076 *) data;
         compressed_chunk_data_estimate = letohu32(p->map_size);
         p->map_name[sizeof(p->map_name) - 1] = 0;
         log_info("map name: %s", p->map_name);
@@ -541,7 +542,7 @@ void read_PacketMapStart(void * data, int len) {
             chunk_rebuild_all();
         }
 
-        struct PacketMapCached c;
+        PacketMapCached c;
         c.cached = network_map_cached;
         network_send(PACKET_MAPCACHED_ID, &c, sizeof(c));
     }
@@ -553,14 +554,14 @@ void read_PacketMapStart(void * data, int len) {
 
 void read_PacketWorldUpdate(void * data, int len) {
     if (len > 0) {
-        int is_075 = (len % sizeof(struct PacketWorldUpdate075) == 0);
-        int is_076 = (len % sizeof(struct PacketWorldUpdate076) == 0);
+        int is_075 = (len % sizeof(PacketWorldUpdate075) == 0);
+        int is_076 = (len % sizeof(PacketWorldUpdate076) == 0);
 
         if (is_075) {
-            struct PacketWorldUpdate075 * packets = (struct PacketWorldUpdate075 *) data;
+            PacketWorldUpdate075 * packets = (PacketWorldUpdate075 *) data;
 
-            for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate075)); k++) { // supports up to 256 players
-                struct PacketWorldUpdate075 * p = packets + k;
+            for (int k = 0; k < (len / sizeof(PacketWorldUpdate075)); k++) { // supports up to 256 players
+                PacketWorldUpdate075 * p = packets + k;
 
                 float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                 if (players[k].connected && players[k].alive && k != local_player.id) {
@@ -576,11 +577,10 @@ void read_PacketWorldUpdate(void * data, int len) {
                 }
             }
         } else if (is_076) {
-            struct PacketWorldUpdate076 * packets = (struct PacketWorldUpdate076 *) data;
+            PacketWorldUpdate076 * packets = (PacketWorldUpdate076 *) data;
 
-
-            for (int k = 0; k < (len / sizeof(struct PacketWorldUpdate076)); k++) {
-                struct PacketWorldUpdate076 * p = packets + k;
+            for (int k = 0; k < (len / sizeof(PacketWorldUpdate076)); k++) {
+                PacketWorldUpdate076 * p = packets + k;
 
                 float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                 if (players[p->player_id].connected && players[p->player_id].alive
@@ -601,21 +601,21 @@ void read_PacketWorldUpdate(void * data, int len) {
 }
 
 void read_PacketPositionData(void * data, int len) {
-    struct PacketPositionData * p = (struct PacketPositionData*) data;
+    PacketPositionData * p = (PacketPositionData *) data;
     players[local_player.id].pos.x = letohf(p->x);
     players[local_player.id].pos.y = 63.0F - letohf(p->z);
     players[local_player.id].pos.z = letohf(p->y);
 }
 
 void read_PacketOrientationData(void * data, int len) {
-    struct PacketOrientationData * p = (struct PacketOrientationData*) data;
+    PacketOrientationData * p = (PacketOrientationData *) data;
     players[local_player.id].orientation.x = letohf(p->x);
     players[local_player.id].orientation.y = -letohf(p->z);
     players[local_player.id].orientation.z = letohf(p->y);
 }
 
 void read_PacketSetColor(void * data, int len) {
-    struct PacketSetColor * p = (struct PacketSetColor*) data;
+    PacketSetColor * p = ( PacketSetColor *) data;
     if (p->player_id < PLAYERS_MAX) {
         players[p->player_id].block.r = p->red;
         players[p->player_id].block.g = p->green;
@@ -624,7 +624,7 @@ void read_PacketSetColor(void * data, int len) {
 }
 
 void read_PacketInputData(void * data, int len) {
-    struct PacketInputData * p = (struct PacketInputData*) data;
+    PacketInputData * p = (PacketInputData *) data;
     if (p->player_id < PLAYERS_MAX) {
         if (p->player_id != local_player.id)
             players[p->player_id].input.keys = p->keys;
@@ -634,7 +634,7 @@ void read_PacketInputData(void * data, int len) {
 }
 
 void read_PacketWeaponInput(void * data, int len) {
-    struct PacketWeaponInput * p = (struct PacketWeaponInput*) data;
+    PacketWeaponInput * p = (PacketWeaponInput *) data;
     if (p->player_id < PLAYERS_MAX && p->player_id != local_player.id) {
         players[p->player_id].input.buttons = p->input;
 
@@ -646,7 +646,7 @@ void read_PacketWeaponInput(void * data, int len) {
 }
 
 void read_PacketSetTool(void * data, int len) {
-    struct PacketSetTool * p = (struct PacketSetTool*) data;
+    PacketSetTool * p = (PacketSetTool *) data;
     if (p->player_id < PLAYERS_MAX && p->tool < 4)
         players[p->player_id].held_item = TOOL(p->tool);
 }
@@ -660,7 +660,7 @@ void player_reset_toggleable_input() {
 }
 
 void read_PacketKillAction(void * data, int len) {
-    struct PacketKillAction * p = (struct PacketKillAction*) data;
+    PacketKillAction * p = (PacketKillAction *) data;
     if (p->player_id < PLAYERS_MAX && p->killer_id < PLAYERS_MAX && p->kill_type >= 0 && p->kill_type < 7) {
         if (p->player_id == local_player.id) {
             player_reset_toggleable_input();
@@ -725,12 +725,12 @@ void read_PacketKillAction(void * data, int len) {
 
 void read_PacketShortPlayerData(void * data, int len) {
     // should never be received
-    struct PacketShortPlayerData * p = (struct PacketShortPlayerData*) data;
+    PacketShortPlayerData * p = (PacketShortPlayerData *) data;
     log_warn("Unexpected ShortPlayerDataPacket");
 }
 
 void read_PacketGrenade(void * data, int len) {
-    struct PacketGrenade * p = (struct PacketGrenade*) data;
+    PacketGrenade * p = (PacketGrenade *) data;
 
     grenade_add(&(Grenade) {
         .team        = players[p->player_id].team,
@@ -745,7 +745,7 @@ void read_PacketGrenade(void * data, int len) {
 }
 
 void read_PacketSetHP(void * data, int len) {
-    struct PacketSetHP * p = (struct PacketSetHP*) data;
+    PacketSetHP * p = (PacketSetHP *) data;
     local_player.health = p->hp;
 
     if (p->type == DAMAGE_SOURCE_GUN) {
@@ -759,7 +759,7 @@ void read_PacketSetHP(void * data, int len) {
 }
 
 void read_PacketRestock(void * data, int len) {
-    struct PacketRestock * p = (struct PacketRestock*) data;
+    PacketRestock * p = (PacketRestock *) data;
     local_player.health   = 100;
     local_player.blocks   = 50;
     local_player.grenades = 3;
@@ -768,7 +768,7 @@ void read_PacketRestock(void * data, int len) {
 }
 
 void read_PacketChangeWeapon(void * data, int len) {
-    struct PacketChangeWeapon * p = (struct PacketChangeWeapon*) data;
+    PacketChangeWeapon * p = (PacketChangeWeapon *) data;
     if (p->player_id < PLAYERS_MAX) {
         if (p->player_id == local_player.id) {
             log_warn("Unexpected ChangeWeaponPacket");
@@ -780,7 +780,8 @@ void read_PacketChangeWeapon(void * data, int len) {
 }
 
 void read_PacketWeaponReload(void * data, int len) {
-    struct PacketWeaponReload * p = (struct PacketWeaponReload*) data;
+    PacketWeaponReload * p = (PacketWeaponReload *) data;
+
     if (p->player_id == local_player.id) {
         local_player.ammo          = p->ammo;
         local_player.ammo_reserved = p->reserved;
@@ -793,7 +794,7 @@ void read_PacketWeaponReload(void * data, int len) {
 }
 
 void read_PacketMoveObject(void * data, int len) {
-    struct PacketMoveObject * p = (struct PacketMoveObject*) data;
+    PacketMoveObject * p = (PacketMoveObject *) data;
     if (gamestate.gamemode_type == GAMEMODE_CTF) {
         switch (p->object_id) {
             case TEAM_1_BASE:
@@ -830,7 +831,7 @@ void read_PacketMoveObject(void * data, int len) {
 }
 
 void read_PacketIntelCapture(void * data, int len) {
-    struct PacketIntelCapture * p = (struct PacketIntelCapture*) data;
+    PacketIntelCapture * p = (PacketIntelCapture *) data;
     if (gamestate.gamemode_type == GAMEMODE_CTF && p->player_id < PLAYERS_MAX) {
         char capture_str[128];
         switch (players[p->player_id].team) {
@@ -864,7 +865,8 @@ void read_PacketIntelCapture(void * data, int len) {
 }
 
 void read_PacketIntelDrop(void * data, int len) {
-    struct PacketIntelDrop * p = (struct PacketIntelDrop*) data;
+    PacketIntelDrop * p = (PacketIntelDrop *) data;
+
     if (gamestate.gamemode_type == GAMEMODE_CTF && p->player_id < PLAYERS_MAX) {
         char drop_str[128];
         switch (players[p->player_id].team) {
@@ -889,7 +891,8 @@ void read_PacketIntelDrop(void * data, int len) {
 }
 
 void read_PacketIntelPickup(void * data, int len) {
-    struct PacketIntelPickup * p = (struct PacketIntelPickup*) data;
+    PacketIntelPickup * p = (PacketIntelPickup *) data;
+
     if (gamestate.gamemode_type == GAMEMODE_CTF && p->player_id < PLAYERS_MAX) {
         char pickup_str[128];
         switch (players[p->player_id].team) {
@@ -914,7 +917,7 @@ void read_PacketIntelPickup(void * data, int len) {
 }
 
 void read_PacketTerritoryCapture(void * data, int len) {
-    struct PacketTerritoryCapture * p = (struct PacketTerritoryCapture*) data;
+    PacketTerritoryCapture * p = (PacketTerritoryCapture *) data;
     if (gamestate.gamemode_type == GAMEMODE_TC && p->tent < gamestate.gamemode.tc.territory_count) {
         gamestate.gamemode.tc.territory[p->tent].team = TEAM(p->team);
         sound_create(SOUND_LOCAL, p->winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
@@ -943,7 +946,7 @@ void read_PacketTerritoryCapture(void * data, int len) {
 }
 
 void read_PacketProgressBar(void * data, int len) {
-    struct PacketProgressBar * p = (struct PacketProgressBar*) data;
+    PacketProgressBar * p = (PacketProgressBar *) data;
     if (gamestate.gamemode_type == GAMEMODE_TC && p->tent < gamestate.gamemode.tc.territory_count) {
         gamestate.progressbar.progress       = max(min(letohf(p->progress), 1.0F), 0.0F);
         gamestate.progressbar.rate           = p->rate;
@@ -964,7 +967,7 @@ void read_PacketHandshakeInit(void * data, int len) {
 #endif
 
 void read_PacketVersionGet(void * data, int len) {
-    struct PacketVersionSend ver;
+    PacketVersionSend ver;
     ver.client   = 'B';
     ver.major    = BETTERSPADES_MAJOR;
     ver.minor    = BETTERSPADES_MINOR;
@@ -975,8 +978,8 @@ void read_PacketVersionGet(void * data, int len) {
 }
 
 void read_PacketExtInfo(void * data, int len) {
-    struct PacketExtInfo * p = (struct PacketExtInfo*) data;
-    if (len >= p->length * sizeof(struct PacketExtInfoEntry) + 1) {
+    PacketExtInfo * p = (PacketExtInfo *) data;
+    if (len >= p->length * sizeof(PacketExtInfoEntry) + 1) {
         if (p->length > 0) {
             log_info("Server supports the following extensions:");
             for (int k = 0; k < p->length; k++) {
@@ -985,38 +988,38 @@ void read_PacketExtInfo(void * data, int len) {
             }
         } else log_info("Server does not support extensions");
 
-        struct PacketExtInfo reply;
+        PacketExtInfo reply;
         reply.length = 5;
 
-        reply.entries[0] = (struct PacketExtInfoEntry) {
+        reply.entries[0] = (PacketExtInfoEntry) {
             .id      = EXT_PLAYER_PROPERTIES,
             .version = 1,
         };
-        reply.entries[1] = (struct PacketExtInfoEntry) {
+        reply.entries[1] = (PacketExtInfoEntry) {
             .id      = EXT_256PLAYERS,
             .version = 1,
         };
-        reply.entries[2] = (struct PacketExtInfoEntry) {
+        reply.entries[2] = (PacketExtInfoEntry) {
             .id      = EXT_MESSAGES,
             .version = 1,
         };
-        reply.entries[3] = (struct PacketExtInfoEntry) {
+        reply.entries[3] = (PacketExtInfoEntry) {
             .id      = EXT_KICKREASON,
             .version = 1,
         };
-        reply.entries[4] = (struct PacketExtInfoEntry) {
+        reply.entries[4] = (PacketExtInfoEntry) {
             .id      = EXT_TRACE_BULLETS,
             .version = 1,
         };
 
-        network_send(PACKET_EXTINFO_ID, &reply, reply.length * sizeof(struct PacketExtInfoEntry) + 1);
+        network_send(PACKET_EXTINFO_ID, &reply, reply.length * sizeof(PacketExtInfoEntry) + 1);
     }
 }
 
 void read_PacketPlayerProperties(void * data, int len) {
-    struct PacketPlayerProperties * p = (struct PacketPlayerProperties*) data;
+    PacketPlayerProperties * p = (PacketPlayerProperties *) data;
 
-    if (len >= sizeof(struct PacketPlayerProperties) && p->subID == 0) {
+    if (len >= sizeof(PacketPlayerProperties) && p->subID == 0) {
         players[p->player_id].ammo          = p->ammo_clip;
         players[p->player_id].ammo_reserved = p->ammo_reserved;
         players[p->player_id].score         = letohu32(p->score);
@@ -1054,7 +1057,7 @@ void read_PacketBulletTrace(void * data, int len) {
 }
 
 void network_updateColor() {
-    struct PacketSetColor c;
+    PacketSetColor c;
     c.player_id = local_player.id;
     c.red       = players[local_player.id].block.r;
     c.green     = players[local_player.id].block.g;
@@ -1244,7 +1247,7 @@ int network_update() {
 
         if (network_logged_in && players[local_player.id].team != TEAM_SPECTATOR && players[local_player.id].alive) {
             if (players[local_player.id].input.keys != network_keys_last) {
-                struct PacketInputData in;
+                PacketInputData in;
                 in.player_id = local_player.id;
                 in.keys      = players[local_player.id].input.keys;
                 network_send(PACKET_INPUTDATA_ID, &in, sizeof(in));
@@ -1254,7 +1257,7 @@ int network_update() {
 
             if ((players[local_player.id].input.buttons != network_buttons_last) &&
                !HASBIT(players[local_player.id].input.keys, INPUT_SPRINT)) {
-                struct PacketWeaponInput in;
+                PacketWeaponInput in;
                 in.player_id = local_player.id;
                 in.input     = players[local_player.id].input.buttons;
                 network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
@@ -1263,7 +1266,7 @@ int network_update() {
             }
 
             if (players[local_player.id].held_item != network_tool_last) {
-                struct PacketSetTool t;
+                PacketSetTool t;
                 t.player_id = local_player.id;
                 t.tool      = players[local_player.id].held_item;
                 network_send(PACKET_SETTOOL_ID, &t, sizeof(t));
@@ -1278,7 +1281,7 @@ int network_update() {
                 network_pos_update = window_time();
                 network_pos_last   = players[local_player.id].pos;
 
-                struct PacketPositionData pos;
+                PacketPositionData pos;
                 pos.x = htolef(players[local_player.id].pos.x);
                 pos.y = htolef(players[local_player.id].pos.z);
                 pos.z = htolef(63.0F - players[local_player.id].pos.y);
@@ -1293,7 +1296,7 @@ int network_update() {
                 network_orient_update = window_time();
                 network_orient_last   = players[local_player.id].orientation;
 
-                struct PacketOrientationData orient;
+                PacketOrientationData orient;
                 orient.x = htolef(players[local_player.id].orientation.x);
                 orient.y = htolef(players[local_player.id].orientation.z);
                 orient.z = htolef(-players[local_player.id].orientation.y);
