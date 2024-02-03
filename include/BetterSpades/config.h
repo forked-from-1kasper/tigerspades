@@ -43,57 +43,60 @@ struct config_file_entry {
     char value[32];
 };
 
-extern struct RENDER_OPTIONS {
-    char name[16];
-    int min_lan_port;
-    int max_lan_port;
-    int opengl14;
-    int color_correction;
-    int shadow_entities;
-    int ambient_occlusion;
+typedef struct {
+    char  name[16];
+    int   min_lan_port;
+    int   max_lan_port;
+    int   opengl14;
+    int   color_correction;
+    int   shadow_entities;
+    int   ambient_occlusion;
     float render_distance;
-    int window_width;
-    int window_height;
-    int multisamples;
-    int player_arms;
-    int fullscreen;
-    int greedy_meshing;
-    int vsync;
+    int   window_width;
+    int   window_height;
+    int   multisamples;
+    int   player_arms;
+    int   fullscreen;
+    int   greedy_meshing;
+    int   vsync;
     float mouse_sensitivity;
-    int show_news;
-    int show_fps;
-    int volume;
-    int voxlap_models;
-    int force_displaylist;
-    int invert_y;
-    int smooth_fog;
+    int   show_news;
+    int   show_fps;
+    int   volume;
+    int   voxlap_models;
+    int   force_displaylist;
+    int   invert_y;
+    int   smooth_fog;
     float camera_fov;
-    int hold_down_sights;
-    int chat_shadow;
-    int scale;
-    int tracing_enabled;
-    int trajectory_length;
-    int projectile_count;
-    int show_minimap;
-    int toggle_crouch;
-    int toggle_sprint;
-    int enable_shadows;
-} settings, settings_tmp;
+    int   hold_down_sights;
+    int   chat_shadow;
+    int   scale;
+    int   tracing_enabled;
+    int   trajectory_length;
+    int   projectile_count;
+    int   show_minimap;
+    int   toggle_crouch;
+    int   toggle_sprint;
+    int   enable_shadows;
+    int   enable_particles;
+} Options;
+
+extern Options settings, settings_tmp;
 
 extern List config_keys;
 
 struct config_key_pair {
-    int internal;
-    int def;
-    int original;
-    int toggle;
+    int  internal;
+    int  def;
+    int  original;
+    int  toggle;
     char name[24];
     char display[24];
     char category[24];
 };
 
 typedef struct {
-    int key;
+    int  key;
     char value[128];
 } Keybind;
 
@@ -105,14 +108,14 @@ enum {
 
 struct config_setting {
     void * value;
-    int type;
-    int min;
-    int max;
-    char name[32];
-    char help[32];
-    char category[32];
-    int defaults[8];
-    int defaults_length;
+    int    type;
+    int    min;
+    int    max;
+    char   name[32];
+    char   help[32];
+    char   category[32];
+    int    defaults[8];
+    int    defaults_length;
     void (*label_callback)(char * buffer, size_t length, int value, size_t index);
 };
 

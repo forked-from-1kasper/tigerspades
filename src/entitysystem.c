@@ -27,24 +27,24 @@
 void entitysys_create(EntitySystem * es, size_t object_size, size_t initial_size) {
     assert(es != NULL && object_size > 0 && initial_size > 0);
 
-    es->buffer = malloc(object_size * initial_size);
-    es->count = 0;
+    es->buffer      = malloc(object_size * initial_size);
+    es->count       = 0;
     es->object_size = object_size;
-    es->length = initial_size;
+    es->length      = initial_size;
 
     pthread_mutex_init(&es->lock, NULL);
 }
 
-void entitysys_iterate(EntitySystem * es, void* user, bool (*callback)(void* object, void* user)) {
+void entitysys_iterate(EntitySystem * es, void * user, bool (*callback)(void * object, void * user)) {
     assert(es != NULL && callback != NULL);
 
     pthread_mutex_lock(&es->lock);
 
-    uint8_t* obj = es->buffer;
+    uint8_t * obj = es->buffer;
     for (size_t k = 0; k < es->count; k++, obj += es->object_size) {
         if (callback(obj, user)) {
             if (es->count > 1)
-                memcpy(obj, (uint8_t*)es->buffer + es->object_size * (es->count - 1), es->object_size);
+                memcpy(obj, (uint8_t *) es->buffer + es->object_size * (es->count - 1), es->object_size);
 
             es->count--;
         }
@@ -53,17 +53,17 @@ void entitysys_iterate(EntitySystem * es, void* user, bool (*callback)(void* obj
     pthread_mutex_unlock(&es->lock);
 }
 
-void entitysys_add(EntitySystem * es, void* object) {
+void entitysys_add(EntitySystem * es, void * object) {
     assert(es != NULL && object != NULL);
 
     pthread_mutex_lock(&es->lock);
 
     if (es->count >= es->length) {
         es->length *= 2;
-        es->buffer = realloc(es->buffer, es->object_size * es->length);
+        es->buffer  = realloc(es->buffer, es->object_size * es->length);
     }
 
-    memcpy((uint8_t*)es->buffer + es->object_size * (es->count++), object, es->object_size);
+    memcpy((uint8_t *) es->buffer + es->object_size * (es->count++), object, es->object_size);
 
     pthread_mutex_unlock(&es->lock);
 }

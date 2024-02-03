@@ -238,6 +238,8 @@ void particle_create_casing(Player * p) {
 
 void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size) {
+    if (!settings.enable_particles) return;
+
     for (int k = 0; k < amount; k++) {
         float vx = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);
         float vy = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);

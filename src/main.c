@@ -741,29 +741,6 @@ void idle(double dt) {
 #define MATCH(x, y) if (!strcmp((x), (y)))
 
 int main(int argc, char ** argv) {
-    settings.opengl14          = 1;
-    settings.color_correction  = 0;
-    settings.multisamples      = 0;
-    settings.shadow_entities   = 0;
-    settings.ambient_occlusion = 0;
-    settings.render_distance   = RENDER_DISTANCE;
-    settings.window_width      = 800;
-    settings.window_height     = 600;
-    settings.player_arms       = 0;
-    settings.fullscreen        = 0;
-    settings.greedy_meshing    = 0;
-    settings.mouse_sensitivity = MOUSE_SENSITIVITY;
-    settings.show_news         = 1;
-    settings.show_fps          = 0;
-    settings.volume            = 10;
-    settings.voxlap_models     = 0;
-    settings.force_displaylist = 0;
-    settings.invert_y          = 0;
-    settings.smooth_fog        = 0;
-    settings.camera_fov        = CAMERA_DEFAULT_FOV;
-    settings.scale             = 0;
-    strcpy(settings.name, "DEV_CLIENT");
-
 #ifdef USE_TOUCH
     mkdir("/sdcard/BetterSpades");
 #else

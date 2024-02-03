@@ -333,7 +333,8 @@ void weapon_shoot() {
 
         tracer_pvelocity(o, &players[local_player.id]);
         tracer_add(
-            players[local_player.id].weapon, players[local_player.id].physics.eye.x,
+            players[local_player.id].weapon,
+            players[local_player.id].physics.eye.x,
             players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),
             players[local_player.id].physics.eye.z,
             o[0], o[1], o[2]

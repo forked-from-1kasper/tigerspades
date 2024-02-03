@@ -2542,7 +2542,7 @@ HUD hud_serverlist = {
 /*         HUD_SETTINGS START        */
 
 static void hud_settings_init() {
-    memcpy(&settings_tmp, &settings, sizeof(struct RENDER_OPTIONS));
+    memcpy(&settings_tmp, &settings, sizeof(Options));
 }
 
 static int int_slider_defaults(mu_Context * ctx, struct config_setting * setting) {
@@ -2680,7 +2680,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
         mu_layout_next(ctx);
 
         if (mu_button(ctx, "Apply changes")) {
-            memcpy(&settings, &settings_tmp, sizeof(struct RENDER_OPTIONS));
+            memcpy(&settings, &settings_tmp, sizeof(Options));
             window_fromsettings();
             sound_volume(settings.volume / 10.0F);
             config_save();

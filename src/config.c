@@ -36,7 +36,45 @@
 
 char * config_filepath = "config.ini";
 
-struct RENDER_OPTIONS settings, settings_tmp;
+Options settings = {
+    .opengl14          = 1,
+    .color_correction  = 0,
+    .shadow_entities   = 0,
+    .render_distance   = RENDER_DISTANCE,
+    .name              = "Deuce",
+    .window_width      = 800,
+    .window_height     = 600,
+    .min_lan_port      = 32882,
+    .max_lan_port      = 32892,
+    .volume            = 10,
+    .invert_y          = 0,
+    .fullscreen        = 0,
+    .mouse_sensitivity = MOUSE_SENSITIVITY,
+    .show_news         = 1,
+    .multisamples      = 0,
+    .greedy_meshing    = 0,
+    .vsync             = 1,
+    .show_fps          = 0,
+    .voxlap_models     = 0,
+    .force_displaylist = 0,
+    .smooth_fog        = 0,
+    .ambient_occlusion = 0,
+    .camera_fov        = CAMERA_DEFAULT_FOV,
+    .hold_down_sights  = 0,
+    .chat_shadow       = 1,
+    .player_arms       = 0,
+    .scale             = 0,
+    .tracing_enabled   = 0,
+    .trajectory_length = 16,
+    .projectile_count  = 8,
+    .show_minimap      = 1,
+    .toggle_crouch     = 0,
+    .toggle_sprint     = 0,
+    .enable_shadows    = 1,
+    .enable_particles  = 1,
+};
+
+Options settings_tmp = {0};
 
 List config_keys, config_settings, config_file, config_keybind;
 
@@ -106,6 +144,7 @@ void config_save() {
     config_seti("client", "toggle_crouch",     settings.toggle_crouch);
     config_seti("client", "toggle_sprint",     settings.toggle_sprint);
     config_seti("client", "enable_shadows",    settings.enable_shadows);
+    config_seti("client", "enable_particles",  settings.enable_particles);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
         struct config_key_pair * e = list_get(&config_keys, k);
@@ -218,6 +257,8 @@ static int config_read_key(void * user, const char * section, const char * name,
             settings.toggle_sprint = atoi(value);
         } else if (!strcmp(name, "enable_shadows")) {
             settings.enable_shadows = atoi(value);
+        } else if (!strcmp(name, "enable_particles")) {
+            settings.enable_particles = atoi(value);
         }
     }
 
@@ -672,6 +713,16 @@ void config_reload() {
                  .max      = 1,
                  .help     = "(won't work with greedy mesh)",
                  .name     = "Ambient occlusion",
+                 .category = "Graphics"
+             });
+    list_add(&config_settings,
+             &(struct config_setting) {
+                 .value    = &settings_tmp.enable_particles,
+                 .type     = CONFIG_TYPE_INT,
+                 .min      = 0,
+                 .max      = 1,
+                 .help     = "Disable this on weak hardware",
+                 .name     = "Enable particles",
                  .category = "Graphics"
              });
     list_add(&config_settings,

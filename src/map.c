@@ -372,7 +372,7 @@ void map_collapsing_render() {
 static bool falling_blocks_collision(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t*) key;
     MapCollapsing * collapsing = ((MapCollapsing**) user)[0];
-    float dt = *(((float**)user)[1]);
+    float dt = *(((float**) user)[1]);
 
     vec4 v = {pos_keyx(pos) + collapsing->v.x * dt * 32.0F - collapsing->p2.x + 0.5F,
               pos_keyy(pos) + collapsing->v.y * dt * 32.0F - collapsing->p2.y + 0.5F,
