@@ -2737,7 +2737,7 @@ static void hud_controls_render(mu_Context * ctx, float scale) {
         char * category = NULL;
         int open = 0;
         for (int k = 0; k < list_size(&config_keys); k++) {
-            struct config_key_pair * a = list_get(&config_keys, k);
+            ConfigKeyPair * a = list_get(&config_keys, k);
 
             if (*a->display) {
                 if (!category || strcmp(category, a->category)) {

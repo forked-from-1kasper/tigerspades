@@ -85,13 +85,14 @@ static void config_keys_update() {
 
 static void config_sets(const char * section, const char * name, const char * value) {
     for (int k = 0; k < list_size(&config_file); k++) {
-        struct config_file_entry * e = list_get(&config_file, k);
+        ConfigFileEntry * e = list_get(&config_file, k);
         if (strcmp(e->name, name) == 0) {
             strncpy(e->value, value, sizeof(e->value) - 1);
             return;
         }
     }
-    struct config_file_entry e;
+
+    ConfigFileEntry e;
     strncpy(e.section, section, sizeof(e.section) - 1);
     strncpy(e.name,    name,    sizeof(e.name)    - 1);
     strncpy(e.value,   value,   sizeof(e.value)   - 1);
@@ -147,44 +148,44 @@ void config_save() {
     config_seti("client", "enable_particles",  settings.enable_particles);
 
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair * e = list_get(&config_keys, k);
+        ConfigKeyPair * e = list_get(&config_keys, k);
         if (strlen(e->name) > 0)
             config_seti("controls", e->name, e->def);
     }
 
-    void * f = file_open(config_filepath, "w");
-    if (f) {
+    void * fin = file_open(config_filepath, "w");
+    if (fin) {
         char last_section[32] = {0};
         for (int k = 0; k < list_size(&config_file); k++) {
-            struct config_file_entry * e = list_get(&config_file, k);
+            ConfigFileEntry * e = list_get(&config_file, k);
             if (strcmp(e->section, last_section) != 0) {
-                file_printf(f, "\r\n[%s]\r\n", e->section);
+                file_printf(fin, "\r\n[%s]\r\n", e->section);
                 strcpy(last_section, e->section);
             }
 
-            file_printf(f, "%s", e->name);
+            file_printf(fin, "%s", e->name);
 
             for (int l = 0; l < 31 - strlen(e->name); l++)
-                file_printf(f, " ");
+                file_printf(fin, " ");
 
-            file_printf(f, "= %s\r\n", e->value);
+            file_printf(fin, "= %s\r\n", e->value);
         }
 
-        file_printf(f, "\r\n[keybind]\r\n");
+        file_printf(fin, "\r\n[keybind]\r\n");
         for (int k = 0; k < list_size(&config_keybind); k++) {
             Keybind * keybind = list_get(&config_keybind, k);
 
             if (keybind->key > 0 && strlen(keybind->value) > 0)
-                file_printf(f, "%d = %s\r\n", keybind->key, keybind->value);
+                file_printf(fin, "%d = %s\r\n", keybind->key, keybind->value);
         }
 
-        file_close(f);
+        file_close(fin);
     }
 }
 
 static int config_read_key(void * user, const char * section, const char * name, const char * value) {
     if (strcmp(section, "keybind") != 0) {
-        struct config_file_entry e;
+        ConfigFileEntry e;
         strncpy(e.section, section, sizeof(e.section) - 1);
         strncpy(e.name, name, sizeof(e.name) - 1);
         strncpy(e.value, value, sizeof(e.value) - 1);
@@ -264,7 +265,8 @@ static int config_read_key(void * user, const char * section, const char * name,
 
     if (!strcmp(section, "controls")) {
         for (int k = 0; k < list_size(&config_keys); k++) {
-            struct config_key_pair * key = list_get(&config_keys, k);
+            ConfigKeyPair * key = list_get(&config_keys, k);
+
             if (!strcmp(name, key->name)) {
                 log_debug("found override for %s, from %i to %i", key->name, key->def, atoi(value));
                 key->def = strtol(value, NULL, 0);
@@ -276,37 +278,11 @@ static int config_read_key(void * user, const char * section, const char * name,
     return 1;
 }
 
-void config_register_key(int internal, int def, const char * name, int toggle, const char * display,
-                         const char * category) {
-    struct config_key_pair key;
-    key.internal = internal;
-    key.def      = def;
-    key.original = def;
-    key.toggle   = toggle;
-
-    if (display)
-        strncpy(key.display, display, sizeof(key.display) - 1);
-    else
-        *key.display = 0;
-
-    if (name)
-        strncpy(key.name, name, sizeof(key.name) - 1);
-    else
-        *key.name = 0;
-
-    if (category)
-        strncpy(key.category, category, sizeof(key.category) - 1);
-    else
-        *key.category = 0;
-
-    list_add(&config_keys, &key);
-}
-
 int config_key_translate(int key, int dir, int * results) {
     int count = 0;
 
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair * a = list_get(&config_keys, k);
+        ConfigKeyPair * a = list_get(&config_keys, k);
 
         if (dir && a->internal == key) {
             if (results)
@@ -322,9 +298,9 @@ int config_key_translate(int key, int dir, int * results) {
     return count;
 }
 
-struct config_key_pair * config_key(int key) {
+ConfigKeyPair * config_key(int key) {
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair * a = list_get(&config_keys, k);
+        ConfigKeyPair * a = list_get(&config_keys, k);
         if (a->internal == key)
             return a;
     }
@@ -334,17 +310,9 @@ struct config_key_pair * config_key(int key) {
 
 void config_key_reset_togglestates() {
     for (int k = 0; k < list_size(&config_keys); k++) {
-        struct config_key_pair * a = list_get(&config_keys, k);
+        ConfigKeyPair * a = list_get(&config_keys, k);
         if (a->toggle) window_pressed_keys[a->internal] = 0;
     }
-}
-
-static int config_key_cmp(const void * a, const void * b) {
-    const struct config_key_pair * A = (const struct config_key_pair*) a;
-    const struct config_key_pair * B = (const struct config_key_pair*) b;
-
-    int cmp = strcmp(A->category, B->category);
-    return cmp ? cmp : strcmp(A->display, B->display);
 }
 
 static void config_label_scale(char * buffer, size_t length, int value, size_t index) {
@@ -381,6 +349,34 @@ static void config_label_msaa(char * buffer, size_t length, int value, size_t in
     }
 }
 
+static const char * config_key_category = NULL;
+#define CATEGORY(x) { config_key_category = (x); }
+
+static void config_register_key(int internal, int def, const char * name, int toggle, const char * display) {
+    ConfigKeyPair key;
+    key.internal = internal;
+    key.def      = def;
+    key.original = def;
+    key.toggle   = toggle;
+
+    if (display)
+        strncpy(key.display, display, sizeof(key.display) - 1);
+    else
+        *key.display = 0;
+
+    if (name)
+        strncpy(key.name, name, sizeof(key.name) - 1);
+    else
+        *key.name = 0;
+
+    if (config_key_category)
+        strncpy(key.category, config_key_category, sizeof(key.category) - 1);
+    else
+        *key.category = 0;
+
+    list_add(&config_keys, &key);
+}
+
 void config_reload() {
     if (!list_created(&config_keybind))
         list_create(&config_keybind, sizeof(Keybind));
@@ -388,63 +384,78 @@ void config_reload() {
         list_clear(&config_keybind);
 
     if (!list_created(&config_file))
-        list_create(&config_file, sizeof(struct config_file_entry));
+        list_create(&config_file, sizeof(ConfigFileEntry));
     else
         list_clear(&config_file);
 
     if (!list_created(&config_keys))
-        list_create(&config_keys, sizeof(struct config_key_pair));
+        list_create(&config_keys, sizeof(ConfigKeyPair));
     else
         list_clear(&config_keys);
 
-    config_register_key(WINDOW_KEY_UP,           TOOLKIT_KEY_UP, "move_forward", 0, "Forward", "Movement");
-    config_register_key(WINDOW_KEY_DOWN,         TOOLKIT_KEY_DOWN, "move_backward", 0, "Backward", "Movement");
-    config_register_key(WINDOW_KEY_LEFT,         TOOLKIT_KEY_LEFT, "move_left", 0, "Left", "Movement");
-    config_register_key(WINDOW_KEY_RIGHT,        TOOLKIT_KEY_RIGHT, "move_right", 0, "Right", "Movement");
-    config_register_key(WINDOW_KEY_SPACE,        TOOLKIT_KEY_JUMP, "jump", 0, "Jump", "Movement");
-    config_register_key(WINDOW_KEY_SPRINT,       TOOLKIT_KEY_SPRINT, "sprint", 0, "Sprint", "Movement");
-    config_register_key(WINDOW_KEY_SHIFT,        TOOLKIT_KEY_SPRINT, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_CURSOR_UP,    TOOLKIT_KEY_CURSOR_UP, "cube_color_up", 0, "Color up", "Block");
-    config_register_key(WINDOW_KEY_CURSOR_DOWN,  TOOLKIT_KEY_CURSOR_DOWN, "cube_color_down", 0, "Color down", "Block");
-    config_register_key(WINDOW_KEY_CURSOR_LEFT,  TOOLKIT_KEY_CURSOR_LEFT, "cube_color_left", 0, "Color left", "Block");
-    config_register_key(WINDOW_KEY_CURSOR_RIGHT, TOOLKIT_KEY_CURSOR_RIGHT, "cube_color_right", 0, "Color right", "Block");
-    config_register_key(WINDOW_KEY_BACKSPACE,    TOOLKIT_KEY_BACKSPACE, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_TOOL1,        TOOLKIT_KEY_TOOL1, "tool_spade", 0, "Select spade", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TOOL2,        TOOLKIT_KEY_TOOL2, "tool_block", 0, "Select block", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TOOL3,        TOOLKIT_KEY_TOOL3, "tool_gun", 0, "Select gun", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TOOL4,        TOOLKIT_KEY_TOOL4, "tool_grenade", 0, "Select grenade", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_TAB,          TOOLKIT_KEY_TAB, "view_score", 0, "Score", "Information");
-    config_register_key(WINDOW_KEY_ESCAPE,       TOOLKIT_KEY_ESCAPE, "quit_game", 0, "Quit", "Game");
-    config_register_key(WINDOW_KEY_MAP,          TOOLKIT_KEY_MAP, "view_map", 1, "Map", "Information");
-    config_register_key(WINDOW_KEY_CROUCH,       TOOLKIT_KEY_CROUCH, "crouch", 0, "Crouch", "Movement");
-    config_register_key(WINDOW_KEY_SNEAK,        TOOLKIT_KEY_SNEAK, "sneak", 0, "Sneak", "Movement");
-    config_register_key(WINDOW_KEY_ENTER,        TOOLKIT_KEY_ENTER, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F1,           TOOLKIT_KEY_F1, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F2,           TOOLKIT_KEY_F2, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F3,           TOOLKIT_KEY_F3, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_F4,           TOOLKIT_KEY_F4, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_YES,          TOOLKIT_KEY_YES, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_NO,           TOOLKIT_KEY_NO, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_VOLUME_UP,    TOOLKIT_KEY_VOLUME_UP, "volume_up", 0, "Volume up", "Game");
-    config_register_key(WINDOW_KEY_VOLUME_DOWN,  TOOLKIT_KEY_VOLUME_DOWN, "volume_down", 0, "Volume down", "Game");
-    config_register_key(WINDOW_KEY_V,            TOOLKIT_KEY_SNEAK, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_RELOAD,       TOOLKIT_KEY_RELOAD, "reload", 0, "Reload", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_CHAT,         TOOLKIT_KEY_CHAT, "chat_global", 0, "Chat", "Game");
-    config_register_key(WINDOW_KEY_FULLSCREEN,   TOOLKIT_KEY_FULLSCREEN, "fullscreen", 0, "Fullscreen", "Game");
-    config_register_key(WINDOW_KEY_SCREENSHOT,   TOOLKIT_KEY_SCREENSHOT, "screenshot", 0, "Screenshot", "Game");
-    config_register_key(WINDOW_KEY_CHANGETEAM,   TOOLKIT_KEY_CHANGETEAM, "change_team", 0, "Team select", "Game");
-    config_register_key(WINDOW_KEY_CHANGEWEAPON, TOOLKIT_KEY_CHANGEWEAPON, "change_weapon", 0, "Gun select", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_PICKCOLOR,    TOOLKIT_KEY_PICKCOLOR, "cube_color_sample", 0, "Pick color", "Block");
-    config_register_key(WINDOW_KEY_COMMAND,      TOOLKIT_KEY_COMMAND, "chat_command", 0, "Command", "Game");
-    config_register_key(WINDOW_KEY_HIDEHUD,      TOOLKIT_KEY_HIDEHUD, "hide_hud", 1, "Hide HUD", "Game");
-    config_register_key(WINDOW_KEY_LASTTOOL,     TOOLKIT_KEY_LASTTOOL, "last_tool", 0, "Last tool", "Tools & Weapons");
-    config_register_key(WINDOW_KEY_NETWORKSTATS, TOOLKIT_KEY_NETWORKSTATS, "network_stats", 1, "Network stats", "Information");
-    config_register_key(WINDOW_KEY_SAVE_MAP,     TOOLKIT_KEY_SAVE_MAP, "save_map", 0, "Save map", "Game");
-    config_register_key(WINDOW_KEY_SELECT1,      TOOLKIT_KEY_SELECT1, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_SELECT2,      TOOLKIT_KEY_SELECT2, NULL, 0, NULL, NULL);
-    config_register_key(WINDOW_KEY_SELECT3,      TOOLKIT_KEY_SELECT3, NULL, 0, NULL, NULL);
+    CATEGORY("Movement") {
+        config_register_key(WINDOW_KEY_UP,           TOOLKIT_KEY_UP,           "move_forward",      0, "Forward");
+        config_register_key(WINDOW_KEY_DOWN,         TOOLKIT_KEY_DOWN,         "move_backward",     0, "Backward");
+        config_register_key(WINDOW_KEY_LEFT,         TOOLKIT_KEY_LEFT,         "move_left",         0, "Left");
+        config_register_key(WINDOW_KEY_RIGHT,        TOOLKIT_KEY_RIGHT,        "move_right",        0, "Right");
+        config_register_key(WINDOW_KEY_SPACE,        TOOLKIT_KEY_JUMP,         "jump",              0, "Jump");
+        config_register_key(WINDOW_KEY_SPRINT,       TOOLKIT_KEY_SPRINT,       "sprint",            0, "Sprint");
+        config_register_key(WINDOW_KEY_CROUCH,       TOOLKIT_KEY_CROUCH,       "crouch",            0, "Crouch");
+        config_register_key(WINDOW_KEY_SNEAK,        TOOLKIT_KEY_SNEAK,        "sneak",             0, "Sneak");
+    }
 
-    list_sort(&config_keys, config_key_cmp);
+    CATEGORY("Block") {
+        config_register_key(WINDOW_KEY_CURSOR_UP,    TOOLKIT_KEY_CURSOR_UP,    "cube_color_up",     0, "Color up");
+        config_register_key(WINDOW_KEY_CURSOR_DOWN,  TOOLKIT_KEY_CURSOR_DOWN,  "cube_color_down",   0, "Color down");
+        config_register_key(WINDOW_KEY_CURSOR_LEFT,  TOOLKIT_KEY_CURSOR_LEFT,  "cube_color_left",   0, "Color left");
+        config_register_key(WINDOW_KEY_CURSOR_RIGHT, TOOLKIT_KEY_CURSOR_RIGHT, "cube_color_right",  0, "Color right");
+        config_register_key(WINDOW_KEY_PICKCOLOR,    TOOLKIT_KEY_PICKCOLOR,    "cube_color_sample", 0, "Pick color");
+    }
+
+    CATEGORY("Tools & Weapons") {
+        config_register_key(WINDOW_KEY_TOOL1,        TOOLKIT_KEY_TOOL1,        "tool_spade",        0, "Select spade");
+        config_register_key(WINDOW_KEY_TOOL2,        TOOLKIT_KEY_TOOL2,        "tool_block",        0, "Select block");
+        config_register_key(WINDOW_KEY_TOOL3,        TOOLKIT_KEY_TOOL3,        "tool_gun",          0, "Select gun");
+        config_register_key(WINDOW_KEY_TOOL4,        TOOLKIT_KEY_TOOL4,        "tool_grenade",      0, "Select grenade");
+        config_register_key(WINDOW_KEY_RELOAD,       TOOLKIT_KEY_RELOAD,       "reload",            0, "Reload");
+        config_register_key(WINDOW_KEY_CHANGEWEAPON, TOOLKIT_KEY_CHANGEWEAPON, "change_weapon",     0, "Gun select");
+        config_register_key(WINDOW_KEY_LASTTOOL,     TOOLKIT_KEY_LASTTOOL,     "last_tool",         0, "Last tool");
+    }
+
+    CATEGORY("Game") {
+        config_register_key(WINDOW_KEY_ESCAPE,       TOOLKIT_KEY_ESCAPE,       "quit_game",         0, "Quit");
+        config_register_key(WINDOW_KEY_VOLUME_UP,    TOOLKIT_KEY_VOLUME_UP,    "volume_up",         0, "Volume up");
+        config_register_key(WINDOW_KEY_VOLUME_DOWN,  TOOLKIT_KEY_VOLUME_DOWN,  "volume_down",       0, "Volume down");
+        config_register_key(WINDOW_KEY_CHAT,         TOOLKIT_KEY_CHAT,         "chat_global",       0, "Chat");
+        config_register_key(WINDOW_KEY_FULLSCREEN,   TOOLKIT_KEY_FULLSCREEN,   "fullscreen",        0, "Fullscreen");
+        config_register_key(WINDOW_KEY_SCREENSHOT,   TOOLKIT_KEY_SCREENSHOT,   "screenshot",        0, "Screenshot");
+        config_register_key(WINDOW_KEY_CHANGETEAM,   TOOLKIT_KEY_CHANGETEAM,   "change_team",       0, "Team select");
+        config_register_key(WINDOW_KEY_COMMAND,      TOOLKIT_KEY_COMMAND,      "chat_command",      0, "Command");
+        config_register_key(WINDOW_KEY_HIDEHUD,      TOOLKIT_KEY_HIDEHUD,      "hide_hud",          1, "Hide HUD");
+        config_register_key(WINDOW_KEY_SAVE_MAP,     TOOLKIT_KEY_SAVE_MAP,     "save_map",          0, "Save map");
+    }
+
+    CATEGORY("Information") {
+        config_register_key(WINDOW_KEY_TAB,          TOOLKIT_KEY_TAB,          "view_score",        0, "Score");
+        config_register_key(WINDOW_KEY_MAP,          TOOLKIT_KEY_MAP,          "view_map",          1, "Map");
+        config_register_key(WINDOW_KEY_NETWORKSTATS, TOOLKIT_KEY_NETWORKSTATS, "network_stats",     1, "Network stats");
+    }
+
+    CATEGORY(NULL) {
+        config_register_key(WINDOW_KEY_SHIFT,        TOOLKIT_KEY_SPRINT,       NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_BACKSPACE,    TOOLKIT_KEY_BACKSPACE,    NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_ENTER,        TOOLKIT_KEY_ENTER,        NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_F1,           TOOLKIT_KEY_F1,           NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_F2,           TOOLKIT_KEY_F2,           NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_F3,           TOOLKIT_KEY_F3,           NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_F4,           TOOLKIT_KEY_F4,           NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_YES,          TOOLKIT_KEY_YES,          NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_NO,           TOOLKIT_KEY_NO,           NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_V,            TOOLKIT_KEY_SNEAK,        NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_SELECT1,      TOOLKIT_KEY_SELECT1,      NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_SELECT2,      TOOLKIT_KEY_SELECT2,      NULL,                0, NULL);
+        config_register_key(WINDOW_KEY_SELECT3,      TOOLKIT_KEY_SELECT3,      NULL,                0, NULL);
+    }
 
     char * fin = (char *) file_load(config_filepath);
 

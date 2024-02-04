@@ -37,11 +37,11 @@
     #include <BetterSpades/GUI/glut.h>
 #endif
 
-struct config_file_entry {
+typedef struct {
     char section[32];
     char name[32];
     char value[32];
-};
+} ConfigFileEntry;
 
 typedef struct {
     char  name[16];
@@ -85,7 +85,7 @@ extern Options settings, settings_tmp;
 
 extern List config_keys;
 
-struct config_key_pair {
+typedef struct {
     int  internal;
     int  def;
     int  original;
@@ -93,7 +93,7 @@ struct config_key_pair {
     char name[24];
     char display[24];
     char category[24];
-};
+} ConfigKeyPair;
 
 typedef struct {
     int  key;
@@ -123,10 +123,9 @@ extern char * config_filepath;
 
 extern List config_settings;
 
-void config_register_key(int internal, int def, const char * name, int toggle, const char * display,
-                         const char * category);
+ConfigKeyPair * config_key(int key);
+
 int config_key_translate(int key, int dir, int * results);
-struct config_key_pair * config_key(int key);
 void config_key_reset_togglestates();
 void config_reload(void);
 void config_save(void);
