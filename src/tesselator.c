@@ -24,7 +24,7 @@
 #include <BetterSpades/common.h>
 #include <BetterSpades/tesselator.h>
 
-static size_t vertex_type_size(enum tesselator_vertex_type type) {
+static size_t vertex_type_size(TesselatorVertexType type) {
     switch (type) {
         case VERTEX_INT: return sizeof(int16_t);
         case VERTEX_FLOAT: return sizeof(float);
@@ -32,7 +32,7 @@ static size_t vertex_type_size(enum tesselator_vertex_type type) {
     }
 }
 
-void tesselator_create(Tesselator * t, enum tesselator_vertex_type type, int has_normal) {
+void tesselator_create(Tesselator * t, TesselatorVertexType type, int has_normal) {
     t->quad_count = 0;
     t->quad_space = 128;
     t->vertices = NULL;
@@ -127,7 +127,7 @@ void tesselator_draw(Tesselator * t, int with_color) {
     }
 }
 
-void tesselator_glx(Tesselator * t, struct glx_displaylist * x) {
+void tesselator_glx(Tesselator * t, GLXDisplayList * x) {
 #ifdef TESSELATE_QUADS
     switch (t->vertex_type) {
         case VERTEX_INT:
@@ -278,7 +278,7 @@ void tesselator_addf_simple(Tesselator * t, float * coords) {
                                     NULL);
 }
 
-void tesselator_addi_cube_face_adv(Tesselator * t, enum tesselator_cube_face face, int16_t x, int16_t y,
+void tesselator_addi_cube_face_adv(Tesselator * t, TesselatorCubeFace face, int16_t x, int16_t y,
                                    int16_t z, int16_t sx, int16_t sy, int16_t sz) {
     switch (face) {
         case CUBE_FACE_Z_N:
@@ -305,11 +305,11 @@ void tesselator_addi_cube_face_adv(Tesselator * t, enum tesselator_cube_face fac
     }
 }
 
-void tesselator_addi_cube_face(Tesselator * t, enum tesselator_cube_face face, int16_t x, int16_t y, int16_t z) {
+void tesselator_addi_cube_face(Tesselator * t, TesselatorCubeFace face, int16_t x, int16_t y, int16_t z) {
     tesselator_addi_cube_face_adv(t, face, x, y, z, 1, 1, 1);
 }
 
-void tesselator_addf_cube_face(Tesselator * t, enum tesselator_cube_face face, float x, float y, float z,
+void tesselator_addf_cube_face(Tesselator * t, TesselatorCubeFace face, float x, float y, float z,
                                float sz) {
     switch (face) {
         case CUBE_FACE_Z_N:

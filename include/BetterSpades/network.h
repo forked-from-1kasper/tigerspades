@@ -100,11 +100,13 @@ extern int compressed_chunk_data_size;
 extern int compressed_chunk_data_offset;
 extern int compressed_chunk_data_estimate;
 
-extern struct network_stat {
+typedef struct {
     int outgoing;
     int ingoing;
     int avg_ping;
-} network_stats[40];
+} NetworkStat;
+
+extern NetworkStat network_stats[40];
 
 extern float network_stats_last;
 

@@ -34,7 +34,7 @@
 #define CHUNKS_PER_DIM (512 / CHUNK_SIZE)
 
 typedef struct {
-    struct glx_displaylist display_list;
+    GLXDisplayList display_list;
     int max_height;
     bool updated;
     bool created;

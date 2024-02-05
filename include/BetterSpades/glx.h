@@ -28,14 +28,14 @@
 extern int glx_version;
 extern int glx_fog;
 
-struct glx_displaylist {
+typedef struct {
     uint32_t legacy;
     uint32_t modern;
     size_t size;
     size_t buffer_size;
     bool has_normal;
     bool has_color;
-};
+} GLXDisplayList;
 
 enum {
     GLX_DISPLAYLIST_NORMAL,
@@ -45,14 +45,14 @@ enum {
 
 void glx_init(void);
 
-int glx_shader(const char* vertex, const char* fragment);
+int glx_shader(const char * vertex, const char * fragment);
 
 void glx_enable_sphericalfog(void);
 void glx_disable_sphericalfog(void);
 
-void glx_displaylist_create(struct glx_displaylist* x, bool has_color, bool has_normal);
-void glx_displaylist_destroy(struct glx_displaylist* x);
-void glx_displaylist_update(struct glx_displaylist* x, size_t size, int type, void* color, void* vertex, void* normal);
-void glx_displaylist_draw(struct glx_displaylist* x, int type);
+void glx_displaylist_create(GLXDisplayList *, bool has_color, bool has_normal);
+void glx_displaylist_destroy(GLXDisplayList *);
+void glx_displaylist_update(GLXDisplayList *, size_t size, int type, void* color, void* vertex, void* normal);
+void glx_displaylist_draw(GLXDisplayList *, int type);
 
 #endif

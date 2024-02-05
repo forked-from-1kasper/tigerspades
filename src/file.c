@@ -30,10 +30,10 @@
 
 #include <log.h>
 
-struct file_handle {
+typedef struct {
     void * internal;
     int type;
-};
+} Handle;
 
 enum {
     FILE_STD,
@@ -101,7 +101,7 @@ int file_exists(const char * name) {
 
 int file_size(const char * name) {
 #ifdef USE_ANDROID_FILE
-    struct file_handle * f = (struct file_handle *) file_open(name, "rb");
+    Handle * f = (Handle *) file_open(name, "rb");
     if (!f) return 0;
 
     if (f->type == FILE_SDL) {
@@ -133,7 +133,7 @@ int file_size(const char * name) {
 unsigned char * file_load(const char * name) {
 #ifdef USE_ANDROID_FILE
     int size = file_size(name);
-    struct file_handle * f = (struct file_handle *) file_open(name, "rb");
+    Handle * f = (Handle *) file_open(name, "rb");
     if (!f) return NULL;
 
     unsigned char * data = malloc(size + 1);
@@ -187,7 +187,7 @@ unsigned char * file_load(const char * name) {
 
 void * file_open(const char * name, const char * mode) {
 #ifdef USE_ANDROID_FILE
-    struct file_handle * handle = malloc(sizeof(struct file_handle));
+    Handle * handle = malloc(sizeof(Handle));
     handle->internal = (strchr(mode, 'r') != NULL) ? SDL_RWFromFile(name, mode) : NULL;
     handle->type = FILE_SDL;
 
@@ -214,37 +214,37 @@ void file_printf(void * file, const char * fmt, ...) {
     va_list args;
     va_start(args, fmt);
 #ifdef USE_ANDROID_FILE
-    struct file_handle * f = (struct file_handle*) file;
+    Handle * f = (Handle*) file;
     if (f->type == FILE_SDL) {
         char str[256];
         vsprintf(str, fmt, args);
         int written = 0;
         int total = strlen(str);
         while (written < total)
-            written += SDL_RWwrite((struct SDL_RWops*) f->internal, str + written, 1, total - written);
+            written += SDL_RWwrite((struct SDL_RWops *) f->internal, str + written, 1, total - written);
     }
     if (f->type == FILE_STD) {
         log_warn("%i %i", f->internal, f);
-        vfprintf((FILE*) f->internal, fmt, args);
+        vfprintf((FILE *) f->internal, fmt, args);
     }
 #else
-    vfprintf((FILE*) file, fmt, args);
+    vfprintf((FILE *) file, fmt, args);
 #endif
     va_end(args);
 }
 
 void file_close(void * file) {
 #ifdef USE_ANDROID_FILE
-    struct file_handle * f = (struct file_handle*) file;
+    Handle * f = (Handle *) file;
     if (f->type == FILE_SDL) {
-        SDL_RWclose((struct SDL_RWops*) f->internal);
+        SDL_RWclose((struct SDL_RWops *) f->internal);
     }
     if (f->type == FILE_STD) {
-        fclose((FILE*) f->internal);
+        fclose((FILE *) f->internal);
     }
     free(f);
 #else
-    fclose((FILE*) file);
+    fclose((FILE *) file);
 #endif
 }
 

@@ -22,32 +22,28 @@
 
 #define pos_key(x, y, z) (((z) << 20) | ((x) << 8) | (y))
 #define pos_keyx(key) (((key) >> 8) & 0xFFF)
-#define pos_keyy(key) ((key)&0xFF)
+#define pos_keyy(key) ((key) & 0xFF)
 #define pos_keyz(key) (((key) >> 20) & 0xFFF)
 
-struct path_vec {
-    short x, y, z;
-};
-
-struct minheap_block {
+typedef struct {
     uint32_t pos;
-};
+} MinheapBlock;
 
-struct minheap {
+typedef struct {
     int index;
     int length;
-    struct minheap_block* nodes;
-};
+    MinheapBlock * nodes;
+} Minheap;
 
-int int_cmp(void* first_key, void* second_key, size_t key_size);
-size_t int_hash(void* raw_key, size_t key_size);
+int int_cmp(void * first_key, void * second_key, size_t key_size);
+size_t int_hash(void * raw_key, size_t key_size);
 
-void minheap_create(struct minheap* h);
-void minheap_clear(struct minheap* h);
-void minheap_destroy(struct minheap* h);
-int minheap_isempty(struct minheap* h);
-struct minheap_block minheap_extract(struct minheap* h);
-void minheap_set(struct minheap* h, struct minheap_block* b, int value);
-struct minheap_block* minheap_put(struct minheap* h, struct minheap_block* b);
+void minheap_create(Minheap * h);
+void minheap_clear(Minheap * h);
+void minheap_destroy(Minheap * h);
+int minheap_isempty(Minheap * h);
+MinheapBlock minheap_extract(Minheap * h);
+void minheap_set(Minheap * h, MinheapBlock * b, int value);
+MinheapBlock * minheap_put(Minheap * h, MinheapBlock * b);
 
 #endif

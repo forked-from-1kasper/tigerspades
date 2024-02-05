@@ -53,11 +53,11 @@ static pthread_rwlock_t map_lock;
 
 float fog_color[4] = {0.5F, 0.9098F, 1.0F, 1.0F};
 
-struct damaged_voxel {
+typedef struct {
     int damage;
     float timer;
     float action_timer;
-};
+} DamagedVoxel;
 
 HashTable map_damaged_voxels;
 Tesselator map_damaged_tesselator;
@@ -68,7 +68,7 @@ int map_object_visible(float x, float y, float z) {
 
 int map_damage(int x, int y, int z, int damage) {
     uint32_t key = pos_key(x, y, z);
-    struct damaged_voxel * voxel = ht_lookup(&map_damaged_voxels, &key);
+    DamagedVoxel * voxel = ht_lookup(&map_damaged_voxels, &key);
 
     if (voxel) {
         voxel->damage = min(damage + voxel->damage, 100);
@@ -77,7 +77,7 @@ int map_damage(int x, int y, int z, int damage) {
         return voxel->damage;
     } else {
         ht_insert(&map_damaged_voxels, &key,
-                  &(struct damaged_voxel) {
+                  &(DamagedVoxel) {
                       .damage = damage,
                       .timer = window_time(),
                       .action_timer = -FLT_MAX,
@@ -89,7 +89,7 @@ int map_damage(int x, int y, int z, int damage) {
 
 bool map_damage_action(int x, int y, int z) {
     uint32_t key = pos_key(x, y, z);
-    struct damaged_voxel * voxel = ht_lookup(&map_damaged_voxels, &key);
+    DamagedVoxel * voxel = ht_lookup(&map_damaged_voxels, &key);
 
     if (!voxel) {
         return false;
@@ -103,14 +103,14 @@ bool map_damage_action(int x, int y, int z) {
 
 int map_damage_get(int x, int y, int z) {
     uint32_t key = pos_key(x, y, z);
-    struct damaged_voxel * voxel = ht_lookup(&map_damaged_voxels, &key);
+    DamagedVoxel * voxel = ht_lookup(&map_damaged_voxels, &key);
 
     return voxel ? voxel->damage : 0;
 }
 
 static bool damaged_voxel_update(void * key, void * value, void * user) {
-    uint32_t pos = *(uint32_t*) key;
-    struct damaged_voxel * voxel = (struct damaged_voxel*) value;
+    uint32_t pos = *(uint32_t *) key;
+    DamagedVoxel * voxel = (DamagedVoxel*) value;
     Tesselator * tess = (Tesselator*) user;
     int x = pos_keyx(pos);
     int y = pos_keyy(pos);
@@ -175,7 +175,7 @@ typedef struct {
     Orientation o;
     int voxel_count;
     int rotation, has_displaylist;
-    struct glx_displaylist displaylist;
+    GLXDisplayList displaylist;
     Tesselator mesh_geometry;
 } MapCollapsing;
 
@@ -232,7 +232,7 @@ static bool falling_blocks_meshing(void * key, void * value, void * user) {
 
 static bool falling_blocks_pivot(void * key, void * value, void * user) {
     float * pivot = (float*) user;
-    uint32_t pos = *(uint32_t*) key;
+    uint32_t pos = *(uint32_t *) key;
 
     map_set(pos_keyx(pos), pos_keyy(pos), pos_keyz(pos), White);
     pivot[0] += pos_keyx(pos);
@@ -251,7 +251,7 @@ static bool map_update_physics_sub(MapCollapsing * collapsing, int x, int y, int
     if (map_isair(x, y, z))
         return false;
 
-    struct minheap openlist;
+    Minheap openlist;
     minheap_create(&openlist);
 
     HashTable closedlist;
@@ -259,7 +259,7 @@ static bool map_update_physics_sub(MapCollapsing * collapsing, int x, int y, int
     closedlist.compare = int_cmp;
     closedlist.hash = int_hash;
 
-    struct minheap_block start = (struct minheap_block) {
+    MinheapBlock start = (MinheapBlock) {
         .pos = pos_key(x, y, z),
     };
 
@@ -269,7 +269,7 @@ static bool map_update_physics_sub(MapCollapsing * collapsing, int x, int y, int
     ht_insert(&closedlist, &start.pos, &start_color);
 
     while (!minheap_isempty(&openlist)) { // find all connected blocks
-        struct minheap_block current = minheap_extract(&openlist);
+        MinheapBlock current = minheap_extract(&openlist);
 
         if (pos_keyy(current.pos) <= 1) { // stop at indestructible ground layer
             minheap_destroy(&openlist);
@@ -284,7 +284,7 @@ static bool map_update_physics_sub(MapCollapsing * collapsing, int x, int y, int
                 pos_keyz(current.pos) + DIRECTION_MASK[k][2],
             };
 
-            struct minheap_block block = (struct minheap_block) {
+            MinheapBlock block = (MinheapBlock) {
                 .pos = pos_key(dir_block[0], dir_block[1], dir_block[2]),
             };
 
@@ -370,9 +370,9 @@ void map_collapsing_render() {
 }
 
 static bool falling_blocks_collision(void * key, void * value, void * user) {
-    uint32_t pos = *(uint32_t*) key;
+    uint32_t pos = *(uint32_t *) key;
     MapCollapsing * collapsing = ((MapCollapsing**) user)[0];
-    float dt = *(((float**) user)[1]);
+    float dt = *(((float **) user)[1]);
 
     vec4 v = {pos_keyx(pos) + collapsing->v.x * dt * 32.0F - collapsing->p2.x + 0.5F,
               pos_keyy(pos) + collapsing->v.y * dt * 32.0F - collapsing->p2.y + 0.5F,
@@ -384,8 +384,8 @@ static bool falling_blocks_collision(void * key, void * value, void * user) {
 }
 
 static bool falling_blocks_particles(void * key, void * value, void * user) {
-    uint32_t pos = *(uint32_t*) key;
-    TrueColor color = *(TrueColor*) value;
+    uint32_t pos = *(uint32_t *) key;
+    TrueColor color = *(TrueColor *) value;
     MapCollapsing * collapsing = (MapCollapsing*) user;
 
     vec4 v = {pos_keyx(pos) - collapsing->p2.x + 0.5F, pos_keyy(pos) - collapsing->p2.y + 0.5F,
@@ -511,7 +511,7 @@ void map_init() {
     tesselator_create(&map_damaged_tesselator, VERTEX_INT, 0);
     pthread_rwlock_init(&map_lock, NULL);
 
-    ht_setup(&map_damaged_voxels, sizeof(uint32_t), sizeof(struct damaged_voxel), 16);
+    ht_setup(&map_damaged_voxels, sizeof(uint32_t), sizeof(DamagedVoxel), 16);
     map_damaged_voxels.compare = int_cmp;
     map_damaged_voxels.hash = int_hash;
 

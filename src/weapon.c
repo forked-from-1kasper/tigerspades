@@ -264,7 +264,7 @@ void weapon_shoot() {
 
         weapon_spread(&players[local_player.id], o);
 
-        struct Camera_HitType hit;
+        CameraHit hit;
         camera_hit(&hit, local_player.id,
             players[local_player.id].physics.eye.x,
             players[local_player.id].physics.eye.y + player_height(&players[local_player.id]),

@@ -332,7 +332,7 @@ void player_render_all() {
                HASBIT(players[k].input.buttons, BUTTON_SECONDARY))
            && window_time() - players[k].item_showup >= 0.5F) {
             // now run a hitscan and see if any block or player is in the way
-            struct Camera_HitType hit;
+            CameraHit hit;
             if (HASBIT(players[k].input.buttons, BUTTON_PRIMARY) &&
                (window_time() - players[k].spade_use_timer > 0.2F)) {
                 camera_hit_fromplayer(&hit, k, 4.0F);
@@ -434,7 +434,7 @@ void player_render_all() {
 
                     weapon_spread(&players[k], o);
 
-                    struct Camera_HitType hit;
+                    CameraHit hit;
                     camera_hit(&hit, k, players[k].physics.eye.x, players[k].physics.eye.y + player_height(&players[k]),
                                players[k].physics.eye.z, o[0], o[1], o[2], 128.0F);
                     tracer_pvelocity(o, &players[k]);

@@ -53,7 +53,7 @@
 #include <http.h>
 
 HUD * hud_active;
-struct window_instance * hud_window;
+WindowInstance * hud_window;
 
 static pthread_mutex_t serverlist_lock;
 
@@ -133,15 +133,14 @@ static void hud_ingame_init() {
     window_mousemode(WINDOW_CURSOR_DISABLED);
 }
 
-struct player_table {
+typedef struct {
     unsigned char id;
     unsigned int score;
-};
+} PlayerTable;
 
 static int playertable_sort(const void * a, const void * b) {
-    struct player_table * aa = (struct player_table*) a;
-    struct player_table * bb = (struct player_table*) b;
-    return bb->score - aa->score;
+    PlayerTable * A = (PlayerTable *) a, * B = (PlayerTable *) b;
+    return B->score - A->score;
 }
 
 static void hud_ingame_render3D() {
@@ -624,7 +623,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             font_centered(settings.window_width * 0.75F, settings.window_height - 15 * scale, 2.0F * scale, gamestate.team_2.name, UTF8);
             font_centered(settings.window_width * 0.75F, settings.window_height - 47 * scale, 3.0F * scale, score_str, UTF8);
 
-            struct player_table pt[PLAYERS_MAX];
+            PlayerTable pt[PLAYERS_MAX];
             int connected = 0;
             for (int k = 0; k < PLAYERS_MAX; k++) {
                 if (players[k].connected) {
@@ -632,7 +631,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     pt[connected++].score = players[k].score;
                 }
             }
-            qsort(pt, connected, sizeof(struct player_table), playertable_sort);
+            qsort(pt, connected, sizeof(PlayerTable), playertable_sort);
 
             int cntt[3] = {0};
             for (int k = 0; k < connected; k++) {
@@ -1458,15 +1457,14 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
     }
 }
 
-struct autocomplete_type {
+typedef struct {
     const char * str;
     int acceptance;
-};
+} AutocompleteType;
 
 static int autocomplete_type_cmp(const void * a, const void * b) {
-    struct autocomplete_type * aa = (struct autocomplete_type*) a;
-    struct autocomplete_type * bb = (struct autocomplete_type*) b;
-    return bb->acceptance - aa->acceptance;
+    AutocompleteType * A = (AutocompleteType *) a, * B = (AutocompleteType *) b;
+    return B->acceptance - A->acceptance;
 }
 
 void broadcast_chat(unsigned char chat_type, const char * message, size_t size) {
@@ -1481,38 +1479,38 @@ void broadcast_chat(unsigned char chat_type, const char * message, size_t size) 
 static const char * hud_ingame_completeword(const char * s) {
     // find most likely player name or command
 
-    struct autocomplete_type candidates[PLAYERS_MAX * 2 + 64] = {{0}};
+    AutocompleteType candidates[PLAYERS_MAX * 2 + 64] = {{0}};
     int candidates_cnt = 0;
 
     for (int k = 0; k < PLAYERS_MAX; k++) {
         if (players[k].connected)
-            candidates[candidates_cnt++] = (struct autocomplete_type) {
+            candidates[candidates_cnt++] = (AutocompleteType) {
                 .str = players[k].name,
                 .acceptance = 0,
             };
     }
 
-    candidates[candidates_cnt++] = (struct autocomplete_type) {
+    candidates[candidates_cnt++] = (AutocompleteType) {
         .str = gamestate.team_1.name,
         .acceptance = 0,
     };
 
-    candidates[candidates_cnt++] = (struct autocomplete_type) {
+    candidates[candidates_cnt++] = (AutocompleteType) {
         .str = gamestate.team_2.name,
         .acceptance = 0,
     };
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/help", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/medkit", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/squad", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/votekick", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/login", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/airstrike", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/streak", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/ratio", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/intel", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/time", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/admin", 0};
-    candidates[candidates_cnt++] = (struct autocomplete_type) {"/ping", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/help", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/medkit", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/squad", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/votekick", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/login", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/airstrike", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/streak", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/ratio", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/intel", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/time", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/admin", 0};
+    candidates[candidates_cnt++] = (AutocompleteType) {"/ping", 0};
 
     // valuate all strings
     for (int k = 0; k < candidates_cnt; k++) {
@@ -1528,7 +1526,7 @@ static const char * hud_ingame_completeword(const char * s) {
         }
     }
 
-    qsort(candidates, candidates_cnt, sizeof(struct autocomplete_type), autocomplete_type_cmp);
+    qsort(candidates, candidates_cnt, sizeof(AutocompleteType), autocomplete_type_cmp);
     return (strlen(candidates[0].str) > 0 && candidates[0].acceptance > 0) ? candidates[0].str : NULL;
 }
 
@@ -1812,7 +1810,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 players[local_player.id].items_show_start = window_time();
                 players[local_player.id].items_show = 1;
 
-                struct Camera_HitType hit;
+                CameraHit hit;
                 camera_hit_fromplayer(&hit, local_player.id, 128.0F);
 
                 local_player.color[X] = local_player.color[Y] = -1;
@@ -2009,14 +2007,16 @@ static Server * serverlist;
 
 static int serverlist_con_established;
 
-static struct serverlist_news_entry {
+typedef struct News {
     Texture image;
     char caption[65];
     char url[129];
     float tile_size;
     int color;
-    struct serverlist_news_entry * next;
-} serverlist_news;
+    struct News * next;
+} News;
+
+static News serverlist_news;
 
 static int serverlist_news_exists = 0;
 static char serverlist_input[128];
@@ -2169,7 +2169,7 @@ static void server_c(char * address, char * name, Version version) {
 
 static Texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     if (icon_id >= 32) {
-        struct serverlist_news_entry * current = &serverlist_news;
+        News * current = &serverlist_news;
         int index = 32;
         while (current) {
             if (index == icon_id)
@@ -2250,7 +2250,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
             mu_begin_panel(ctx, "News");
             mu_layout_row(ctx, 0, NULL, 0);
 
-            struct serverlist_news_entry * current = &serverlist_news;
+            News * current = &serverlist_news;
             int index = 0;
             while (current) {
                 mu_layout_begin_column(ctx);
@@ -2404,8 +2404,8 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                 JSON_Array * news = json_value_get_array(js);
                 int news_entries = json_array_get_count(news);
 
-                struct serverlist_news_entry * current = &serverlist_news;
-                memset(current, 0, sizeof(struct serverlist_news_entry));
+                News * current = &serverlist_news;
+                memset(current, 0, sizeof(News));
 
                 for (int k = 0; k < news_entries; k++) {
                     JSON_Object * s = json_array_get_object(news, k);
@@ -2433,7 +2433,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                         }
                     }
 
-                    current->next = (k < news_entries - 1) ? malloc(sizeof(struct serverlist_news_entry)) : NULL;
+                    current->next = (k < news_entries - 1) ? malloc(sizeof(News)) : NULL;
                     current = current->next;
                 }
 
@@ -2545,7 +2545,7 @@ static void hud_settings_init() {
     memcpy(&settings_tmp, &settings, sizeof(Options));
 }
 
-static int int_slider_defaults(mu_Context * ctx, struct config_setting * setting) {
+static int int_slider_defaults(mu_Context * ctx, Setting * setting) {
     int k = setting->defaults_length - 1;
     while (k > 0 && setting->defaults[k] > *(int*) setting->value)
         k--;
@@ -2613,7 +2613,7 @@ static void hud_settings_render(mu_Context * ctx, float scale) {
         char * category = NULL; int open = 0;
 
         for (int k = 0; k < list_size(&config_settings); k++) {
-            struct config_setting * a = list_get(&config_settings, k);
+            Setting * a = list_get(&config_settings, k);
 
             if (!category || strcmp(category, a->category)) {
                 category = a->category;

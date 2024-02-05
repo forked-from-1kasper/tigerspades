@@ -90,7 +90,7 @@ void camera_update(float dt) {
     }
 }
 
-void camera_hit_fromplayer(struct Camera_HitType* hit, int player_id, float range) {
+void camera_hit_fromplayer(CameraHit * hit, int player_id, float range) {
     if (player_id != local_player.id) {
         camera_hit(hit, player_id, players[player_id].physics.eye.x,
                    players[player_id].physics.eye.y + player_height(&players[player_id]),
@@ -104,12 +104,12 @@ void camera_hit_fromplayer(struct Camera_HitType* hit, int player_id, float rang
     }
 }
 
-void camera_hit(struct Camera_HitType * hit, int exclude_player, float x, float y, float z, float ray_x, float ray_y,
+void camera_hit(CameraHit * hit, int exclude_player, float x, float y, float z, float ray_x, float ray_y,
                 float ray_z, float range) {
     camera_hit_mask(hit, exclude_player, x, y, z, ray_x, ray_y, ray_z, range);
 }
 
-void camera_hit_mask(struct Camera_HitType * hit, int exclude_player, float x, float y, float z, float ray_x,
+void camera_hit_mask(CameraHit * hit, int exclude_player, float x, float y, float z, float ray_x,
                      float ray_y, float ray_z, float range) {
     Ray dir = (Ray) {
         .origin = {x, y, z},

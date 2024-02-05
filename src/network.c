@@ -64,7 +64,7 @@ int compressed_chunk_data_size;
 int compressed_chunk_data_offset = 0;
 int compressed_chunk_data_estimate = 0;
 
-struct network_stat network_stats[40];
+NetworkStat network_stats[40];
 float network_stats_last = 0.0F;
 
 ENetHost * client;
@@ -1106,7 +1106,7 @@ int network_connect_sub(char * ip, int port, int version) {
     peer = enet_host_connect(client, &address, 1, version);
     network_logged_in = 0;
     *network_custom_reason = 0;
-    memset(network_stats, 0, sizeof(struct network_stat) * 40);
+    memset(network_stats, 0, sizeof(NetworkStat) * 40);
     if (peer == NULL) return 0;
 
     if (enet_host_service(client, &event, 2500) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {

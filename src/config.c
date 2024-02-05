@@ -49,7 +49,7 @@ Options settings = {
     .volume            = 10,
     .invert_y          = 0,
     .fullscreen        = 0,
-    .mouse_sensitivity = MOUSE_SENSITIVITY,
+    .mouse_sensitivity = 5.0F,
     .show_news         = 1,
     .multisamples      = 0,
     .greedy_meshing    = 0,
@@ -467,12 +467,12 @@ void config_reload() {
     config_keys_update();
 
     if (!list_created(&config_settings))
-        list_create(&config_settings, sizeof(struct config_setting));
+        list_create(&config_settings, sizeof(Setting));
     else
         list_clear(&config_settings);
 
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = settings_tmp.name,
                  .type     = CONFIG_TYPE_STRING,
                  .max      = sizeof(settings.name) - 1,
@@ -481,7 +481,7 @@ void config_reload() {
                  .category = "Game"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.show_minimap,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -490,7 +490,7 @@ void config_reload() {
                  .category = "Game"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.min_lan_port,
                  .type     = CONFIG_TYPE_INT,
                  .max      = INT_MAX,
@@ -499,7 +499,7 @@ void config_reload() {
                  .category = "Game"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.max_lan_port,
                  .type     = CONFIG_TYPE_INT,
                  .max      = INT_MAX,
@@ -508,7 +508,7 @@ void config_reload() {
                  .category = "Game"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.mouse_sensitivity,
                  .type     = CONFIG_TYPE_FLOAT,
                  .min      = 0,
@@ -517,7 +517,7 @@ void config_reload() {
                  .category = "Control"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.invert_y,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -527,7 +527,7 @@ void config_reload() {
                  .category = "Control"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.hold_down_sights,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -537,7 +537,7 @@ void config_reload() {
                  .category = "Control"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.toggle_crouch,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -546,7 +546,7 @@ void config_reload() {
                  .category = "Control"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.toggle_sprint,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -555,7 +555,7 @@ void config_reload() {
                  .category = "Control"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.volume,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -564,7 +564,7 @@ void config_reload() {
                  .category = "Interface"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value           = &settings_tmp.scale,
                  .type            = CONFIG_TYPE_INT,
                  .min             = 0,
@@ -576,7 +576,7 @@ void config_reload() {
                  .label_callback  = config_label_scale
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.chat_shadow,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -586,7 +586,7 @@ void config_reload() {
                  .category = "Interface"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.show_fps,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -596,7 +596,7 @@ void config_reload() {
                  .category = "Interface"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.show_news,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -606,7 +606,7 @@ void config_reload() {
                  .category = "Interface"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.camera_fov,
                  .type     = CONFIG_TYPE_FLOAT,
                  .min      = CAMERA_DEFAULT_FOV,
@@ -616,7 +616,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value           = &settings_tmp.window_width,
                  .type            = CONFIG_TYPE_INT,
                  .min             = 0,
@@ -629,7 +629,7 @@ void config_reload() {
                  .label_callback  = config_label_pixels
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value           = &settings_tmp.window_height,
                  .type            = CONFIG_TYPE_INT,
                  .min             = 0,
@@ -642,7 +642,7 @@ void config_reload() {
                  .label_callback  = config_label_pixels
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value           = &settings_tmp.vsync,
                  .type            = CONFIG_TYPE_INT,
                  .min             = 0,
@@ -655,7 +655,7 @@ void config_reload() {
                  .label_callback  = config_label_vsync
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.fullscreen,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -664,7 +664,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value           = &settings_tmp.multisamples,
                  .type            = CONFIG_TYPE_INT,
                  .min             = 0,
@@ -677,7 +677,7 @@ void config_reload() {
                  .label_callback  = config_label_msaa
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.voxlap_models,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -687,7 +687,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.greedy_meshing,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -697,7 +697,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.force_displaylist,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -707,7 +707,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.smooth_fog,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -717,7 +717,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.ambient_occlusion,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -727,7 +727,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.enable_particles,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -737,7 +737,7 @@ void config_reload() {
                  .category = "Graphics"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.tracing_enabled,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,
@@ -747,7 +747,7 @@ void config_reload() {
                  .category = "Debug"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.trajectory_length,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 16,
@@ -756,7 +756,7 @@ void config_reload() {
                  .category = "Debug"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.projectile_count,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 8,
@@ -765,7 +765,7 @@ void config_reload() {
                  .category = "Debug"
              });
     list_add(&config_settings,
-             &(struct config_setting) {
+             &(Setting) {
                  .value    = &settings_tmp.enable_shadows,
                  .type     = CONFIG_TYPE_INT,
                  .min      = 0,

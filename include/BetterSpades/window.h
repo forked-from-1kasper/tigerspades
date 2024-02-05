@@ -40,9 +40,9 @@
     #endif
 #endif
 
-struct window_instance {
+typedef struct {
     void * impl;
-};
+} WindowInstance;
 
 enum {
     WINDOW_PRESS,

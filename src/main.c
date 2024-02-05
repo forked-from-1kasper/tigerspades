@@ -533,7 +533,7 @@ void init() {
     rpc_init();
 }
 
-void reshape(struct window_instance * window, int width, int height) {
+void reshape(WindowInstance * window, int width, int height) {
     glViewport(0, 0, width, height);
     settings.window_width  = width;
     settings.window_height = height;
@@ -565,7 +565,7 @@ static int mu_key_translate(int key) {
     }
 }
 
-void text_input(struct window_instance * window, const uint8_t * buff) {
+void text_input(WindowInstance * window, const uint8_t * buff) {
     if (hud_active->ctx) mu_input_text(hud_active->ctx, (const char *) buff);
 
     if (chat_input_mode == CHAT_NO_INPUT) return;
@@ -574,7 +574,7 @@ void text_input(struct window_instance * window, const uint8_t * buff) {
     if (len + size <= 128) strcpy(&chat[0][0][len], (const char *) buff);
 }
 
-void keys(struct window_instance * window, int key, int action, int mods) {
+void keys(WindowInstance * window, int key, int action, int mods) {
     if (hud_active->ctx) {
         if (mu_key_translate(key)) {
             switch (action) {
@@ -652,7 +652,7 @@ void keys(struct window_instance * window, int key, int action, int mods) {
     }
 }
 
-void mouse_click(struct window_instance * window, int button, int action, int mods) {
+void mouse_click(WindowInstance * window, int button, int action, int mods) {
     if (hud_active->input_mouseclick) {
         double x, y;
         window_mouseloc(&x, &y);
@@ -669,22 +669,22 @@ void mouse_click(struct window_instance * window, int button, int action, int mo
     }
 }
 
-void mouse_focus(struct window_instance * window, bool focused) {
+void mouse_focus(WindowInstance * window, bool focused) {
     if (hud_active->focus) hud_active->focus(focused);
 }
 
-void mouse_hover(struct window_instance * window, bool hovered) {
+void mouse_hover(WindowInstance * window, bool hovered) {
     if (hud_active->hover) hud_active->hover(hovered);
 }
 
-void mouse(struct window_instance * window, double x, double y) {
+void mouse(WindowInstance * window, double x, double y) {
     if (hud_active->input_mouselocation)
         hud_active->input_mouselocation(x, y);
     if (hud_active->ctx)
         mu_input_mousemove(hud_active->ctx, x, y);
 }
 
-void mouse_scroll(struct window_instance * window, double xoffset, double yoffset) {
+void mouse_scroll(WindowInstance * window, double xoffset, double yoffset) {
     if (hud_active->input_mousescroll)
         hud_active->input_mousescroll(yoffset);
 

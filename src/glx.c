@@ -50,7 +50,7 @@ void glx_init() {
 #endif
 }
 
-int glx_shader(const char* vertex, const char* fragment) {
+int glx_shader(const char * vertex, const char * fragment) {
 #ifndef OPENGL_ES
     int v, f;
     if (vertex) {
@@ -77,7 +77,7 @@ int glx_shader(const char* vertex, const char* fragment) {
 #endif
 }
 
-void glx_displaylist_create(struct glx_displaylist* x, bool has_color, bool has_normal) {
+void glx_displaylist_create(GLXDisplayList * x, bool has_color, bool has_normal) {
     x->has_color = has_color;
     x->has_normal = has_normal;
 
@@ -93,7 +93,7 @@ void glx_displaylist_create(struct glx_displaylist* x, bool has_color, bool has_
     x->buffer_size = 0;
 }
 
-void glx_displaylist_destroy(struct glx_displaylist* x) {
+void glx_displaylist_destroy(GLXDisplayList * x) {
 #ifndef OPENGL_ES
     if (!glx_version || settings.force_displaylist) {
         glDeleteLists(x->legacy, 1);
@@ -105,7 +105,7 @@ void glx_displaylist_destroy(struct glx_displaylist* x) {
 #endif
 }
 
-void glx_displaylist_update(struct glx_displaylist* x, size_t size, int type, void* color, void* vertex, void* normal) {
+void glx_displaylist_update(GLXDisplayList * x, size_t size, int type, void* color, void* vertex, void* normal) {
     int grow_buffer = size > x->buffer_size;
     x->buffer_size = max(x->buffer_size, size);
     x->size = size;
@@ -168,7 +168,7 @@ void glx_displaylist_update(struct glx_displaylist* x, size_t size, int type, vo
 #endif
 }
 
-void glx_displaylist_draw(struct glx_displaylist* x, int type) {
+void glx_displaylist_draw(GLXDisplayList * x, int type) {
 #ifndef OPENGL_ES
     if (!glx_version || settings.force_displaylist) {
         glCallList(x->legacy);

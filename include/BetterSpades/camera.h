@@ -40,29 +40,31 @@ typedef struct {
 extern float frustum[6][4];
 extern Camera camera;
 
-struct Camera_HitType {
+typedef struct {
     char type;
     float x, y, z, distance;
     int xb, yb, zb;
     unsigned char player_id, player_section;
+} CameraHit;
+
+enum {
+    CAMERA_HITTYPE_NONE   = 0,
+    CAMERA_HITTYPE_BLOCK  = 1,
+    CAMERA_HITTYPE_PLAYER = 2
 };
 
-#define CAMERA_HITTYPE_NONE 0
-#define CAMERA_HITTYPE_BLOCK 1
-#define CAMERA_HITTYPE_PLAYER 2
-
-void camera_hit_fromplayer(struct Camera_HitType* hit, int player_id, float range);
-void camera_hit(struct Camera_HitType* hit, int exclude_player, float x, float y, float z, float ray_x, float ray_y,
+void camera_hit_fromplayer(CameraHit *, int player_id, float range);
+void camera_hit(CameraHit *, int exclude_player, float x, float y, float z, float ray_x, float ray_y,
                 float ray_z, float range);
-void camera_hit_mask(struct Camera_HitType* hit, int exclude_player, float x, float y, float z, float ray_x,
+void camera_hit_mask(CameraHit *, int exclude_player, float x, float y, float z, float ray_x,
                      float ray_y, float ray_z, float range);
 
 float camera_fov_scaled();
 void camera_ExtractFrustum(void);
 unsigned char camera_PointInFrustum(float x, float y, float z);
 int camera_CubeInFrustum(float x, float y, float z, float size, float size_y);
-int* camera_terrain_pick(unsigned char mode);
-int* camera_terrain_pickEx(unsigned char mode, float x, float y, float z, float ray_x, float ray_y, float ray_z);
+int * camera_terrain_pick(unsigned char mode);
+int * camera_terrain_pickEx(unsigned char mode, float x, float y, float z, float ray_x, float ray_y, float ray_z);
 void camera_overflow_adjust(void);
 void camera_apply(void);
 void camera_update(float dt);

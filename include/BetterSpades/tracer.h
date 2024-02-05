@@ -25,7 +25,7 @@
 #include <BetterSpades/camera.h>
 
 typedef struct {
-    struct Camera_HitType hit;
+    CameraHit hit;
     float x, y, z;
     Ray r;
     int type;

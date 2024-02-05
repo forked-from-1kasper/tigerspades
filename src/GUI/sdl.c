@@ -30,7 +30,7 @@ static int quit = 0;
 static struct window_finger fingers[8];
 
 void window_init(int * argc, char ** argv) {
-    static struct window_instance i;
+    static WindowInstance i;
     hud_window = &i;
 
 #ifdef USE_TOUCH

@@ -106,7 +106,7 @@ enum {
     CONFIG_TYPE_INT
 };
 
-struct config_setting {
+typedef struct {
     void * value;
     int    type;
     int    min;
@@ -117,7 +117,7 @@ struct config_setting {
     int    defaults[8];
     int    defaults_length;
     void (*label_callback)(char * buffer, size_t length, int value, size_t index);
-};
+} Setting;
 
 extern char * config_filepath;
 

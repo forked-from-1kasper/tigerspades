@@ -25,35 +25,35 @@
 
 #include <BetterSpades/minheap.h>
 
-static void nodes_swap(struct minheap* h, int a, int b) {
-    struct minheap_block tmp;
+static void nodes_swap(Minheap * h, int a, int b) {
+    MinheapBlock tmp;
     tmp = h->nodes[a];
     h->nodes[a] = h->nodes[b];
     h->nodes[b] = tmp;
 }
 
-void minheap_create(struct minheap* h) {
+void minheap_create(Minheap * h) {
     h->index = 0;
     h->length = 256;
-    h->nodes = malloc(sizeof(struct minheap_block) * h->length);
+    h->nodes = malloc(sizeof(MinheapBlock) * h->length);
 }
 
-void minheap_clear(struct minheap* h) {
+void minheap_clear(Minheap * h) {
     h->index = 0;
     h->length = 256;
-    h->nodes = realloc(h->nodes, sizeof(struct minheap_block) * h->length);
+    h->nodes = realloc(h->nodes, sizeof(MinheapBlock) * h->length);
 }
 
-void minheap_destroy(struct minheap* h) {
+void minheap_destroy(Minheap * h) {
     free(h->nodes);
 }
 
-int minheap_isempty(struct minheap* h) {
+int minheap_isempty(Minheap * h) {
     return h->index <= 0;
 }
 
-struct minheap_block minheap_extract(struct minheap* h) {
-    struct minheap_block min = h->nodes[0];
+MinheapBlock minheap_extract(Minheap * h) {
+    MinheapBlock min = h->nodes[0];
 
     h->nodes[0] = h->nodes[--h->index];
 
@@ -78,7 +78,7 @@ struct minheap_block minheap_extract(struct minheap* h) {
     return min;
 }
 
-static void minheap_increase(struct minheap* h, struct minheap_block* b, int value) {
+static void minheap_increase(Minheap * h, MinheapBlock * b, int value) {
     b->pos = pos_key(pos_keyx(b->pos), value, pos_keyy(b->pos));
 
     int k = b - h->nodes;
@@ -99,7 +99,7 @@ static void minheap_increase(struct minheap* h, struct minheap_block* b, int val
     }
 }
 
-static void minheap_decrease(struct minheap* h, struct minheap_block* b, int value) {
+static void minheap_decrease(Minheap * h, MinheapBlock * b, int value) {
     b->pos = pos_key(pos_keyx(b->pos), value, pos_keyy(b->pos));
 
     int k = b - h->nodes;
@@ -113,17 +113,17 @@ static void minheap_decrease(struct minheap* h, struct minheap_block* b, int val
     }
 }
 
-void minheap_set(struct minheap* h, struct minheap_block* b, int value) {
+void minheap_set(Minheap * h, MinheapBlock * b, int value) {
     if (value > pos_keyy(b->pos))
         minheap_increase(h, b, value);
     else
         minheap_decrease(h, b, value);
 }
 
-struct minheap_block* minheap_put(struct minheap* h, struct minheap_block* b) {
+MinheapBlock * minheap_put(Minheap * h, MinheapBlock * b) {
     if (h->index >= h->length) { // grow buffer
         h->length *= 2;
-        h->nodes = realloc(h->nodes, sizeof(struct minheap_block) * h->length);
+        h->nodes = realloc(h->nodes, sizeof(MinheapBlock) * h->length);
     }
 
     h->nodes[h->index++] = *b; // place new node at end of heap

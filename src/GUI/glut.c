@@ -110,7 +110,7 @@ void window_entry(int state) {
 }
 
 void window_init(int * argc, char ** argv) {
-    static struct window_instance i;
+    static WindowInstance i;
     hud_window = &i;
 
     glutInit(argc, argv);
