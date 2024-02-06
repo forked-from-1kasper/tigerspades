@@ -60,7 +60,7 @@ kv6 model_smg_casing;
 kv6 model_shotgun_casing;
 
 static void kv6_load_file(kv6 * model, char * filename, float scale) {
-    void * data = file_load(filename);
+    uint8_t * data = file_load(filename);
     kv6_load(model, data, scale);
     free(data);
 }
@@ -139,7 +139,7 @@ void kv6_rebuild_complete() {
     kv6_rebuild(&model_shotgun_casing);
 }
 
-void kv6_load(kv6 * model, void * bytes, float scale) {
+void kv6_load(kv6 * model, uint8_t * bytes, float scale) {
     model->colorize = false;
     model->has_display_list = false;
     model->scale = scale;
@@ -168,7 +168,7 @@ void kv6_load(kv6 * model, void * bytes, float scale) {
         CHECK_ALLOCATION_ERROR(model->voxels)
 
         for (size_t k = 0; k < model->voxel_count; k++) {
-            TrueColor color = readBGRA(bytes + index); index += 4;
+            TrueColor color = readBGRA((uint32_t *) (bytes + index)); index += 4;
             uint16_t zpos = buffer_read16(bytes, index); index += 2;
             uint8_t visfaces = buffer_read8(bytes, index++); // 0x00zZyYxX
             uint8_t lighting = buffer_read8(bytes, index++); // compressed normal vector (also referred to as lighting)

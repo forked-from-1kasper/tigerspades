@@ -725,7 +725,7 @@ void read_PacketKillAction(void * data, int len) {
 
 void read_PacketShortPlayerData(void * data, int len) {
     // should never be received
-    PacketShortPlayerData * p = (PacketShortPlayerData *) data;
+    // PacketShortPlayerData * p = (PacketShortPlayerData *) data;
     log_warn("Unexpected ShortPlayerDataPacket");
 }
 
@@ -759,7 +759,7 @@ void read_PacketSetHP(void * data, int len) {
 }
 
 void read_PacketRestock(void * data, int len) {
-    PacketRestock * p = (PacketRestock *) data;
+    // PacketRestock * p = (PacketRestock *) data;
     local_player.health   = 100;
     local_player.blocks   = 50;
     local_player.grenades = 3;

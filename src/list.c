@@ -29,7 +29,7 @@ void list_free(List * l) {
     }
 }
 
-void * list_find(List * l, void * ref, enum list_traverse_direction dir, int (*cmp)(void * obj, void * ref)) {
+void * list_find(List * l, void * ref, ListTraverseDirection dir, int (*cmp)(void * obj, void * ref)) {
     assert(l != NULL && cmp != NULL);
 
     switch (dir) {
@@ -37,8 +37,7 @@ void * list_find(List * l, void * ref, enum list_traverse_direction dir, int (*c
             for (size_t k = 0; k < l->elements; k++) {
                 void * obj = l->data + l->element_size * k;
 
-                if (cmp(obj, ref))
-                    return obj;
+                if (cmp(obj, ref)) return obj;
             }
             break;
         case LIST_TRAVERSE_BACKWARD:

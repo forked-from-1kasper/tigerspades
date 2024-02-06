@@ -61,9 +61,9 @@ static int is_inside_centered(double mx, double my, int x, int y, int w, int h) 
     return mx >= x - w / 2 && mx < x + w / 2 && my >= y - h / 2 && my < y + h / 2;
 }
 
-static int is_inside(double mx, double my, int x, int y, int w, int h) {
+/*static int is_inside(double mx, double my, int x, int y, int w, int h) {
     return mx >= x && mx < x + w && my >= y && my < y + h;
-}
+}*/
 
 void hud_init() {
     hud_serverlist.ctx = malloc(sizeof(mu_Context));
@@ -2207,9 +2207,9 @@ static int hud_header_render(mu_Context * ctx, float scale, const char * text) {
 
     mu_Rect frame = mu_rect(settings.window_width * 0.125F, 0, settings.window_width * 0.75F, settings.window_height);
 
-    int retval = 0;
+    int retval = mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE);
 
-    if (retval = mu_begin_window_ex(ctx, "Main", frame, MU_OPT_NOFRAME | MU_OPT_NOTITLE | MU_OPT_NORESIZE)) {
+    if (retval) {
         mu_Container * cnt = mu_get_current_container(ctx); cnt->rect = frame;
 
         int width = cnt->body.w;

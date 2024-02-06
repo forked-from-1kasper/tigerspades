@@ -227,13 +227,13 @@ void cameracontroller_spectator(float dt) {
         camera.movement.z = (z / len) * camera.speed * dt;
     }
 
-    if (abs(camera.movement.x) < 1.0F)
+    if (fabsf(camera.movement.x) < 1.0F)
         camera.movement.x *= pow(0.0025F, dt);
 
-    if (abs(camera.movement.y) < 1.0F)
+    if (fabsf(camera.movement.y) < 1.0F)
         camera.movement.y *= pow(0.0025F, dt);
 
-    if (abs(camera.movement.z) < 1.0F)
+    if (fabsf(camera.movement.z) < 1.0F)
         camera.movement.z *= pow(0.0025F, dt);
 
     aabb_set_center(&aabb, camera.pos.x + camera.movement.x, camera.pos.y - camera.eye_height, camera.pos.z);

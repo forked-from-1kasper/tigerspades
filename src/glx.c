@@ -179,7 +179,7 @@ void glx_displaylist_draw(GLXDisplayList * x, int type) {
 
         size_t len_vertex = ((type == GLX_DISPLAYLIST_NORMAL) ? sizeof(GLshort) : sizeof(GLfloat)) * 3;
         size_t len_color = x->has_color ? (sizeof(GLubyte) * 4) : 0;
-        size_t len_normal = x->has_normal ? (sizeof(GLbyte) * 3) : 0;
+        // size_t len_normal = x->has_normal ? (sizeof(GLbyte) * 3) : 0;
 
         switch (type) {
             case GLX_DISPLAYLIST_NORMAL: glVertexPointer(3, GL_SHORT, 0, NULL); break;

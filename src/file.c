@@ -130,13 +130,13 @@ int file_size(const char * name) {
 #endif
 }
 
-unsigned char * file_load(const char * name) {
+uint8_t * file_load(const char * name) {
 #ifdef USE_ANDROID_FILE
     int size = file_size(name);
     Handle * f = (Handle *) file_open(name, "rb");
     if (!f) return NULL;
 
-    unsigned char * data = malloc(size + 1);
+    uint8_t * data = malloc(size + 1);
     CHECK_ALLOCATION_ERROR(data)
     data[size] = 0;
 
@@ -173,7 +173,7 @@ unsigned char * file_load(const char * name) {
 
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    unsigned char * data = malloc(size + 1);
+    uint8_t * data = malloc(size + 1);
     CHECK_ALLOCATION_ERROR(data)
     data[size] = 0;
 
@@ -248,19 +248,19 @@ void file_close(void * file) {
 #endif
 }
 
-float buffer_readf(unsigned char * buffer, int index) {
+float buffer_readf(uint8_t * buffer, int index) {
     return letohf(*((float*) (buffer + index)));
 }
 
 // kv6 models are stored little-endian, so this code is always correct
-unsigned int buffer_read32(unsigned char * buffer, int index) {
+uint32_t buffer_read32(uint8_t * buffer, int index) {
     return (buffer[index + 3] << 24) | (buffer[index + 2] << 16) | (buffer[index + 1] << 8) | buffer[index];
 }
 
-unsigned short buffer_read16(unsigned char * buffer, int index) {
+uint16_t buffer_read16(uint8_t * buffer, int index) {
     return (buffer[index + 1] << 8) | buffer[index];
 }
 
-unsigned char buffer_read8(unsigned char * buffer, int index) {
+uint8_t buffer_read8(uint8_t * buffer, int index) {
     return buffer[index];
 }

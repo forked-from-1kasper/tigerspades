@@ -57,8 +57,7 @@ static void window_impl_mouseclick(GLFWwindow * window, int button, int action, 
         case GLFW_PRESS: a = WINDOW_PRESS; break;
     }
 
-    if (a >= 0)
-        mouse_click(hud_window, b, a, mods & GLFW_MOD_CONTROL);
+    if (a >= 0) mouse_click(hud_window, b, a, mods & GLFW_MOD_CONTROL);
 }
 
 static void window_impl_mouse(GLFWwindow * window, double x, double y) {

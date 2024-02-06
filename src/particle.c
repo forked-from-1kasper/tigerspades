@@ -128,11 +128,13 @@ static bool particle_update_single(void * obj, void * user) {
             p->vx = -p->vx * 0.6F;
             on_ground = true;
         }
+
         if (!map_isair(p->x + movement_x, p->y + movement_y, p->z)) {
             movement_y = 0.0F;
             p->vy = -p->vy * 0.6F;
             on_ground = true;
         }
+
         if (!map_isair(p->x + movement_x, p->y + movement_y, p->z + movement_z)) {
             movement_z = 0.0F;
             p->vz = -p->vz * 0.6F;
@@ -148,12 +150,9 @@ static bool particle_update_single(void * obj, void * user) {
             p->vy *= pow1_tys; // pow(0.1F, dt);
             p->vz *= pow1_tys; // pow(0.1F, dt);
 
-            if (abs(p->vx) < 0.1F)
-                p->vx = 0.0F;
-            if (abs(p->vy) < 0.1F)
-                p->vy = 0.0F;
-            if (abs(p->vz) < 0.1F)
-                p->vz = 0.0F;
+            if (fabsf(p->vx) < 0.1F) p->vx = 0.0F;
+            if (fabsf(p->vy) < 0.1F) p->vy = 0.0F;
+            if (fabsf(p->vz) < 0.1F) p->vz = 0.0F;
         } else {
             p->vx *= pow4_tys; // pow(0.4F, dt);
             p->vy *= pow4_tys; // pow(0.4F, dt);
