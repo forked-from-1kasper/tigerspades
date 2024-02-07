@@ -157,7 +157,7 @@ typedef enum {
     UTF8, CP437, CP1252
 } Codepage;
 
-extern const TrueColor White, Black, Red, Green, Blue, Yellow, Cyan, Magenta;
+extern const TrueColor White, Black, Red, Green, Blue, Yellow, Cyan, Magenta, Sky;
 
 extern int chat_input_mode;
 extern float last_cy;

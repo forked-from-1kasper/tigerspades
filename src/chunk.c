@@ -170,6 +170,9 @@ static __attribute__((always_inline)) inline float solid_sunblock(struct libvxl_
     return (float) i / 127.0F;
 }
 
+// This grid is 1 pixel off on the right and bottom, but I doubt no one will notice.
+#define ISGRID(x, z) ((x) % 64 == 0 || (z) % 64 == 0 || (x) == 511 || (z) == 511)
+
 void * chunk_generate(void * data) {
     pthread_detach(pthread_self());
 
@@ -193,10 +196,20 @@ void * chunk_generate(void * data) {
         else
             chunk_generate_naive(&blocks, &result.tesselator, &result.max_height, settings.ambient_occlusion);
 
-        // use the fact that libvxl orders libvxl_blocks by top-down coordinate first in its data structure
+        // Use the fact that libvxl orders libvxl_blocks by top-down coordinate first in its data structure.
         size_t chunk_x = work.chunk_x * CHUNK_SIZE;
         size_t chunk_y = work.chunk_y * CHUNK_SIZE;
         uint32_t last_position = 0;
+
+        // Clean up garbage contained in “result.minimap_data”.
+        for (int i = 0; i < CHUNK_SIZE; i++) {
+            for (int j = 0; j < CHUNK_SIZE; j++) {
+                int x = i + chunk_x, z = j + chunk_y;
+                uint32_t * out = result.minimap_data + i + j * CHUNK_SIZE;
+                writeRGBA(out, ISGRID(x, z) ? White : Sky);
+            }
+        }
+
         for (int k = blocks.blocks_sorted_count - 1; k >= 0; k--) {
             struct libvxl_block * blk = blocks.blocks_sorted + k;
 
@@ -205,10 +218,7 @@ void * chunk_generate(void * data) {
 
                 int x = key_getx(blk->position), z = key_gety(blk->position);
                 uint32_t * out = result.minimap_data + (x - chunk_x + (z - chunk_y) * CHUNK_SIZE);
-
-                if (x % 64 == 0 || z % 64 == 0 || x == 511 || z == 511)
-                    *out = 0xFFFFFFFF;
-                else writeRGBA(out, readBGR(&blk->color));
+                writeRGBA(out, ISGRID(x, z) ? White : readBGR(&blk->color));
             }
         }
 
@@ -805,6 +815,22 @@ void chunk_rebuild_all() {
             }
         }
     }
+
+    uint32_t * buff = malloc(map_size_x * map_size_z * sizeof(uint32_t));
+
+    // Clean up “texture_minimap” as it can hold previous map or GPU garbage.
+    for (size_t x = 0; x < map_size_x; x++) {
+        for (size_t z = 0; z < map_size_z; z++) {
+            uint32_t * out = buff + x + z * map_size_z;
+            writeRGBA(out, ISGRID(x, z) ? White : Sky);
+        }
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture_minimap.texture_id);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, map_size_x, map_size_z, GL_RGBA, GL_UNSIGNED_BYTE, buff);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    free(buff);
 }
 
 void chunk_block_update(int x, int y, int z) {

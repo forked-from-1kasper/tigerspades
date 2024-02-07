@@ -9,6 +9,7 @@ const TrueColor Blue    = {0x00, 0x00, 0xFF, 0xFF};
 const TrueColor Yellow  = {0xFF, 0xFF, 0x00, 0xFF};
 const TrueColor Cyan    = {0x00, 0xFF, 0xFF, 0xFF};
 const TrueColor Magenta = {0xFF, 0x00, 0xFF, 0xFF};
+const TrueColor Sky     = {0x80, 0xE8, 0xFF, 0xFF};
 
 #define BSWAP16(T, ident)                                         \
     T ident (T inval) {                                           \
