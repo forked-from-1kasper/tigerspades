@@ -217,7 +217,7 @@ void * chunk_generate(void * data) {
                 last_position = blk->position;
 
                 int x = key_getx(blk->position), z = key_gety(blk->position);
-                uint32_t * out = result.minimap_data + (x - chunk_x + (z - chunk_y) * CHUNK_SIZE);
+                uint32_t * out = result.minimap_data + (x - chunk_x) + (z - chunk_y) * CHUNK_SIZE;
                 writeRGBA(out, ISGRID(x, z) ? White : readBGR(&blk->color));
             }
         }

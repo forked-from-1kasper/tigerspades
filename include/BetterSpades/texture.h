@@ -28,63 +28,65 @@ typedef struct {
     unsigned char * pixels;
 } Texture;
 
-extern Texture texture_splash;
-extern Texture texture_minimap;
-extern Texture texture_gradient;
-extern Texture texture_dummy;
+enum Texture {
+    TEXTURE_SPLASH,
 
-extern Texture texture_health;
-extern Texture texture_block;
-extern Texture texture_grenade;
-extern Texture texture_ammo_semi;
-extern Texture texture_ammo_smg;
-extern Texture texture_ammo_shotgun;
+    TEXTURE_ZOOM_SEMI,
+    TEXTURE_ZOOM_SMG,
+    TEXTURE_ZOOM_SHOTGUN,
 
-extern Texture texture_color_selection;
+    TEXTURE_WHITE,
+    TEXTURE_CROSSHAIR1,
+    TEXTURE_CROSSHAIR2,
+    TEXTURE_INDICATOR,
 
-extern Texture texture_zoom_semi;
-extern Texture texture_zoom_smg;
-extern Texture texture_zoom_shotgun;
+    TEXTURE_PLAYER,
+    TEXTURE_MEDICAL,
+    TEXTURE_INTEL,
+    TEXTURE_COMMAND,
+    TEXTURE_TRACER,
 
-extern Texture texture_white;
-extern Texture texture_crosshair1;
-extern Texture texture_crosshair2;
-extern Texture texture_indicator;
+#ifdef USE_TOUCH
+    TEXTURE_UI_KNOB,
+    TEXTURE_UI_JOYSTICK,
+#endif
 
-extern Texture texture_player;
-extern Texture texture_medical;
-extern Texture texture_intel;
-extern Texture texture_command;
-extern Texture texture_tracer;
+    TEXTURE_UI_RELOAD,
+    TEXTURE_UI_BG,
+    TEXTURE_UI_INPUT,
+    TEXTURE_UI_COLLAPSED,
+    TEXTURE_UI_EXPANDED,
+    TEXTURE_UI_FLAGS,
+    TEXTURE_UI_ALERT,
 
-extern Texture texture_ui_wait;
-extern Texture texture_ui_join;
-extern Texture texture_ui_reload;
-extern Texture texture_ui_bg;
-extern Texture texture_ui_input;
-extern Texture texture_ui_expanded;
-extern Texture texture_ui_collapsed;
-extern Texture texture_ui_flags;
-extern Texture texture_ui_alert;
-extern Texture texture_ui_joystick;
-extern Texture texture_ui_knob;
+    TEXTURE_FIRST = TEXTURE_SPLASH,
+    TEXTURE_LAST  = TEXTURE_UI_ALERT
+};
+
+#define TEXTURE_TOTAL (TEXTURE_LAST + 1)
+
+extern Texture texture[TEXTURE_TOTAL];
+
+extern Texture texture_color_selection, texture_minimap, texture_dummy, texture_gradient;
 
 #define TEXTURE_FILTER_NEAREST GL_NEAREST
 #define TEXTURE_FILTER_LINEAR  GL_LINEAR
 
+const char * texture_filename(enum Texture);
+
 int texture_flag_index(const char * country);
 void texture_flag_offset(int index, float * u, float * v);
-void texture_filter(Texture * t, int filter);
+void texture_filter(Texture *, int filter);
 void texture_init(void);
-void texture_create(Texture * t, char * filename, GLuint filter);
-void texture_create_buffer(Texture * t, unsigned int width, unsigned int height, unsigned char * buff, int new);
-void texture_delete(Texture * t);
-void texture_draw(Texture * t, float x, float y, float w, float h);
-void texture_draw_sector(Texture * t, float x, float y, float w, float h, float u, float v, float us, float vs);
+void texture_create(Texture *, const char * filename, GLuint filter);
+void texture_create_buffer(Texture *, unsigned int width, unsigned int height, unsigned char * buff, int new);
+void texture_delete(Texture *);
+void texture_draw(Texture *, float x, float y, float w, float h);
+void texture_draw_sector(Texture *, float x, float y, float w, float h, float u, float v, float us, float vs);
 void texture_draw_empty(float x, float y, float w, float h);
 void texture_draw_empty_rotated(float x, float y, float w, float h, float angle);
-void texture_draw_rotated(Texture * t, float x, float y, float w, float h, float angle);
-void texture_resize_pow2(Texture * t, int min_size);
+void texture_draw_rotated(Texture *, float x, float y, float w, float h, float angle);
+void texture_resize_pow2(Texture *, int min_size);
 TrueColor texture_block_color(int x, int y);
 void texture_gradient_fog(unsigned int *);
 

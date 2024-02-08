@@ -27,39 +27,45 @@
 #include <log.h>
 #include <lodepng/lodepng.c>
 
-Texture texture_splash;
-Texture texture_minimap;
-Texture texture_gradient;
-Texture texture_dummy;
+Texture texture[TEXTURE_TOTAL];
 
-Texture texture_color_selection;
+Texture texture_color_selection, texture_minimap, texture_dummy, texture_gradient;
 
-Texture texture_zoom_semi;
-Texture texture_zoom_smg;
-Texture texture_zoom_shotgun;
+const char * texture_filename(enum Texture ident) {
+    switch (ident) {
+        case TEXTURE_SPLASH:       return "png/splash.png";
 
-Texture texture_white;
-Texture texture_crosshair1;
-Texture texture_crosshair2;
-Texture texture_indicator;
+        case TEXTURE_ZOOM_SEMI:    return "png/semi.png";
+        case TEXTURE_ZOOM_SMG:     return "png/smg.png";
+        case TEXTURE_ZOOM_SHOTGUN: return "png/shotgun.png";
 
-Texture texture_player;
-Texture texture_medical;
-Texture texture_intel;
-Texture texture_command;
-Texture texture_tracer;
+        case TEXTURE_WHITE:        return "png/white.png";
+        case TEXTURE_CROSSHAIR1:   return "png/crosshair1.png";
+        case TEXTURE_CROSSHAIR2:   return "png/crosshair2.png";
+        case TEXTURE_INDICATOR:    return "png/indicator.png";
 
-Texture texture_ui_wait;
-Texture texture_ui_join;
-Texture texture_ui_reload;
-Texture texture_ui_bg;
-Texture texture_ui_input;
-Texture texture_ui_expanded;
-Texture texture_ui_collapsed;
-Texture texture_ui_flags;
-Texture texture_ui_alert;
-Texture texture_ui_joystick;
-Texture texture_ui_knob;
+        case TEXTURE_PLAYER:       return "png/player.png";
+        case TEXTURE_MEDICAL:      return "png/medical.png";
+        case TEXTURE_INTEL:        return "png/intel.png";
+        case TEXTURE_COMMAND:      return "png/command.png";
+        case TEXTURE_TRACER:       return "png/tracer.png";
+
+#ifdef USE_TOUCH
+        case TEXTURE_UI_KNOB:      return "png/ui/knob.png";
+        case TEXTURE_UI_JOYSTICK:  return "png/ui/joystick.png";
+#endif
+
+        case TEXTURE_UI_RELOAD:    return "png/ui/reload.png";
+        case TEXTURE_UI_BG:        return "png/ui/bg.png";
+        case TEXTURE_UI_INPUT:     return "png/ui/input.png";
+        case TEXTURE_UI_COLLAPSED: return "png/ui/collapsed.png";
+        case TEXTURE_UI_EXPANDED:  return "png/ui/expanded.png";
+        case TEXTURE_UI_FLAGS:     return "png/ui/flags.png";
+        case TEXTURE_UI_ALERT:     return "png/ui/alert.png";
+    }
+
+    return NULL;
+}
 
 static char * texture_flags[] = {
     "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
@@ -106,7 +112,7 @@ void texture_filter(Texture * t, int filter) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void texture_create(Texture * t, char * filename, GLuint filter) {
+void texture_create(Texture * t, const char * filename, GLuint filter) {
     int sz = file_size(filename);
     void * data = file_load(filename);
     int error = lodepng_decode32(&t->pixels, &t->width, &t->height, data, sz);
@@ -116,6 +122,8 @@ void texture_create(Texture * t, char * filename, GLuint filter) {
         log_warn("Could not load texture (%u): %s", error, lodepng_error_text(error));
         return;
     }
+
+    log_info("loading texture: %s", filename);
 
     texture_resize_pow2(t, 0);
 
@@ -268,10 +276,10 @@ void texture_resize_pow2(Texture * t, int min_size) {
             float u = px - (int) px;
             float v = py - (int) py;
 
-            unsigned int aa = ((unsigned int*) t->pixels)[(int) px + (int) py * t->width];
-            unsigned int ba = ((unsigned int*) t->pixels)[min((int) px + (int) py * t->width + 1, t->width * t->height)];
-            unsigned int ab = ((unsigned int*) t->pixels)[min((int) px + (int) py * t->width + t->width, t->width * t->height)];
-            unsigned int bb = ((unsigned int*) t->pixels)[min((int) px + (int) py * t->width + 1 + t->width, t->width * t->height)];
+            unsigned int aa = ((unsigned int *) t->pixels)[(int) px + (int) py * t->width];
+            unsigned int ba = ((unsigned int *) t->pixels)[min((int) px + (int) py * t->width + 1, t->width * t->height)];
+            unsigned int ab = ((unsigned int *) t->pixels)[min((int) px + (int) py * t->width + t->width, t->width * t->height)];
+            unsigned int bb = ((unsigned int *) t->pixels)[min((int) px + (int) py * t->width + 1 + t->width, t->width * t->height)];
 
             pixels_new[x + y * w] = 0;
             pixels_new[x + y * w] |= (int) ((1.0F - v) * u * BYTE0(ba) + (1.0F - v) * (1.0F - u) * BYTE0(aa)
@@ -291,7 +299,7 @@ void texture_resize_pow2(Texture * t, int min_size) {
     t->width = w;
     t->height = h;
     free(t->pixels);
-    t->pixels = (unsigned char*) pixels_new;
+    t->pixels = (unsigned char *) pixels_new;
 }
 
 TrueColor texture_block_color(int x, int y) {
@@ -321,55 +329,30 @@ void texture_gradient_fog(unsigned int * gradient) {
 }
 
 void texture_init() {
-    texture_create(&texture_splash,       "png/splash.png",       TEXTURE_FILTER_NEAREST);
-
-    texture_create(&texture_zoom_semi,    "png/semi.png",         TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_zoom_smg,     "png/smg.png",          TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_zoom_shotgun, "png/shotgun.png",      TEXTURE_FILTER_NEAREST);
-
-    texture_create(&texture_white,        "png/white.png",        TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_crosshair1,   "png/crosshair1.png",   TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_crosshair2,   "png/crosshair2.png",   TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_indicator,    "png/indicator.png",    TEXTURE_FILTER_NEAREST);
-
-    texture_create(&texture_player,       "png/player.png",       TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_medical,      "png/medical.png",      TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_intel,        "png/intel.png",        TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_command,      "png/command.png",      TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_tracer,       "png/tracer.png",       TEXTURE_FILTER_NEAREST);
-
-    texture_create(&texture_ui_wait,      "png/ui/wait.png",      TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_join,      "png/ui/join.png",      TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_reload,    "png/ui/reload.png",    TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_bg,        "png/ui/bg.png",        TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_input,     "png/ui/input.png",     TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_collapsed, "png/ui/collapsed.png", TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_expanded,  "png/ui/expanded.png",  TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_flags,     "png/ui/flags.png",     TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_alert,     "png/ui/alert.png",     TEXTURE_FILTER_NEAREST);
-
-#ifdef USE_TOUCH
-    texture_create(&texture_ui_knob,      "png/ui/knob.png",      TEXTURE_FILTER_NEAREST);
-    texture_create(&texture_ui_joystick,  "png/ui/joystick.png",  TEXTURE_FILTER_NEAREST);
-#endif
+    for (enum Texture i = TEXTURE_FIRST; i <= TEXTURE_LAST; i++)
+        texture_create(&texture[i], texture_filename(i), TEXTURE_FILTER_NEAREST);
 
     unsigned int pixels[64 * 64];
     memset(pixels, 0, sizeof(pixels));
 
-    for (int y = 0; y < 8; y++)
-        for (int x = 0; x < 8; x++)
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            TrueColor color = texture_block_color(x, y);
+
             for (int ys = 0; ys < 6; ys++)
                 for (int xs = 0; xs < 6; xs++)
-                    writeRGBA(pixels + (x * 8 + xs) + (y * 8 + ys) * 64, texture_block_color(x, y));
+                    writeRGBA(pixels + (x * 8 + xs) + (y * 8 + ys) * 64, color);
+        }
+    }
 
-    texture_create_buffer(&texture_color_selection, 64, 64, (unsigned char*) pixels, 1);
+    texture_create_buffer(&texture_color_selection, 64, 64, (unsigned char *) pixels, 1);
 
     texture_create_buffer(&texture_minimap, map_size_x, map_size_z, NULL, 1);
 
     unsigned int * gradient = malloc(512 * 512 * sizeof(unsigned int));
     CHECK_ALLOCATION_ERROR(gradient)
     texture_gradient_fog(gradient);
-    texture_create_buffer(&texture_gradient, 512, 512, (unsigned char*) gradient, 1);
+    texture_create_buffer(&texture_gradient, 512, 512, (unsigned char *) gradient, 1);
     texture_filter(&texture_gradient, TEXTURE_FILTER_LINEAR);
 
     texture_create_buffer(&texture_dummy, 1, 1, (unsigned char[]) {0, 0, 0, 0}, 1);

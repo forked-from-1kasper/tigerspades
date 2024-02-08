@@ -463,7 +463,7 @@ void display() {
                             float u, v;
                             texture_flag_offset(cmd->icon.id - HUD_FLAG_INDEX_START, &u, &v);
                             texture_draw_sector(
-                                &texture_ui_flags, cmd->icon.rect.x, settings.window_height - cmd->icon.rect.y,
+                                &texture[TEXTURE_UI_FLAGS], cmd->icon.rect.x, settings.window_height - cmd->icon.rect.y,
                                 size, size, u, v, 16.0F / 256.0F, 16.0F / 256.0F
                             );
                             glEnable(GL_BLEND);

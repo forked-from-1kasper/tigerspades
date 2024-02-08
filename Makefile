@@ -7,6 +7,7 @@ RESDIR     = resources
 GAMEDIR    = dist
 BINARY     = $(BUILDDIR)/betterspades
 TOOLKIT   ?= SDL
+IGNORERES  = png/tracer.png png/command.png png/medical.png png/intel.png png/player.png
 
 MAJOR   = 0
 MINOR   = 1
@@ -20,7 +21,7 @@ ODEPS   := $(CDEPS:$(DEPSDIR)/%.c=$(BUILDDIR)/%.o)
 CFILES  := $(shell find $(SRCDIR) -type f -name '*.c')
 OFILES  := $(CFILES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 
-CFLAGS  = -std=gnu99
+CFLAGS  = -std=gnu99 -Wall -pedantic
 CFLAGS += -DBETTERSPADES_MAJOR=$(MAJOR)
 CFLAGS += -DBETTERSPADES_MINOR=$(MINOR)
 CFLAGS += -DBETTERSPADES_PATCH=$(PATCH)
@@ -99,11 +100,11 @@ $(BINARY): $(OFILES) $(ODEPS)
 
 $(OFILES): $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	mkdir -p `dirname $@`
-	$(CC) -Wall $(CFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
 
 $(ODEPS): $(BUILDDIR)/%.o: $(DEPSDIR)/%.c
 	mkdir -p `dirname $@`
-	$(CC) -Wall $(CFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -113,7 +114,7 @@ game: $(BINARY) $(RESPACK)
 	mkdir -p $(GAMEDIR)
 	cp $(BINARY) $(GAMEDIR)
 	cp -r $(RESDIR)/* $(GAMEDIR)
-	unzip -o $(RESPACK) -d $(GAMEDIR) -x png/command.png png/medical.png png/intel.png png/player.png || true
+	unzip -o $(RESPACK) -d $(GAMEDIR) -x $(IGNORERES) || true
 
 $(RESPACK):
 	mkdir -p `dirname $(RESPACK)`
