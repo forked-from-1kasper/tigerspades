@@ -64,9 +64,9 @@ void weapon_update() {
         }
 
         if (players[local_player.id].held_item == TOOL_GUN) {
-            players[local_player.id].item_disabled = weapon_reload_inprogress ? window_time() : 0;
+            players[local_player.id].item_disabled    = weapon_reload_inprogress ? window_time() : 0;
             players[local_player.id].items_show_start = window_time();
-            players[local_player.id].items_show = 1;
+            players[local_player.id].items_show       = 1;
         }
     } else {
         if (screen_current == SCREEN_NONE && window_time() - players[local_player.id].item_disabled >= 0.5F) {
@@ -162,8 +162,8 @@ void weapon_recoil(int gun, double * horiz_recoil, double * vert_recoil) {
             *vert_recoil  = 0.1;
             break;
         default:
-            *horiz_recoil = 0.0F;
-            *vert_recoil  = 0.0F;
+            *horiz_recoil = 0.0;
+            *vert_recoil  = 0.0;
     }
 }
 
@@ -245,7 +245,7 @@ int weapon_reloading() {
 
 int weapon_can_reload() {
     int mag_size = weapon_ammo(players[local_player.id].weapon);
-    return max(min(min(local_player.ammo_reserved, mag_size), mag_size - local_player.ammo), 0);
+    return clamp(0, min(local_player.ammo_reserved, mag_size), mag_size - local_player.ammo);
 }
 
 #define WEAPON_ROUNDS(w) ((w) == WEAPON_SHOTGUN ? 8 : 1)
@@ -350,11 +350,7 @@ void weapon_shoot() {
     if (((long) (window_time() * 1000) & 1023) < 512)
         horiz_recoil *= -1.0;
 
-    if ((HASBIT(players[local_player.id].input.keys, INPUT_UP)   ||
-         HASBIT(players[local_player.id].input.keys, INPUT_DOWN) ||
-         HASBIT(players[local_player.id].input.keys, INPUT_LEFT) ||
-         HASBIT(players[local_player.id].input.keys, INPUT_RIGHT)) &&
-        !HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY)) {
+    if (ISMOVING(&players[local_player.id]) && !HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY)) {
         vert_recoil  *= 2.0;
         horiz_recoil *= 2.0;
     }
@@ -367,10 +363,8 @@ void weapon_shoot() {
         horiz_recoil *= 0.5;
     }
 
-    // converges to 0 for (+/-) 1.0, (only slowly, has no effect on usual orientation.y range)
-    horiz_recoil *= sqrt(1.0F
-                         - players[local_player.id].orientation.y * players[local_player.id].orientation.y
-                             * players[local_player.id].orientation.y * players[local_player.id].orientation.y);
+    // converges to 0 for (+/-) 1.0 (only slowly, has no effect on usual orientation.y range)
+    horiz_recoil *= sqrtf(1.0F - fourthf(players[local_player.id].orientation.y));
 
 #if !(HACKS_ENABLED && HACK_NORECOIL)
     camera.rot.x += horiz_recoil;
@@ -379,7 +373,11 @@ void weapon_shoot() {
 
     camera_overflow_adjust();
 
-    sound_create(SOUND_LOCAL, weapon_sound(players[local_player.id].weapon), players[local_player.id].pos.x,
-                 players[local_player.id].pos.y, players[local_player.id].pos.z);
+    sound_create(
+        SOUND_LOCAL, weapon_sound(players[local_player.id].weapon),
+        players[local_player.id].pos.x,
+        players[local_player.id].pos.y,
+        players[local_player.id].pos.z
+    );
     particle_create_casing(&players[local_player.id]);
 }

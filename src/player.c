@@ -409,8 +409,8 @@ void player_render_all() {
         }
         if (k != local_player.id) {
             if (camera_CubeInFrustum(players[k].pos.x, players[k].pos.y, players[k].pos.z, 1.0F, 2.0F)
-               && distance2D(players[k].pos.x, players[k].pos.z, camera.pos.x, camera.pos.z)
-                   <= pow(settings.render_distance + 2.0F, 2.0F)) {
+               && norm2f(players[k].pos.x, players[k].pos.z, camera.pos.x, camera.pos.z) <=
+                  sqrf(settings.render_distance + 2.0F)) {
                 Hit intersects = {0};
                 player_render(players + k, k);
                 player_collision(players + k, &ray, &intersects);
@@ -548,7 +548,7 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     if (!p->alive || p->team == TEAM_SPECTATOR)
         return;
 
-    float l = sqrt(distance3D(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z, 0, 0, 0));
+    float l  = hypot3f(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z);
     float ox = p->orientation_smooth.x / l;
     float oy = p->orientation_smooth.y / l;
     float oz = p->orientation_smooth.z / l;
@@ -558,9 +558,9 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 
     float height = player_height(p) - 0.25F;
 
-    float len = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.z, 2.0F));
-    float fx = p->orientation.x / len;
-    float fy = p->orientation.z / len;
+    float len = hypot2f(p->orientation.x, p->orientation.z);
+    float fx  = p->orientation.x / len;
+    float fy  = p->orientation.z / len;
 
     float a = (p->physics.velocity.x * fx + fy * p->physics.velocity.z) / (fx * fx + fy * fy);
     float b = (p->physics.velocity.z - fy * a) / fx;
@@ -573,14 +573,14 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
 
     matrix_identity(matrix_model);
     matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
-    float head_scale = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.y, 2.0F) + pow(p->orientation.z, 2.0F));
+    float head_scale = hypot3f(p->orientation.x, p->orientation.y, p->orientation.z);
     matrix_translate(matrix_model, 0.0F, box_head.pivot[2] * (head_scale * box_head.scale - box_head.scale), 0.0F);
     matrix_scale3(matrix_model, head_scale);
     matrix_pointAt(matrix_model, ox, oy, oz);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
 
     if (hitbox_intersection(matrix_model, &box_head, ray, &dist)) {
-        intersects->head = 1;
+        intersects->head          = 1;
         intersects->distance.head = dist;
     }
 
@@ -590,7 +590,7 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
 
     if (hitbox_intersection(matrix_model, torso, ray, &dist)) {
-        intersects->torso = 1;
+        intersects->torso          = 1;
         intersects->distance.torso = dist;
     }
 
@@ -602,7 +602,7 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     matrix_rotate(matrix_model, 45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
 
     if (hitbox_intersection(matrix_model, leg, ray, &dist)) {
-        intersects->leg_left = 1;
+        intersects->leg_left          = 1;
         intersects->distance.leg_left = dist;
     }
 
@@ -614,7 +614,7 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     matrix_rotate(matrix_model, -45.0F * foot_function(p) * b, 0.0F, 0.0F, 1.0F);
 
     if (hitbox_intersection(matrix_model, leg, ray, &dist)) {
-        intersects->leg_right = 1;
+        intersects->leg_right          = 1;
         intersects->distance.leg_right = dist;
     }
 
@@ -632,14 +632,14 @@ void player_collision(const Player * p, Ray * ray, Hit * intersects) {
     matrix_rotate(matrix_model, angles[1], 0.0F, 1.0F, 0.0F);
 
     if (hitbox_intersection(matrix_model, &box_arm_left, ray, &dist)) {
-        intersects->arms = 1;
+        intersects->arms          = 1;
         intersects->distance.arms = dist;
     }
 
     matrix_rotate(matrix_model, -45.0F, 0.0F, 1.0F, 0.0F);
 
     if (hitbox_intersection(matrix_model, &box_arm_right, ray, &dist)) {
-        intersects->arms = 1;
+        intersects->arms          = 1;
         intersects->distance.arms = dist;
     }
 
@@ -678,7 +678,7 @@ void player_render(Player * p, int id) {
         matrix_upload();
     }
 
-    float l = sqrt(distance3D(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z, 0, 0, 0));
+    float l  = hypot3f(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z);
     float ox = p->orientation_smooth.x / l;
     float oy = p->orientation_smooth.y / l;
     float oz = p->orientation_smooth.z / l;
@@ -708,9 +708,9 @@ void player_render(Player * p, int id) {
     if (id != local_player.id)
         height -= 0.25F;
 
-    float len = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.z, 2.0F));
-    float fx = p->orientation.x / len;
-    float fy = p->orientation.z / len;
+    float len = hypot2f(p->orientation.x, p->orientation.z);
+    float fx  = p->orientation.x / len;
+    float fy  = p->orientation.z / len;
 
     float a = (p->physics.velocity.x * fx + fy * p->physics.velocity.z) / (fx * fx + fy * fy);
     float b = (p->physics.velocity.z - fy * a) / fx;
@@ -727,8 +727,7 @@ void player_render(Player * p, int id) {
     if (render_body) {
         matrix_push(matrix_model);
         matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
-        float head_scale
-            = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.y, 2.0F) + pow(p->orientation.z, 2.0F));
+        float head_scale = hypot3f(p->orientation.x, p->orientation.y, p->orientation.z);
         matrix_translate(matrix_model, 0.0F,
                          model_playerhead.zpiv * (head_scale * model_playerhead.scale - model_playerhead.scale), 0.0F);
         matrix_scale3(matrix_model, head_scale);
@@ -819,9 +818,9 @@ void player_render(Player * p, int id) {
         matrix_translate(matrix_model, 0.0F, -2 * 0.1F, -2 * 0.1F);
 
     if (render_fpv && p->alive) {
-        float speed = sqrt(pow(p->physics.velocity.x, 2) + pow(p->physics.velocity.z, 2)) / 0.25F;
+        float speed = hypot2f(p->physics.velocity.x, p->physics.velocity.z) / 0.25F;
         float * f = player_tool_translate_func(p);
-        matrix_translate(matrix_model, f[0], f[1], 0.1F * player_swing_func(time / 1000.0F) * speed + f[2]);
+        matrix_translate(matrix_model, f[X], f[Y], 0.1F * player_swing_func(time / 1000.0F) * speed + f[Z]);
     }
 
     if (HASBIT(p->input.keys, INPUT_SPRINT) && !HASBIT(p->input.keys, INPUT_CROUCH))
@@ -1096,7 +1095,7 @@ int player_move(Player * p, float fsynctics, int id) {
         f *= 0.1f;
     else if (HASBIT(p->input.keys, INPUT_CROUCH))
         f *= 0.3f;
-    else if ((HASBIT(p->input.buttons, BUTTON_SECONDARY) && p->held_item == TOOL_GUN) || HASBIT(p->input.keys, INPUT_SNEAK))
+    else if (ISSCOPING(p) || HASBIT(p->input.keys, INPUT_SNEAK))
         f *= 0.5f;
     else if (HASBIT(p->input.keys, INPUT_SPRINT))
         f *= 1.3f;
@@ -1105,10 +1104,9 @@ int player_move(Player * p, float fsynctics, int id) {
         (HASBIT(p->input.keys, INPUT_LEFT) || HASBIT(p->input.keys, INPUT_RIGHT)))
         f *= SQRT; // if strafe + forward/backwards then limit diagonal velocity
 
-    float len = sqrt(pow(p->orientation.x, 2.0F) + pow(p->orientation.y, 2.0F));
-
-    float sx = p->orientation.x / len;
-    float sy = p->orientation.y / len;
+    float len = hypot2f(p->orientation.x, p->orientation.y);
+    float sx  = p->orientation.x / len;
+    float sy  = p->orientation.y / len;
 
     if (HASBIT(p->input.keys, INPUT_UP)) {
         p->physics.velocity.x += sx * f;
@@ -1133,6 +1131,7 @@ int player_move(Player * p, float fsynctics, int id) {
         f = fsynctics * 6.0F + 1; // water friction
     else if (!p->physics.airborne)
         f = fsynctics * 4.0F + 1; // ground friction
+
     p->physics.velocity.x /= f;
     p->physics.velocity.y /= f;
     f2 = p->physics.velocity.z;
@@ -1160,31 +1159,26 @@ int player_move(Player * p, float fsynctics, int id) {
 
     player_coordsystem_adjust2(p);
 
-    if (HASBIT(p->input.keys, INPUT_UP)   ||
-        HASBIT(p->input.keys, INPUT_DOWN) ||
-        HASBIT(p->input.keys, INPUT_LEFT) ||
-        HASBIT(p->input.keys, INPUT_RIGHT)) {
+    if (ISMOVING(p)) {
         if (window_time() - p->sound.feet_started > (HASBIT(p->input.keys, INPUT_SPRINT) ? (0.5F / 1.3F) : 0.5F)
            && (!HASBIT(p->input.keys, INPUT_CROUCH) && !HASBIT(p->input.keys, INPUT_SNEAK))
            && !p->physics.airborne
-           && pow(p->physics.velocity.x, 2.0F) + pow(p->physics.velocity.z, 2.0F) > pow(0.125F, 2.0F)) {
-            WAV * footstep = (WAV*[]) {
-                &sound_footstep1, &sound_footstep2, &sound_footstep3, &sound_footstep4,
-                &sound_wade1,      &sound_wade2,    &sound_wade3,     &sound_wade4,
-            }[(rand() % 4) + (p->physics.wade ? 4 : 0)];
+           && norm2f(p->physics.velocity.x, p->physics.velocity.z, 0.0F, 0.0F) > sqrf(0.125F)) {
 
-            if (local) {
-                sound_create(SOUND_LOCAL, footstep, p->pos.x, p->pos.y, p->pos.z);
-            } else {
-                sound_create_sticky(footstep, p, id);
-            }
+            static WAV * footstep[] = {&sound_footstep1, &sound_footstep2, &sound_footstep3, &sound_footstep4};
+            static WAV * wade[]     = {&sound_wade1,     &sound_wade2,     &sound_wade3,     &sound_wade4};
+
+            size_t num = rand() % 4; WAV * sound = p->physics.wade ? wade[num] : footstep[num];
+
+            if (local) sound_create(SOUND_LOCAL, sound, p->pos.x, p->pos.y, p->pos.z);
+            else sound_create_sticky(sound, p, id);
 
             p->sound.feet_started = window_time();
         }
 
         if (window_time() - p->sound.feet_started_cycle > (HASBIT(p->input.keys, INPUT_SPRINT) ? (0.5F / 1.3F) : 0.5F)) {
             p->sound.feet_started_cycle = window_time();
-            p->sound.feet_cylce = !p->sound.feet_cylce;
+            p->sound.feet_cylce         = !p->sound.feet_cylce;
         }
     }
 
@@ -1193,30 +1187,31 @@ int player_move(Player * p, float fsynctics, int id) {
 
 int player_uncrouch(Player * p) {
     player_coordsystem_adjust1(p);
-    float x1 = p->pos.x + 0.45F;
-    float x2 = p->pos.x - 0.45F;
-    float y1 = p->pos.y + 0.45F;
-    float y2 = p->pos.y - 0.45F;
-    float z1 = p->pos.z + 2.25F;
-    float z2 = p->pos.z - 1.35F;
+
+    float x1 = p->pos.x + 0.45F, y1 = p->pos.y + 0.45F, z1 = p->pos.z + 2.25F;
+    float x2 = p->pos.x - 0.45F, y2 = p->pos.y - 0.45F, z2 = p->pos.z - 1.35F;
 
     // first check if player can lower feet (in midair)
     if (p->physics.airborne
-       && !(player_clipbox(x1, y1, z1) || player_clipbox(x1, y2, z1) || player_clipbox(x2, y1, z1)
-            || player_clipbox(x2, y2, z1))) {
+       && !(player_clipbox(x1, y1, z1) ||
+            player_clipbox(x1, y2, z1) ||
+            player_clipbox(x2, y1, z1) ||
+            player_clipbox(x2, y2, z1))) {
         player_coordsystem_adjust2(p);
         return 1;
-        // then check if they can raise their head
-    } else if (!(player_clipbox(x1, y1, z2) || player_clipbox(x1, y2, z2) || player_clipbox(x2, y1, z2)
-                || player_clipbox(x2, y2, z2))) {
-        p->pos.z -= 0.9F;
+    // then check if they can raise their head
+    } else if (!(player_clipbox(x1, y1, z2) ||
+                 player_clipbox(x1, y2, z2) ||
+                 player_clipbox(x2, y1, z2) ||
+                 player_clipbox(x2, y2, z2))) {
+        p->pos.z         -= 0.9F;
         p->physics.eye.z -= 0.9F;
-        if (&players[local_player.id] == p) {
-            last_cy += 0.9F;
-        }
+        if (&players[local_player.id] == p) last_cy += 0.9F;
+
         player_coordsystem_adjust2(p);
         return 1;
     }
+
     player_coordsystem_adjust2(p);
     return 0;
 }

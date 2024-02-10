@@ -17,6 +17,8 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <math.h>
+
 #ifndef COMMON_H
 #define COMMON_H
 
@@ -111,11 +113,25 @@
 
 #define absf(a) (((a) > 0) ? (a) : -(a))
 
-#define distance2D(x1, y1, x2, y2) (((x2) - (x1)) * ((x2) - (x1)) + ((y2) - (y1)) * ((y2) - (y1)))
-#define distance3D(x1, y1, z1, x2, y2, z2) (((x2) - (x1)) * ((x2) - (x1)) + ((y2) - (y1)) * ((y2) - (y1)) + ((z2) - (z1)) * ((z2) - (z1)))
-#define angle3D(x1, y1, z1, x2, y2, z2) acos((x1) * (x2) + (y1) * (y2) + (z1) * (z2)) // vectors should be normalized
-#define len2D(x, y) sqrt(pow(x, 2) + pow(y, 2))
-#define len3D(x, y, z) sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2))
+static inline float sqrf(float x)    { return x * x; }
+static inline float cubef(float x)   { return x * x * x; }
+static inline float fourthf(float x) { return x * x * x; }
+
+static inline float norm2f(float x1, float y1, float x2, float y2)
+{ return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1); }
+
+static inline float norm3f(float x1, float y1, float z1, float x2, float y2, float z2)
+{ return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1); }
+
+static inline int norm3i(int x1, int y1, int z1, int x2, int y2, int z2)
+{ return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1); }
+
+// Vectors should be normalized.
+static inline float angle3f(float x1, float y1, float z1, float x2, float y2, float z2)
+{ return acosf(x1 * x2 + y1 * y2 + z1 * z2); }
+
+static inline float hypot2f(float x, float y) { return sqrtf(x * x + y * y); }
+static inline float hypot3f(float x, float y, float z) { return sqrtf(x * x + y * y + z * z); }
 
 #define BYTE0(col) ((col) & 0xFF)
 #define BYTE1(col) (((col) >> 8) & 0xFF)

@@ -123,7 +123,7 @@ void camera_hit_mask(CameraHit * hit, int exclude_player, float x, float y, floa
     if (players[local_player.id].held_item != TOOL_GUN) {
 #endif
     int * pos = camera_terrain_pickEx(1, x, y, z, ray_x, ray_y, ray_z);
-    if (pos != NULL && distance3D(x, y, z, pos[0], pos[1], pos[2]) <= range * range) {
+    if (pos != NULL && norm3f(x, y, z, pos[0], pos[1], pos[2]) <= sqrf(range)) {
         AABB block = (AABB) {
             .min = {pos[0], pos[1], pos[2]},
             .max = {pos[0] + 1, pos[1] + 1, pos[2] + 1},
@@ -131,14 +131,14 @@ void camera_hit_mask(CameraHit * hit, int exclude_player, float x, float y, floa
 
         float d;
         if (aabb_intersection_ray(&block, &dir, &d)) {
-            hit->type = CAMERA_HITTYPE_BLOCK;
+            hit->type     = CAMERA_HITTYPE_BLOCK;
             hit->distance = d;
-            hit->x = pos[0];
-            hit->y = pos[1];
-            hit->z = pos[2];
-            hit->xb = pos[3];
-            hit->yb = pos[4];
-            hit->zb = pos[5];
+            hit->x        = pos[0];
+            hit->y        = pos[1];
+            hit->z        = pos[2];
+            hit->xb       = pos[3];
+            hit->yb       = pos[4];
+            hit->zb       = pos[5];
         }
     }
 #if HACKS_ENABLED && HACK_WALLHACK
@@ -146,7 +146,7 @@ void camera_hit_mask(CameraHit * hit, int exclude_player, float x, float y, floa
 #endif
 
     for (int i = 0; i < PLAYERS_MAX; i++) {
-        float l = distance2D(x, z, players[i].pos.x, players[i].pos.z);
+        float l = norm2f(x, z, players[i].pos.x, players[i].pos.z);
         if (players[i].connected && players[i].alive && l < range * range
            && (exclude_player < 0 || (exclude_player >= 0 && exclude_player != i))) {
             Hit intersects = {0};
@@ -289,7 +289,7 @@ void camera_ExtractFrustum() {
     frustum[0][3] = clip[15] - clip[12];
 
     /* Normalize the result */
-    t = sqrt(frustum[0][0] * frustum[0][0] + frustum[0][1] * frustum[0][1] + frustum[0][2] * frustum[0][2]);
+    t = hypot3f(frustum[0][0], frustum[0][1], frustum[0][2]);
     frustum[0][0] /= t;
     frustum[0][1] /= t;
     frustum[0][2] /= t;
@@ -302,7 +302,7 @@ void camera_ExtractFrustum() {
     frustum[1][3] = clip[15] + clip[12];
 
     /* Normalize the result */
-    t = sqrt(frustum[1][0] * frustum[1][0] + frustum[1][1] * frustum[1][1] + frustum[1][2] * frustum[1][2]);
+    t = hypot3f(frustum[1][0], frustum[1][1], frustum[1][2]);
     frustum[1][0] /= t;
     frustum[1][1] /= t;
     frustum[1][2] /= t;
@@ -315,7 +315,7 @@ void camera_ExtractFrustum() {
     frustum[2][3] = clip[15] + clip[13];
 
     /* Normalize the result */
-    t = sqrt(frustum[2][0] * frustum[2][0] + frustum[2][1] * frustum[2][1] + frustum[2][2] * frustum[2][2]);
+    t = hypot3f(frustum[2][0], frustum[2][1], frustum[2][2]);
     frustum[2][0] /= t;
     frustum[2][1] /= t;
     frustum[2][2] /= t;
@@ -328,7 +328,7 @@ void camera_ExtractFrustum() {
     frustum[3][3] = clip[15] - clip[13];
 
     /* Normalize the result */
-    t = sqrt(frustum[3][0] * frustum[3][0] + frustum[3][1] * frustum[3][1] + frustum[3][2] * frustum[3][2]);
+    t = hypot3f(frustum[3][0], frustum[3][1], frustum[3][2]);
     frustum[3][0] /= t;
     frustum[3][1] /= t;
     frustum[3][2] /= t;
@@ -341,7 +341,7 @@ void camera_ExtractFrustum() {
     frustum[4][3] = clip[15] - clip[14];
 
     /* Normalize the result */
-    t = sqrt(frustum[4][0] * frustum[4][0] + frustum[4][1] * frustum[4][1] + frustum[4][2] * frustum[4][2]);
+    t = hypot3f(frustum[4][0], frustum[4][1], frustum[4][2]);
     frustum[4][0] /= t;
     frustum[4][1] /= t;
     frustum[4][2] /= t;
@@ -354,7 +354,7 @@ void camera_ExtractFrustum() {
     frustum[5][3] = clip[15] + clip[14];
 
     /* Normalize the result */
-    t = sqrt(frustum[5][0] * frustum[5][0] + frustum[5][1] * frustum[5][1] + frustum[5][2] * frustum[5][2]);
+    t = hypot3f(frustum[5][0], frustum[5][1], frustum[5][2]);
     frustum[5][0] /= t;
     frustum[5][1] /= t;
     frustum[5][2] /= t;

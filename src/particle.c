@@ -172,13 +172,13 @@ void particle_update(float dt) {
 }
 
 static bool particle_render_single(void * obj, void * user) {
-    Particle * p = (Particle*) obj;
-    Tesselator * tess = (Tesselator*) user;
+    Particle * p = (Particle *) obj;
+    Tesselator * tess = (Tesselator *) user;
 
-    if (distance2D(camera.pos.x, camera.pos.z, p->x, p->z) > settings.render_distance * settings.render_distance)
+    if (norm2f(camera.pos.x, camera.pos.z, p->x, p->z) > sqrf(settings.render_distance))
         return false;
 
-    float size = p->size / 2.0F * (1.0F - ((float)(window_time() - p->fade) / 2.0F));
+    float size = p->size / 2.0F * (1.0F - ((float) (window_time() - p->fade) / 2.0F));
 
     if (p->type == 255) {
         tesselator_set_color(tess, p->color);
@@ -235,15 +235,18 @@ void particle_create_casing(Player * p) {
                   });
 }
 
+static inline float random() { return (float) rand() / (float) RAND_MAX; }
+static inline float uniform(float a, float b) { return random() * (b - a) + a; }
+
 void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size) {
     if (!settings.enable_particles) return;
 
     for (int k = 0; k < amount; k++) {
-        float vx = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);
-        float vy = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);
-        float vz = (((float) rand() / (float) RAND_MAX) * 2.0F - 1.0F);
-        float len = len3D(vx, vy, vz);
+        float vx  = random(-1.0F, 1.0F);
+        float vy  = random(-1.0F, 1.0F);
+        float vz  = random(-1.0F, 1.0F);
+        float len = hypot3f(vx, vy, vz);
 
         vx = (vx / len) * velocity;
         vy = (vy / len) * velocity * velocity_y;
@@ -251,7 +254,7 @@ void particle_create(TrueColor color, float x, float y, float z, float velocity,
 
         entitysys_add(&particles,
                       &(Particle) {
-                          .size  = ((float) rand() / (float) RAND_MAX) * (max_size - min_size) + min_size,
+                          .size  = uniform(min_size, max_size),
                           .x     = x,
                           .y     = y,
                           .z     = z,

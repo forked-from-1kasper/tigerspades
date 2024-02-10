@@ -153,4 +153,11 @@ void player_reset(Player * p);
 int player_move(Player * p, float fsynctics, int id);
 int player_uncrouch(Player * p);
 
+#define ISSCOPING(player) (HASBIT((player)->input.buttons, BUTTON_SECONDARY) && player->held_item == TOOL_GUN)
+
+#define ISMOVING(player) (HASBIT((player)->input.keys, INPUT_UP)   || \
+                          HASBIT((player)->input.keys, INPUT_DOWN) || \
+                          HASBIT((player)->input.keys, INPUT_LEFT) || \
+                          HASBIT((player)->input.keys, INPUT_RIGHT))
+
 #endif

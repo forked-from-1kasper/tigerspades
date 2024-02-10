@@ -545,9 +545,9 @@ void kv6_render(kv6 * model, unsigned char team) {
         float near_plane_height
             = (float) settings.window_height / (2.0F * tan(glm_persp_fovy(matrix_projection) / 2.0F));
 
-        float len_x = len3D(matrix_model[0][0], matrix_model[1][0], matrix_model[2][0]);
-        float len_y = len3D(matrix_model[0][1], matrix_model[1][1], matrix_model[2][1]);
-        float len_z = len3D(matrix_model[0][2], matrix_model[1][2], matrix_model[2][2]);
+        float len_x = hypot3f(matrix_model[0][0], matrix_model[1][0], matrix_model[2][0]);
+        float len_y = hypot3f(matrix_model[0][1], matrix_model[1][1], matrix_model[2][1]);
+        float len_z = hypot3f(matrix_model[0][2], matrix_model[1][2], matrix_model[2][2]);
 
 #ifndef OPENGL_ES
         if (!glx_version)

@@ -36,7 +36,7 @@ Velocity cameracontroller_death_velocity;
 void cameracontroller_death_init(int player, Position r) {
     camera.mode = CAMERAMODE_DEATH;
 
-    float len = len3D(camera.pos.x - r.x, camera.pos.y - r.y, camera.pos.z - r.z);
+    float len = hypot3f(camera.pos.x - r.x, camera.pos.y - r.y, camera.pos.z - r.z);
     cameracontroller_death_velocity.x = (camera.pos.x - r.x) / len * 3;
     cameracontroller_death_velocity.y = (camera.pos.y - r.y) / len * 3;
     cameracontroller_death_velocity.z = (camera.pos.z - r.z) / len * 3;
@@ -64,9 +64,9 @@ void cameracontroller_death(float dt) {
         cameracontroller_death_velocity.y *= -0.5F;
         cameracontroller_death_velocity.z *= +0.5F;
 
-        if (len3D(cameracontroller_death_velocity.x,
-                  cameracontroller_death_velocity.y,
-                  cameracontroller_death_velocity.z) < 0.05F)
+        if (hypot3f(cameracontroller_death_velocity.x,
+                    cameracontroller_death_velocity.y,
+                    cameracontroller_death_velocity.z) < 0.05F)
             camera.mode = CAMERAMODE_BODYVIEW;
     }
 }
@@ -177,7 +177,7 @@ void cameracontroller_fps(float dt) {
     players[local_player.id].orientation_smooth.y = ly;
     players[local_player.id].orientation_smooth.z = lz;
 
-    float len = sqrt(lx * lx + ly * ly + lz * lz);
+    float len = hypot3f(lx, ly, lz);
     players[local_player.id].orientation.x = lx / len;
     players[local_player.id].orientation.y = ly / len;
     players[local_player.id].orientation.z = lz / len;
@@ -220,7 +220,7 @@ void cameracontroller_spectator(float dt) {
         else if (window_key_down(WINDOW_KEY_CROUCH)) y--;
     }
 
-    float len = sqrt(x * x + y * y + z * z);
+    float len = hypot3f(x, y, z);
     if (len > 0.0F) {
         camera.movement.x = (x / len) * camera.speed * dt;
         camera.movement.y = (y / len) * camera.speed * dt;
@@ -281,7 +281,7 @@ void cameracontroller_spectator(float dt) {
 void cameracontroller_spectator_render() {
     if (cameracontroller_bodyview_mode && players[cameracontroller_bodyview_player].alive) {
         Player * p = &players[cameracontroller_bodyview_player];
-        float l = len3D(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z);
+        float l  = hypot3f(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z);
         float ox = p->orientation_smooth.x / l;
         float oy = p->orientation_smooth.y / l;
         float oz = p->orientation_smooth.z / l;
@@ -357,7 +357,7 @@ void cameracontroller_bodyview(float dt) {
 void cameracontroller_bodyview_render() {
     if (cameracontroller_bodyview_mode && players[cameracontroller_bodyview_player].alive) {
         Player * p = &players[cameracontroller_bodyview_player];
-        float l = sqrt(distance3D(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z, 0, 0, 0));
+        float l  = hypot3f(p->orientation_smooth.x, p->orientation_smooth.y, p->orientation_smooth.z);
         float ox = p->orientation_smooth.x / l;
         float oy = p->orientation_smooth.y / l;
         float oz = p->orientation_smooth.z / l;

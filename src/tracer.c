@@ -92,7 +92,7 @@ void tracer_add(int type, float x, float y, float z, float dx, float dy, float d
         .created = window_time(),
     };
 
-    float len = len3D(dx, dy, dz);
+    float len = hypot3f(dx, dy, dz);
     camera_hit(&t.hit, -1, t.x, t.y, t.z, dx / len, dy / len, dz / len, 128.0F);
 
     entitysys_add(&tracers, &t);
@@ -122,10 +122,10 @@ static bool tracer_update_single(void * obj, void * user) {
     Tracer * t = (Tracer*) obj;
     float dt = *(float*) user;
 
-    float len = distance3D(t->x, t->y, t->z, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
+    float len = norm3f(t->x, t->y, t->z, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
 
     // 128.0[m] / 256.0[m/s] = 0.5[s]
-    if ((t->hit.type != CAMERA_HITTYPE_NONE && len > pow(t->hit.distance, 2)) || window_time() - t->created > 0.5F) {
+    if ((t->hit.type != CAMERA_HITTYPE_NONE && len > sqrf(t->hit.distance)) || window_time() - t->created > 0.5F) {
         if (t->hit.type != CAMERA_HITTYPE_NONE)
             sound_create(SOUND_WORLD, &sound_impact, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
 

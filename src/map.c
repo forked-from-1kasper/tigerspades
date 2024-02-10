@@ -321,19 +321,19 @@ static bool map_update_physics_sub(MapCollapsing * collapsing, int x, int y, int
     return true;
 }
 
-/*int map_collapsing_cmp(const void* a, const void* b) {
-    MapCollapsing * A = (MapCollapsing*) a;
-    MapCollapsing * B = (MapCollapsing*) b;
+/*int map_collapsing_cmp(const void * a, const void * b) {
+    MapCollapsing * A = (MapCollapsing *) a;
+    MapCollapsing * B = (MapCollapsing *) b;
     if (A->used && !B->used)
         return -1;
     if (!A->used && B->used)
         return 1;
-    return distance3D(B->p.x, B->p.y, B->p.z, camera_x, camera_y, camera_z)
-        - distance3D(A->p.x, A->p.y, A->p.z, camera_x, camera_y, camera_z);
+    return norm3f(B->p.x, B->p.y, B->p.z, camera_x, camera_y, camera_z)
+         - norm3f(A->p.x, A->p.y, A->p.z, camera_x, camera_y, camera_z);
 }*/
 
 static bool falling_blocks_render(void * obj, void * user) {
-    MapCollapsing * collapsing = (MapCollapsing*) obj;
+    MapCollapsing * collapsing = (MapCollapsing *) obj;
 
     matrix_identity(matrix_model);
     matrix_translate(matrix_model, collapsing->p.x, collapsing->p.y, collapsing->p.z);

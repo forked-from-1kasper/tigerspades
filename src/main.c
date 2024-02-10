@@ -247,7 +247,7 @@ void display() {
                    (local_player.blocks > 0)) {
                     int * pos = camera_terrain_pick(0);
                     if (pos != NULL && pos[1] > 1
-                       && distance3D(camera.pos.x, camera.pos.y, camera.pos.z, pos[0], pos[1], pos[2]) < 5.0F * 5.0F
+                       && norm3f(camera.pos.x, camera.pos.y, camera.pos.z, pos[0], pos[1], pos[2]) < 25.0F
                        && !(pos[0] == (int) camera.pos.x && pos[1] == (int) camera.pos.y + 0 && pos[2] == (int) camera.pos.z)
                        && !(pos[0] == (int) camera.pos.x && pos[1] == (int) camera.pos.y - 1 && pos[2] == (int) camera.pos.z)) {
                         players[local_player.id].item_showup = window_time();
@@ -294,8 +294,8 @@ void display() {
                     break;
                 default: pos = NULL;
             }
-            if (pos != NULL && pos[1] > 1
-               && (pow(pos[0] - camera.pos.x, 2) + pow(pos[1] - camera.pos.y, 2) + pow(pos[2] - camera.pos.z, 2)) < 5 * 5) {
+
+            if (pos != NULL && pos[1] > 1 && norm3i(pos[X], pos[Y], pos[Z], camera.pos.x, camera.pos.y, camera.pos.z) < 25) {
                 matrix_upload();
                 glColor3f(1.0F, 0.0F, 0.0F);
                 glLineWidth(1.0F);

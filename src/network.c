@@ -565,8 +565,7 @@ void read_PacketWorldUpdate(void * data, int len) {
 
                 float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                 if (players[k].connected && players[k].alive && k != local_player.id) {
-                    if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
-                       > 0.1F * 0.1F) {
+                    if (norm3f(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y) > 0.01F) {
                         players[k].pos.x = x;
                         players[k].pos.y = 63.0F - z;
                         players[k].pos.z = y;
@@ -585,8 +584,7 @@ void read_PacketWorldUpdate(void * data, int len) {
                 float x = letohf(p->x), y = letohf(p->y), z = letohf(p->z);
                 if (players[p->player_id].connected && players[p->player_id].alive
                    && p->player_id != local_player.id) {
-                    if (distance3D(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y)
-                       > 0.1F * 0.1F) {
+                    if (norm3f(players[k].pos.x, players[k].pos.y, players[k].pos.z, x, 63.0F - z, y) > 0.01F) {
                         players[p->player_id].pos.x = x;
                         players[p->player_id].pos.y = 63.0F - z;
                         players[p->player_id].pos.z = y;
@@ -1275,9 +1273,10 @@ int network_update() {
             }
 
             if (window_time() - network_pos_update > 1.0F
-               && distance3D(network_pos_last.x, network_pos_last.y, network_pos_last.z, players[local_player.id].pos.x,
-                             players[local_player.id].pos.y, players[local_player.id].pos.z)
-                   > 0.01F) {
+               && norm3f(network_pos_last.x, network_pos_last.y, network_pos_last.z,
+                         players[local_player.id].pos.x,
+                         players[local_player.id].pos.y,
+                         players[local_player.id].pos.z) > 0.01F) {
                 network_pos_update = window_time();
                 network_pos_last   = players[local_player.id].pos;
 
@@ -1289,8 +1288,9 @@ int network_update() {
             }
 
             if (window_time() - network_orient_update > (1.0F / 120.0F)
-               && angle3D(network_orient_last.x, network_orient_last.y, network_orient_last.z,
-                          players[local_player.id].orientation.x, players[local_player.id].orientation.y,
+               && angle3f(network_orient_last.x, network_orient_last.y, network_orient_last.z,
+                          players[local_player.id].orientation.x,
+                          players[local_player.id].orientation.y,
                           players[local_player.id].orientation.z)
                    > 0.5F / 180.0F * PI) {
                 network_orient_update = window_time();

@@ -314,11 +314,15 @@ static void hud_ingame_render3D() {
 
         if (gamestate.gamemode_type == GAMEMODE_TC) {
             for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
-                float l = pow(gamestate.gamemode.tc.territory[k].x - players[local_player.id].pos.x, 2.0F)
-                    + pow((63.0F - gamestate.gamemode.tc.territory[k].z) - players[local_player.id].pos.y, 2.0F)
-                    + pow(gamestate.gamemode.tc.territory[k].y - players[local_player.id].pos.z, 2.0F);
-                if (l <= 20.0F * 20.0F) {
-                    rotating_model = &model_tent;
+                float n = norm3f(gamestate.gamemode.tc.territory[k].x,
+                                 63.0F - gamestate.gamemode.tc.territory[k].z,
+                                 gamestate.gamemode.tc.territory[k].y,
+                                 players[local_player.id].pos.x,
+                                 players[local_player.id].pos.y,
+                                 players[local_player.id].pos.z);
+
+                if (n <= 400.0F) {
+                    rotating_model      = &model_tent;
                     rotating_model_team = gamestate.gamemode.tc.territory[k].team;
                     break;
                 }
@@ -904,18 +908,15 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         if (gamestate.gamemode_type == GAMEMODE_TC && gamestate.progressbar.tent < gamestate.gamemode.tc.territory_count
            && gamestate.gamemode.tc.territory[gamestate.progressbar.tent].team
                != gamestate.progressbar.team_capturing) {
-            float p = max(min(gamestate.progressbar.progress
-                                  + 0.05F * gamestate.progressbar.rate * (window_time() - gamestate.progressbar.update),
-                              1.0F),
-                          0.0F);
-            float l
-                = pow(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].x - players[local_player.id].pos.x,
-                      2.0F)
-                + pow((63.0F - gamestate.gamemode.tc.territory[gamestate.progressbar.tent].z)
-                          - players[local_player.id].pos.y,
-                      2.0F)
-                + pow(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].y - players[local_player.id].pos.z,
-                      2.0F);
+            float p = clamp(0.0F, 1.0F, gamestate.progressbar.progress + 0.05F * gamestate.progressbar.rate * (window_time() - gamestate.progressbar.update));
+
+            float l = norm3f(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].x,
+                             63.0F - gamestate.gamemode.tc.territory[gamestate.progressbar.tent].z,
+                             gamestate.gamemode.tc.territory[gamestate.progressbar.tent].y,
+                             players[local_player.id].pos.x,
+                             players[local_player.id].pos.y,
+                             players[local_player.id].pos.z);
+
             if (p < 1.0F && l < 20.0F * 20.0F) {
                 switch (gamestate.gamemode.tc.territory[gamestate.progressbar.tent].team) {
                     case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
@@ -1326,8 +1327,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
 
         if (local_player.drag_active && action == WINDOW_RELEASE && players[local_player.id].held_item == TOOL_BLOCK) {
             int * pos = camera_terrain_pick(0);
-            if (pos != NULL && pos[1] > 1
-               && (pow(pos[0] - camera.pos.x, 2) + pow(pos[1] - camera.pos.y, 2) + pow(pos[2] - camera.pos.z, 2)) < 5 * 5) {
+            if (pos != NULL && pos[1] > 1 && norm3i(pos[X], pos[Y], pos[Z], camera.pos.x, camera.pos.y, camera.pos.z) < 25) {
                 int amount = map_cube_line(local_player.drag[X], local_player.drag[Z], 63 - local_player.drag[Y], pos[0],
                                            pos[2], 63 - pos[1], NULL);
                 if (amount <= local_player.blocks) {
@@ -1351,7 +1351,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
            && window_time() - players[local_player.id].item_showup >= 0.5F) {
             int * pos = camera_terrain_pick(0);
 
-            if (pos != NULL && pos[Y] > 1 && distance3D(camera.pos.x, camera.pos.y, camera.pos.z, pos[X], pos[Y], pos[Z]) < 5.0F * 5.0F) {
+            if (pos != NULL && pos[Y] > 1 && norm3f(camera.pos.x, camera.pos.y, camera.pos.z, pos[X], pos[Y], pos[Z]) < 25.0F) {
                 local_player.drag_active = 1;
                 local_player.drag[X] = pos[X];
                 local_player.drag[Y] = pos[Y];
@@ -1367,16 +1367,16 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
     if (camera.mode == CAMERAMODE_BODYVIEW && button == WINDOW_MOUSE_MMB && action == WINDOW_PRESS) {
         float nearest_dist = FLT_MAX;
         int nearest_player = -1;
-        for (int k = 0; k < PLAYERS_MAX; k++)
-            if (player_can_spectate(&players[k]) && players[k].alive && k != cameracontroller_bodyview_player
-               && distance3D(camera.pos.x, camera.pos.y, camera.pos.z, players[k].pos.x, players[k].pos.y, players[k].pos.z)
-                   < nearest_dist) {
-                nearest_dist
-                    = distance3D(camera.pos.x, camera.pos.y, camera.pos.z, players[k].pos.x, players[k].pos.y, players[k].pos.z);
+        for (int k = 0; k < PLAYERS_MAX; k++) {
+            float dist = norm3f(camera.pos.x, camera.pos.y, camera.pos.z, players[k].pos.x, players[k].pos.y, players[k].pos.z);
+
+            if (player_can_spectate(&players[k]) && players[k].alive && k != cameracontroller_bodyview_player && dist < nearest_dist) {
+                nearest_dist   = dist;
                 nearest_player = k;
             }
-        if (nearest_player >= 0)
-            cameracontroller_bodyview_player = nearest_player;
+        }
+
+        if (nearest_player >= 0) cameracontroller_bodyview_player = nearest_player;
     }
 
     if (button == WINDOW_MOUSE_RMB && action == WINDOW_PRESS) {
@@ -1924,8 +1924,8 @@ static void hud_ingame_touch(void * finger, int action, float x, float y, float 
         }
 
         if ((camera.mode == CAMERAMODE_FPS || camera.mode == CAMERAMODE_SPECTATOR)
-           && distance2D(f->start.x, f->start.y, settings.window_height * 0.3F, settings.window_height * 0.7F)
-               < pow(settings.window_height * 0.15F, 2)) {
+           && norm2f(f->start.x, f->start.y, settings.window_height * 0.3F, settings.window_height * 0.7F) <
+              sqrf(settings.window_height * 0.15F)) {
             float mx = max(min(x - settings.window_height * 0.3F, settings.window_height * 0.2F),
                            -settings.window_height * 0.2F);
             float my = max(min(y - settings.window_height * 0.7F, settings.window_height * 0.2F),

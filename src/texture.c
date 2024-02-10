@@ -322,7 +322,7 @@ void texture_gradient_fog(unsigned int * gradient) {
     int size = 512;
     for (int y = 0; y < size; y++) {
         for (int x = 0; x < size; x++) {
-            int d = min(sqrt(distance2D(size / 2, size / 2, x, y)) / (float) size * 2.0F * 255.0F, 255);
+            int d = min(hypot2f(x - size / 2, y - size / 2) / (float) size * 2.0F * 255.0F, 255);
             writeRGBA(gradient + x + y * size, (TrueColor) {d, d, d, 255});
         }
     }

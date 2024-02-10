@@ -30,7 +30,7 @@
 void aabb_render(AABB * a) { }
 
 // see: https://tavianator.com/2011/ray_box.html
-bool aabb_intersection_ray(AABB * a, Ray * r, float* distance) {
+bool aabb_intersection_ray(AABB * a, Ray * r, float * distance) {
     double inv_x = 1.0 / r->direction[X];
     double tx1 = (a->min[X] - r->origin[X]) * inv_x;
     double tx2 = (a->max[X] - r->origin[X]) * inv_x;
@@ -52,8 +52,7 @@ bool aabb_intersection_ray(AABB * a, Ray * r, float* distance) {
     tmin = fmax(tmin, fmin(fmin(tz1, tz2), tmax));
     tmax = fmin(tmax, fmax(fmax(tz1, tz2), tmin));
 
-    if (distance)
-        *distance = fmax(tmin, 0.0) * len3D(r->direction[X], r->direction[Y], r->direction[Z]);
+    if (distance) *distance = fmax(tmin, 0.0) * hypot3f(r->direction[X], r->direction[Y], r->direction[Z]);
 
     return tmax > fmax(tmin, 0.0);
 }

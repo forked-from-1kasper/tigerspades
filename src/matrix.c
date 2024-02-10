@@ -88,12 +88,14 @@ void matrix_vector(mat4 m, vec4 v) {
 }
 
 void matrix_pointAt(mat4 m, float dx, float dy, float dz) {
-    float l = sqrt(dx * dx + dy * dy + dz * dz);
-    if (l) {
-        dx /= l;
-        dy /= l;
-        dz /= l;
+    float len = hypot3f(dx, dy, dz);
+
+    if (len > 0.0F) {
+        dx /= len;
+        dy /= len;
+        dz /= len;
     }
+
     float rx = -atan2(dz, dx) * GLM_1_PI * 180.0F;
     matrix_rotate(m, rx, 0.0F, 1.0F, 0.0F);
     if (dy) {
