@@ -235,8 +235,8 @@ void particle_create_casing(Player * p) {
                   });
 }
 
-static inline float random() { return (float) rand() / (float) RAND_MAX; }
-static inline float uniform(float a, float b) { return random() * (b - a) + a; }
+static inline float randomf() { return (float) rand() / (float) RAND_MAX; }
+static inline float uniform(float a, float b) { return randomf() * (b - a) + a; }
 
 void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size) {
