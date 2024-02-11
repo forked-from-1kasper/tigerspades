@@ -692,7 +692,7 @@ void player_render(Player * p, int id) {
             if (p->physics.velocity.y < 0.05F && p->pos.y < 1.5F)
                 matrix_translate(matrix_model, 0.0F, (sin(window_time() * 1.5F) - 1.0F) * 0.1F, 0.0F);
             matrix_upload();
-            kv6_render(&model_playerdead, p->team);
+            kv6_render(&model[MODEL_PLAYERDEAD], p->team);
             matrix_pop(matrix_model);
         }
 
@@ -701,8 +701,8 @@ void player_render(Player * p, int id) {
 
     float time = window_time() * 1000.0F;
 
-    kv6 * torso = HASBIT(p->input.keys, INPUT_CROUCH) ? &model_playertorsoc : &model_playertorso;
-    kv6 * leg   = HASBIT(p->input.keys, INPUT_CROUCH) ? &model_playerlegc   : &model_playerleg;
+    kv6 * torso = &model[HASBIT(p->input.keys, INPUT_CROUCH) ? MODEL_PLAYERTORSOC : MODEL_PLAYERTORSO];
+    kv6 * leg   = &model[HASBIT(p->input.keys, INPUT_CROUCH) ? MODEL_PLAYERLEGC   : MODEL_PLAYERLEG];
     float height = player_height(p);
 
     if (id != local_player.id)
@@ -725,16 +725,17 @@ void player_render(Player * p, int id) {
             && cameracontroller_bodyview_mode && cameracontroller_bodyview_player == id);
 
     if (render_body) {
+        static kv6 * const model_playerhead = &model[MODEL_PLAYERHEAD];
+
         matrix_push(matrix_model);
         matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
         float head_scale = hypot3f(p->orientation.x, p->orientation.y, p->orientation.z);
-        matrix_translate(matrix_model, 0.0F,
-                         model_playerhead.zpiv * (head_scale * model_playerhead.scale - model_playerhead.scale), 0.0F);
+        matrix_translate(matrix_model, 0.0F, model_playerhead->zpiv * (head_scale * model_playerhead->scale - model_playerhead->scale), 0.0F);
         matrix_scale3(matrix_model, head_scale);
         matrix_pointAt(matrix_model, ox, oy, oz);
         matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
         matrix_upload();
-        kv6_render(&model_playerhead, p->team);
+        kv6_render(model_playerhead, p->team);
         matrix_pop(matrix_model);
     }
 
@@ -752,16 +753,18 @@ void player_render(Player * p, int id) {
               (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id)) ||
              (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL) &&
               (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id)))) {
+            static kv6 * const model_intel = &model[MODEL_INTEL];
+
             matrix_push(matrix_model);
             matrix_translate(matrix_model, p->physics.eye.x, p->physics.eye.y + height, p->physics.eye.z);
             matrix_pointAt(matrix_model, -oz, 0.0F, ox);
             matrix_translate(
-                matrix_model, (torso->xsiz - model_intel.xsiz) * 0.5F * torso->scale,
-                -(torso->zpiv - torso->zsiz * 0.5F + model_intel.zsiz * (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.125F : 0.25F)) * torso->scale,
-                (torso->ypiv + model_intel.ypiv) * torso->scale
+                matrix_model, (torso->xsiz - model_intel->xsiz) * 0.5F * torso->scale,
+                -(torso->zpiv - torso->zsiz * 0.5F + model_intel->zsiz * (HASBIT(p->input.keys, INPUT_CROUCH) ? 0.125F : 0.25F)) * torso->scale,
+                (torso->ypiv + model_intel->ypiv) * torso->scale
             );
 
-            matrix_scale3(matrix_model, torso->scale / model_intel.scale);
+            matrix_scale3(matrix_model, torso->scale / model_intel->scale);
 
             if (HASBIT(p->input.keys, INPUT_CROUCH))
                 matrix_rotate(matrix_model, -45.0F, 1.0F, 0.0F, 0.0F);
@@ -777,7 +780,7 @@ void player_render(Player * p, int id) {
              && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id))
                 t = TEAM_2;
 
-            kv6_render(&model_intel, t);
+            kv6_render(model_intel, t);
             matrix_pop(matrix_model);
         }
 
@@ -837,27 +840,31 @@ void player_render(Player * p, int id) {
 
     if (render_body || settings.player_arms) {
         matrix_upload();
-        kv6_render(&model_playerarms, p->team);
+        kv6_render(&model[MODEL_PLAYERARMS], p->team);
     }
+
+    static kv6 * const model_spade = &model[MODEL_SPADE];
 
     matrix_translate(matrix_model, -3.5F * 0.1F + 0.01F, 0.0F, 10 * 0.1F);
     if (p->held_item == TOOL_SPADE && render_fpv && window_time() - p->item_showup >= 0.5F) {
         float * angles = player_tool_func(p);
-        matrix_translate(matrix_model, 0.0F, (model_spade.zpiv - model_spade.zsiz) * 0.05F, 0.0F);
+        matrix_translate(matrix_model, 0.0F, (model_spade->zpiv - model_spade->zsiz) * 0.05F, 0.0F);
         matrix_rotate(matrix_model, angles[0], 1.0F, 0.0F, 0.0F);
         matrix_rotate(matrix_model, angles[1], 0.0F, 1.0F, 0.0F);
-        matrix_translate(matrix_model, 0.0F, -(model_spade.zpiv - model_spade.zsiz) * 0.05F, 0.0F);
+        matrix_translate(matrix_model, 0.0F, -(model_spade->zpiv - model_spade->zsiz) * 0.05F, 0.0F);
     }
 
     matrix_upload();
     switch (p->held_item) {
-        case TOOL_SPADE: kv6_render(&model_spade, p->team); break;
+        case TOOL_SPADE: kv6_render(model_spade, p->team); break;
 
         case TOOL_BLOCK: {
-            model_block.red   = p->block.r / 255.0F;
-            model_block.green = p->block.g / 255.0F;
-            model_block.blue  = p->block.b / 255.0F;
-            kv6_render(&model_block, p->team);
+            static kv6 * const model_block = &model[MODEL_BLOCK];
+
+            model_block->red   = p->block.r / 255.0F;
+            model_block->green = p->block.g / 255.0F;
+            model_block->blue  = p->block.b / 255.0F;
+            kv6_render(model_block, p->team);
             break;
         }
 
@@ -870,7 +877,7 @@ void player_render(Player * p, int id) {
             break;
         }
 
-        case TOOL_GRENADE: kv6_render(&model_grenade, p->team); break;
+        case TOOL_GRENADE: kv6_render(&model[MODEL_GRENADE], p->team); break;
     }
 
     vec4 v = {0.1F, 0, -0.3F, 1};

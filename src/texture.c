@@ -31,8 +31,8 @@ Texture texture[TEXTURE_TOTAL];
 
 Texture texture_color_selection, texture_minimap, texture_dummy, texture_gradient;
 
-const char * texture_filename(enum Texture ident) {
-    switch (ident) {
+const char * texture_filename(enum Texture index) {
+    switch (index) {
         case TEXTURE_SPLASH:       return "png/splash.png";
 
         case TEXTURE_ZOOM_SEMI:    return "png/semi.png";
@@ -112,39 +112,13 @@ void texture_filter(Texture * t, int filter) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void texture_create(Texture * t, const char * filename, GLuint filter) {
-    int sz = file_size(filename);
-    void * data = file_load(filename);
-    int error = lodepng_decode32(&t->pixels, &t->width, &t->height, data, sz);
-    free(data);
-
-    if (error) {
-        log_warn("Could not load texture (%u): %s", error, lodepng_error_text(error));
-        return;
-    }
-
-    log_info("loading texture: %s", filename);
-
-    texture_resize_pow2(t, 0);
-
-    glGenTextures(1, &t->texture_id);
-    glBindTexture(GL_TEXTURE_2D, t->texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t->width, t->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void texture_create_buffer(Texture * t, unsigned int width, unsigned int height, unsigned char * buff, int new) {
+void texture_create_buffer(Texture * t, const char * name, unsigned int width, unsigned int height, unsigned char * buff, int new) {
     if (new) glGenTextures(1, &t->texture_id);
     t->width  = width;
     t->height = height;
     t->pixels = buff;
-    texture_resize_pow2(t, max(width, height));
+
+    texture_resize_pow2(t, name, max(width, height));
 
     glBindTexture(GL_TEXTURE_2D, t->texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t->width, t->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
@@ -232,11 +206,39 @@ void texture_draw_empty_rotated(float x, float y, float w, float h, float angle)
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+void texture_load(enum Texture index, GLuint filter) {
+    Texture * t = &texture[index];
+    const char * filename = texture_filename(index);
+
+    int sz = file_size(filename);
+    void * data = file_load(filename);
+    int error = lodepng_decode32(&t->pixels, &t->width, &t->height, data, sz);
+    free(data);
+
+    if (error) {
+        log_warn("%s: could not load texture (%u): %s", filename, error, lodepng_error_text(error));
+        return;
+    }
+
+    texture_resize_pow2(t, filename, 0);
+
+    glGenTextures(1, &t->texture_id);
+    glBindTexture(GL_TEXTURE_2D, t->texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t->width, t->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 static inline bool has_npot_textures() {
     return strstr((const char *) glGetString(GL_EXTENSIONS), "ARB_texture_non_power_of_two") != NULL;
 }
 
-void texture_resize_pow2(Texture * t, int min_size) {
+void texture_resize_pow2(Texture * t, const char * name, int min_size) {
     if (!t->pixels) return;
 
     int max_size = 0;
@@ -262,7 +264,7 @@ void texture_resize_pow2(Texture * t, int min_size) {
     if (t->width == w && t->height == h)
         return;
 
-    log_info("texture original: %i:%i now: %i:%i limit: %i", t->width, t->height, w, h, max_size);
+    log_info("%s: texture original: %i:%i now: %i:%i limit: %i", name, t->width, t->height, w, h, max_size);
 
     if (!t->pixels)
         return;
@@ -330,7 +332,7 @@ void texture_gradient_fog(unsigned int * gradient) {
 
 void texture_init() {
     for (enum Texture i = TEXTURE_FIRST; i <= TEXTURE_LAST; i++)
-        texture_create(&texture[i], texture_filename(i), TEXTURE_FILTER_NEAREST);
+        texture_load(i, TEXTURE_FILTER_NEAREST);
 
     unsigned int pixels[64 * 64];
     memset(pixels, 0, sizeof(pixels));
@@ -345,15 +347,15 @@ void texture_init() {
         }
     }
 
-    texture_create_buffer(&texture_color_selection, 64, 64, (unsigned char *) pixels, 1);
+    texture_create_buffer(&texture_color_selection, "texture_color_selection", 64, 64, (unsigned char *) pixels, 1);
 
-    texture_create_buffer(&texture_minimap, map_size_x, map_size_z, NULL, 1);
+    texture_create_buffer(&texture_minimap, "texture_minimap", map_size_x, map_size_z, NULL, 1);
 
     unsigned int * gradient = malloc(512 * 512 * sizeof(unsigned int));
     CHECK_ALLOCATION_ERROR(gradient)
     texture_gradient_fog(gradient);
-    texture_create_buffer(&texture_gradient, 512, 512, (unsigned char *) gradient, 1);
+    texture_create_buffer(&texture_gradient, "texture_gradient", 512, 512, (unsigned char *) gradient, 1);
     texture_filter(&texture_gradient, TEXTURE_FILTER_LINEAR);
 
-    texture_create_buffer(&texture_dummy, 1, 1, (unsigned char[]) {0, 0, 0, 0}, 1);
+    texture_create_buffer(&texture_dummy, "texture_dummy", 1, 1, (unsigned char[]) {0, 0, 0, 0}, 1);
 }

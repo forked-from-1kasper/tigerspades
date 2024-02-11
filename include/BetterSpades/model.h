@@ -52,30 +52,40 @@ typedef struct {
     float red, green, blue;
 } kv6;
 
-extern kv6 model_playerdead;
-extern kv6 model_playerhead;
-extern kv6 model_playertorso;
-extern kv6 model_playertorsoc;
-extern kv6 model_playerarms;
-extern kv6 model_playerleg;
-extern kv6 model_playerlegc;
-extern kv6 model_intel;
-extern kv6 model_tent;
+enum kv6 {
+    MODEL_PLAYERDEAD,
+    MODEL_PLAYERHEAD,
+    MODEL_PLAYERTORSO,
+    MODEL_PLAYERTORSOC,
+    MODEL_PLAYERARMS,
+    MODEL_PLAYERLEG,
+    MODEL_PLAYERLEGC,
 
-extern kv6 model_semi;
-extern kv6 model_smg;
-extern kv6 model_shotgun;
-extern kv6 model_spade;
-extern kv6 model_block;
-extern kv6 model_grenade;
+    MODEL_INTEL,
+    MODEL_TENT,
 
-extern kv6 model_semi_tracer;
-extern kv6 model_smg_tracer;
-extern kv6 model_shotgun_tracer;
+    MODEL_SEMI,
+    MODEL_SMG,
+    MODEL_SHOTGUN,
+    MODEL_SPADE,
+    MODEL_BLOCK,
+    MODEL_GRENADE,
 
-extern kv6 model_semi_casing;
-extern kv6 model_smg_casing;
-extern kv6 model_shotgun_casing;
+    MODEL_SEMI_TRACER,
+    MODEL_SMG_TRACER,
+    MODEL_SHOTGUN_TRACER,
+
+    MODEL_SEMI_CASING,
+    MODEL_SMG_CASING,
+    MODEL_SHOTGUN_CASING,
+
+    MODEL_FIRST = MODEL_PLAYERDEAD,
+    MODEL_LAST  = MODEL_SHOTGUN_CASING
+};
+
+#define MODEL_TOTAL (MODEL_LAST + 1)
+
+extern kv6 model[MODEL_TOTAL];
 
 void kv6_calclight(int x, int y, int z);
 void kv6_rebuild_complete(void);

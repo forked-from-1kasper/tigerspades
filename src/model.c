@@ -34,109 +34,71 @@
 
 #include <log.h>
 
-kv6 model_playerdead;
-kv6 model_playerhead;
-kv6 model_playertorso;
-kv6 model_playertorsoc;
-kv6 model_playerarms;
-kv6 model_playerleg;
-kv6 model_playerlegc;
-kv6 model_intel;
-kv6 model_tent;
+kv6 model[MODEL_TOTAL];
 
-kv6 model_semi;
-kv6 model_smg;
-kv6 model_shotgun;
-kv6 model_spade;
-kv6 model_block;
-kv6 model_grenade;
+typedef struct {
+    const char * filename;
+    float scale, max_size;
+} Blob;
 
-kv6 model_semi_tracer;
-kv6 model_smg_tracer;
-kv6 model_shotgun_tracer;
+static Blob kv6_model(enum kv6 index) {
+    switch (index) {
+        case MODEL_PLAYERDEAD:     return (Blob) {"kv6/playerdead.kv6",    0.1000F, INFINITY};
+        case MODEL_PLAYERHEAD:     return (Blob) {"kv6/playerhead.kv6",    0.1000F, 1.2F};
+        case MODEL_PLAYERTORSO:    return (Blob) {"kv6/playertorso.kv6",   0.1000F, 1.8F};
+        case MODEL_PLAYERTORSOC:   return (Blob) {"kv6/playertorsoc.kv6",  0.1000F, 1.6F};
+        case MODEL_PLAYERARMS:     return (Blob) {"kv6/playerarms.kv6",    0.1000F, 2.0F};
+        case MODEL_PLAYERLEG:      return (Blob) {"kv6/playerleg.kv6",     0.1000F, 2.0F};
+        case MODEL_PLAYERLEGC:     return (Blob) {"kv6/playerlegc.kv6",    0.1000F, 1.6F};
 
-kv6 model_semi_casing;
-kv6 model_smg_casing;
-kv6 model_shotgun_casing;
+        case MODEL_INTEL:          return (Blob) {"kv6/intel.kv6",         0.2000F, INFINITY};
+        case MODEL_TENT:           return (Blob) {"kv6/cp.kv6",            0.2780F, INFINITY};
 
-static void kv6_load_file(kv6 * model, char * filename, float scale) {
+        case MODEL_SEMI:           return (Blob) {"kv6/semi.kv6",          0.0500F, 2.25F};
+        case MODEL_SMG:            return (Blob) {"kv6/smg.kv6",           0.0500F, 2.25F};
+        case MODEL_SHOTGUN:        return (Blob) {"kv6/shotgun.kv6",       0.0500F, 2.25F};
+        case MODEL_SPADE:          return (Blob) {"kv6/spade.kv6",         0.0500F, 2.25F};
+        case MODEL_BLOCK:          return (Blob) {"kv6/block.kv6",         0.0500F, 2.25F};
+        case MODEL_GRENADE:        return (Blob) {"kv6/grenade.kv6",       0.0500F, 2.25F};
+
+        case MODEL_SEMI_TRACER:    return (Blob) {"kv6/semitracer.kv6",    0.0500F, INFINITY};
+        case MODEL_SMG_TRACER:     return (Blob) {"kv6/smgtracer.kv6",     0.0500F, INFINITY};
+        case MODEL_SHOTGUN_TRACER: return (Blob) {"kv6/shotguntracer.kv6", 0.0500F, INFINITY};
+
+        case MODEL_SEMI_CASING:    return (Blob) {"kv6/semicasing.kv6",    0.0125F, INFINITY};
+        case MODEL_SMG_CASING:     return (Blob) {"kv6/smgcasing.kv6",     0.0125F, INFINITY};
+        case MODEL_SHOTGUN_CASING: return (Blob) {"kv6/shotguncasing.kv6", 0.0125F, INFINITY};
+    }
+
+    return (Blob) {NULL, 0.0F, 0.0F};
+}
+
+static void kv6_load_file(kv6 * model, const char * filename, float scale) {
     uint8_t * data = file_load(filename);
     kv6_load(model, data, scale);
     free(data);
 }
 
-static void kv6_check_dimensions(kv6 * model, float max) {
+static void kv6_check_dimensions(kv6 * model, const char * name, float max) {
     if (max(max(model->xsiz, model->ysiz), model->zsiz) * model->scale > max) {
-        log_error("Model dimensions too large");
+        log_error("%s: model dimensions too large", name);
         model->voxel_count = 0;
     }
 }
 
 void kv6_init() {
-    kv6_load_file(&model_playerdead, "kv6/playerdead.kv6", 0.1F);
-    kv6_load_file(&model_playerhead, "kv6/playerhead.kv6", 0.1F);
-    kv6_load_file(&model_playertorso, "kv6/playertorso.kv6", 0.1F);
-    kv6_load_file(&model_playertorsoc, "kv6/playertorsoc.kv6", 0.1F);
-    kv6_load_file(&model_playerarms, "kv6/playerarms.kv6", 0.1F);
-    kv6_load_file(&model_playerleg, "kv6/playerleg.kv6", 0.1F);
-    kv6_load_file(&model_playerlegc, "kv6/playerlegc.kv6", 0.1F);
+    for (enum kv6 i = MODEL_FIRST; i <= MODEL_LAST; i++) {
+        Blob blob = kv6_model(i);
+        kv6_load_file(&model[i], blob.filename, blob.scale);
+        kv6_check_dimensions(&model[i], blob.filename, blob.max_size);
+    }
 
-    kv6_load_file(&model_intel, "kv6/intel.kv6", 0.2F);
-    kv6_load_file(&model_tent, "kv6/cp.kv6", 0.278F);
-
-    kv6_load_file(&model_semi, "kv6/semi.kv6", 0.05F);
-    kv6_load_file(&model_smg, "kv6/smg.kv6", 0.05F);
-    kv6_load_file(&model_shotgun, "kv6/shotgun.kv6", 0.05F);
-    kv6_load_file(&model_spade, "kv6/spade.kv6", 0.05F);
-    kv6_load_file(&model_block, "kv6/block.kv6", 0.05F);
-    model_block.colorize = true;
-    kv6_load_file(&model_grenade, "kv6/grenade.kv6", 0.05F);
-
-    kv6_load_file(&model_semi_tracer, "kv6/semitracer.kv6", 0.05F);
-    kv6_load_file(&model_smg_tracer, "kv6/smgtracer.kv6", 0.05F);
-    kv6_load_file(&model_shotgun_tracer, "kv6/shotguntracer.kv6", 0.05F);
-
-    kv6_load_file(&model_semi_casing, "kv6/semicasing.kv6", 0.0125F);
-    kv6_load_file(&model_smg_casing, "kv6/smgcasing.kv6", 0.0125F);
-    kv6_load_file(&model_shotgun_casing, "kv6/shotguncasing.kv6", 0.0125F);
-
-    kv6_check_dimensions(&model_playerhead, 1.2F);
-    kv6_check_dimensions(&model_playertorso, 1.8F);
-    kv6_check_dimensions(&model_playertorsoc, 1.6F);
-    kv6_check_dimensions(&model_playerarms, 2.0F);
-    kv6_check_dimensions(&model_playerleg, 2.0F);
-    kv6_check_dimensions(&model_playerlegc, 1.6F);
-
-    kv6_check_dimensions(&model_semi, 2.25F);
-    kv6_check_dimensions(&model_smg, 2.25F);
-    kv6_check_dimensions(&model_shotgun, 2.25F);
-    kv6_check_dimensions(&model_spade, 2.25F);
-    kv6_check_dimensions(&model_block, 2.25F);
-    kv6_check_dimensions(&model_grenade, 2.25F);
+    model[MODEL_BLOCK].colorize = true;
 }
 
 void kv6_rebuild_complete() {
-    kv6_rebuild(&model_playerdead);
-    kv6_rebuild(&model_playerhead);
-    kv6_rebuild(&model_playertorso);
-    kv6_rebuild(&model_playertorsoc);
-    kv6_rebuild(&model_playerarms);
-    kv6_rebuild(&model_playerleg);
-    kv6_rebuild(&model_playerlegc);
-    kv6_rebuild(&model_intel);
-    kv6_rebuild(&model_tent);
-    kv6_rebuild(&model_semi);
-    kv6_rebuild(&model_smg);
-    kv6_rebuild(&model_shotgun);
-    kv6_rebuild(&model_spade);
-    kv6_rebuild(&model_block);
-    kv6_rebuild(&model_grenade);
-    kv6_rebuild(&model_semi_tracer);
-    kv6_rebuild(&model_smg_tracer);
-    kv6_rebuild(&model_shotgun_tracer);
-    kv6_rebuild(&model_semi_casing);
-    kv6_rebuild(&model_smg_casing);
-    kv6_rebuild(&model_shotgun_casing);
+    for (enum kv6 i = MODEL_FIRST; i <= MODEL_LAST; i++)
+        kv6_rebuild(&model[i]);
 }
 
 void kv6_load(kv6 * model, uint8_t * bytes, float scale) {

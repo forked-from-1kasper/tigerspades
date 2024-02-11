@@ -148,47 +148,51 @@ static void hud_ingame_render3D() {
 
     matrix_identity(matrix_projection);
     matrix_perspective(matrix_projection, CAMERA_DEFAULT_FOV,
-                       ((float)settings.window_width) / ((float)settings.window_height), 0.1F, 128.0F);
+                       ((float) settings.window_width) / ((float) settings.window_height), 0.1F, 128.0F);
     matrix_identity(matrix_view);
     matrix_upload_p();
 
     if (!network_map_transfer) {
         if (camera.mode == CAMERAMODE_FPS && players[local_player.id].items_show) {
+            static kv6 * const model_spade = &model[MODEL_SPADE];
+
             players[local_player.id].input.buttons &= MASKOFF(BUTTON_SECONDARY);
 
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, -2.25F, -1.5F - (players[local_player.id].held_item == TOOL_SPADE) * 0.5F,
                              -6.0F);
             matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
-            matrix_translate(matrix_model, (model_spade.xpiv - model_spade.xsiz / 2) * 0.05F,
-                             (model_spade.zpiv - model_spade.zsiz / 2) * 0.05F,
-                             (model_spade.ypiv - model_spade.ysiz / 2) * 0.05F);
+            matrix_translate(matrix_model, (model_spade->xpiv - model_spade->xsiz / 2) * 0.05F,
+                             (model_spade->zpiv - model_spade->zsiz / 2) * 0.05F,
+                             (model_spade->ypiv - model_spade->ysiz / 2) * 0.05F);
 
             if (players[local_player.id].held_item == TOOL_SPADE)
                 matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
 
             matrix_upload();
-            kv6_render(&model_spade, players[local_player.id].team);
+            kv6_render(model_spade, players[local_player.id].team);
 
             if (local_player.blocks > 0) {
+                static kv6 * const model_block = &model[MODEL_BLOCK];
+
                 matrix_identity(matrix_model);
                 matrix_translate(matrix_model, -2.25F,
                                  -1.5F - (players[local_player.id].held_item == TOOL_BLOCK) * 0.5F, -6.0F);
                 matrix_translate(matrix_model, 1.5F, 0.0F, 0.0F);
                 matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
-                matrix_translate(matrix_model, (model_block.xpiv - model_block.xsiz / 2) * 0.05F,
-                                 (model_block.zpiv - model_block.zsiz / 2) * 0.05F,
-                                 (model_block.ypiv - model_block.ysiz / 2) * 0.05F);
+                matrix_translate(matrix_model, (model_block->xpiv - model_block->xsiz / 2) * 0.05F,
+                                 (model_block->zpiv - model_block->zsiz / 2) * 0.05F,
+                                 (model_block->ypiv - model_block->ysiz / 2) * 0.05F);
 
                 if (players[local_player.id].held_item == TOOL_BLOCK)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
 
-                model_block.red   = players[local_player.id].block.r / 255.0F;
-                model_block.green = players[local_player.id].block.g / 255.0F;
-                model_block.blue  = players[local_player.id].block.b / 255.0F;
+                model_block->red   = players[local_player.id].block.r / 255.0F;
+                model_block->green = players[local_player.id].block.g / 255.0F;
+                model_block->blue  = players[local_player.id].block.b / 255.0F;
                 matrix_upload();
 
-                kv6_render(&model_block, players[local_player.id].team);
+                kv6_render(model_block, players[local_player.id].team);
             }
 
             if (local_player.ammo + local_player.ammo_reserved > 0) {
@@ -210,20 +214,22 @@ static void hud_ingame_render3D() {
             }
 
             if (local_player.grenades > 0) {
+                static kv6 * const model_grenade = &model[MODEL_GRENADE];
+
                 matrix_identity(matrix_model);
                 matrix_translate(matrix_model, -2.25F,
                                  -1.5F - (players[local_player.id].held_item == TOOL_GRENADE) * 0.5F, -6.0F);
                 matrix_translate(matrix_model, 4.5F, 0.0F, 0.0F);
                 matrix_rotate(matrix_model, window_time() * 57.4F, 0.0F, 1.0F, 0.0F);
-                matrix_translate(matrix_model, (model_grenade.xpiv - model_grenade.xsiz / 2) * 0.05F,
-                                 (model_grenade.zpiv - model_grenade.zsiz / 2) * 0.05F,
-                                 (model_grenade.ypiv - model_grenade.ysiz / 2) * 0.05F);
+                matrix_translate(matrix_model, (model_grenade->xpiv - model_grenade->xsiz / 2) * 0.05F,
+                                 (model_grenade->zpiv - model_grenade->zsiz / 2) * 0.05F,
+                                 (model_grenade->ypiv - model_grenade->ysiz / 2) * 0.05F);
 
                 if (players[local_player.id].held_item == TOOL_GRENADE)
                     matrix_scale(matrix_model, 1.5F, 1.5F, 1.5F);
 
                 matrix_upload();
-                kv6_render(&model_grenade, players[local_player.id].team);
+                kv6_render(model_grenade, players[local_player.id].team);
             }
         }
 
@@ -260,32 +266,38 @@ static void hud_ingame_render3D() {
         }
 
         if (screen_current == SCREEN_GUN_SELECT) {
+            static kv6 * const model_semi = &model[MODEL_SEMI];
+
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, -1.5F, -1.25F, -3.25F);
             matrix_rotate(matrix_model, window_time() * 90.0F, 0.0F, 1.0F, 0.0F);
-            matrix_translate(matrix_model, (model_semi.xpiv - model_semi.xsiz / 2.0F) * model_semi.scale,
-                             (model_semi.zpiv - model_semi.zsiz / 2.0F) * model_semi.scale,
-                             (model_semi.ypiv - model_semi.ysiz / 2.0F) * model_semi.scale);
+            matrix_translate(matrix_model, (model_semi->xpiv - model_semi->xsiz / 2.0F) * model_semi->scale,
+                             (model_semi->zpiv - model_semi->zsiz / 2.0F) * model_semi->scale,
+                             (model_semi->ypiv - model_semi->ysiz / 2.0F) * model_semi->scale);
             matrix_upload();
-            kv6_render(&model_semi, TEAM_SPECTATOR);
+            kv6_render(model_semi, TEAM_SPECTATOR);
+
+            static kv6 * const model_smg = &model[MODEL_SMG];
 
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, 0.0F, -1.25F, -3.25F);
             matrix_rotate(matrix_model, window_time() * 90.0F, 0.0F, 1.0F, 0.0F);
-            matrix_translate(matrix_model, (model_smg.xpiv - model_smg.xsiz / 2.0F) * model_smg.scale,
-                             (model_smg.zpiv - model_smg.zsiz / 2.0F) * model_smg.scale,
-                             (model_smg.ypiv - model_smg.ysiz / 2.0F) * model_smg.scale);
+            matrix_translate(matrix_model, (model_smg->xpiv - model_smg->xsiz / 2.0F) * model_smg->scale,
+                             (model_smg->zpiv - model_smg->zsiz / 2.0F) * model_smg->scale,
+                             (model_smg->ypiv - model_smg->ysiz / 2.0F) * model_smg->scale);
             matrix_upload();
-            kv6_render(&model_smg, TEAM_SPECTATOR);
+            kv6_render(model_smg, TEAM_SPECTATOR);
+
+            static kv6 * const model_shotgun = &model[MODEL_SHOTGUN];
 
             matrix_identity(matrix_model);
             matrix_translate(matrix_model, 1.5F, -1.25F, -3.25F);
             matrix_rotate(matrix_model, window_time() * 90.0F, 0.0F, 1.0F, 0.0F);
-            matrix_translate(matrix_model, (model_shotgun.xpiv - model_shotgun.xsiz / 2.0F) * model_shotgun.scale,
-                             (model_shotgun.zpiv - model_shotgun.zsiz / 2.0F) * model_shotgun.scale,
-                             (model_shotgun.ypiv - model_shotgun.ysiz / 2.0F) * model_shotgun.scale);
+            matrix_translate(matrix_model, (model_shotgun->xpiv - model_shotgun->xsiz / 2.0F) * model_shotgun->scale,
+                             (model_shotgun->zpiv - model_shotgun->zsiz / 2.0F) * model_shotgun->scale,
+                             (model_shotgun->ypiv - model_shotgun->ysiz / 2.0F) * model_shotgun->scale);
             matrix_upload();
-            kv6_render(&model_shotgun, TEAM_SPECTATOR);
+            kv6_render(model_shotgun, TEAM_SPECTATOR);
         }
 
         kv6 * rotating_model = NULL;
@@ -295,7 +307,7 @@ static void hud_ingame_render3D() {
                 case TEAM_1: {
                     if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)
                     && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player.id)) {
-                        rotating_model = &model_intel;
+                        rotating_model      = &model[MODEL_INTEL];
                         rotating_model_team = TEAM_2;
                     }
                     break;
@@ -304,7 +316,7 @@ static void hud_ingame_render3D() {
                 case TEAM_2: {
                     if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)
                     && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player.id)) {
-                        rotating_model = &model_intel;
+                        rotating_model      = &model[MODEL_INTEL];
                         rotating_model_team = TEAM_1;
                     }
                     break;
@@ -322,7 +334,7 @@ static void hud_ingame_render3D() {
                                  players[local_player.id].pos.z);
 
                 if (n <= 400.0F) {
-                    rotating_model      = &model_tent;
+                    rotating_model      = &model[MODEL_TENT];
                     rotating_model_team = gamestate.gamemode.tc.territory[k].team;
                     break;
                 }
@@ -2426,7 +2438,7 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                             unsigned char * buffer; unsigned int width, height;
                             lodepng_decode32(&buffer, &width, &height, (uint8_t *) img, size);
 
-                            texture_create_buffer(&current->image, width, height, buffer, 1);
+                            texture_create_buffer(&current->image, "image", width, height, buffer, 1);
                             texture_filter(&current->image, TEXTURE_FILTER_LINEAR);
                         }
                     }

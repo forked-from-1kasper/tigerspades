@@ -187,18 +187,18 @@ int weapon_ammo_reserved(int gun) {
 
 kv6 * weapon_casing(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE:   return &model_semi_casing;
-        case WEAPON_SMG:     return &model_smg_casing;
-        case WEAPON_SHOTGUN: return &model_shotgun_casing;
+        case WEAPON_RIFLE:   return &model[MODEL_SEMI_CASING];
+        case WEAPON_SMG:     return &model[MODEL_SMG_CASING];
+        case WEAPON_SHOTGUN: return &model[MODEL_SHOTGUN_CASING];
         default:             return NULL;
     }
 }
 
 kv6 * weapon_model(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE:   return &model_semi;
-        case WEAPON_SMG:     return &model_smg;
-        case WEAPON_SHOTGUN: return &model_shotgun;
+        case WEAPON_RIFLE:   return &model[MODEL_SEMI];
+        case WEAPON_SMG:     return &model[MODEL_SMG];
+        case WEAPON_SHOTGUN: return &model[MODEL_SHOTGUN];
         default:             return NULL;
     }
 }

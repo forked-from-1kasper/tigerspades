@@ -78,15 +78,15 @@ int texture_flag_index(const char * country);
 void texture_flag_offset(int index, float * u, float * v);
 void texture_filter(Texture *, int filter);
 void texture_init(void);
-void texture_create(Texture *, const char * filename, GLuint filter);
-void texture_create_buffer(Texture *, unsigned int width, unsigned int height, unsigned char * buff, int new);
+void texture_load(enum Texture, GLuint filter);
+void texture_create_buffer(Texture *, const char *, unsigned int width, unsigned int height, unsigned char * buff, int new);
 void texture_delete(Texture *);
 void texture_draw(Texture *, float x, float y, float w, float h);
 void texture_draw_sector(Texture *, float x, float y, float w, float h, float u, float v, float us, float vs);
 void texture_draw_empty(float x, float y, float w, float h);
 void texture_draw_empty_rotated(float x, float y, float w, float h, float angle);
 void texture_draw_rotated(Texture *, float x, float y, float w, float h, float angle);
-void texture_resize_pow2(Texture *, int min_size);
+void texture_resize_pow2(Texture *, const char *, int min_size);
 TrueColor texture_block_color(int x, int y);
 void texture_gradient_fog(unsigned int *);
 

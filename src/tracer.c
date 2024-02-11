@@ -99,16 +99,20 @@ void tracer_add(int type, float x, float y, float z, float dx, float dy, float d
 }
 
 static bool tracer_render_single(void * obj, void * user) {
-    Tracer * t = (Tracer*) obj;
+    Tracer * t = (Tracer *) obj;
 
-    static kv6 * model_tracer[] = {&model_semi_tracer, &model_smg_tracer, &model_shotgun_tracer};
+    static enum kv6 model_tracer[] = {
+        [WEAPON_RIFLE]   = MODEL_SEMI_TRACER,
+        [WEAPON_SMG]     = MODEL_SMG_TRACER,
+        [WEAPON_SHOTGUN] = MODEL_SHOTGUN_TRACER
+    };
 
     matrix_push(matrix_model);
     matrix_translate(matrix_model, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
     matrix_pointAt(matrix_model, t->r.direction[X], t->r.direction[Y], t->r.direction[Z]);
     matrix_rotate(matrix_model, 90.0F, 0.0F, 1.0F, 0.0F);
     matrix_upload();
-    kv6_render(model_tracer[t->type], TEAM_SPECTATOR);
+    kv6_render(&model[model_tracer[t->type]], TEAM_SPECTATOR);
     matrix_pop(matrix_model);
 
     return false;
