@@ -243,9 +243,9 @@ void particle_create(TrueColor color, float x, float y, float z, float velocity,
     if (!settings.enable_particles) return;
 
     for (int k = 0; k < amount; k++) {
-        float vx  = random(-1.0F, 1.0F);
-        float vy  = random(-1.0F, 1.0F);
-        float vz  = random(-1.0F, 1.0F);
+        float vx  = randomf(-1.0F, 1.0F);
+        float vy  = randomf(-1.0F, 1.0F);
+        float vz  = randomf(-1.0F, 1.0F);
         float len = hypot3f(vx, vy, vz);
 
         vx = (vx / len) * velocity;
