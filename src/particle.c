@@ -235,7 +235,7 @@ void particle_create_casing(Player * p) {
                   });
 }
 
-static inline float randomf() { return (float) rand() / (float) RAND_MAX; }
+static inline float randomf(void) { return (float) rand() / (float) RAND_MAX; }
 static inline float uniform(float a, float b) { return randomf() * (b - a) + a; }
 
 void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
@@ -243,9 +243,9 @@ void particle_create(TrueColor color, float x, float y, float z, float velocity,
     if (!settings.enable_particles) return;
 
     for (int k = 0; k < amount; k++) {
-        float vx  = randomf(-1.0F, 1.0F);
-        float vy  = randomf(-1.0F, 1.0F);
-        float vz  = randomf(-1.0F, 1.0F);
+        float vx  = uniform(-1.0F, 1.0F);
+        float vy  = uniform(-1.0F, 1.0F);
+        float vz  = uniform(-1.0F, 1.0F);
         float len = hypot3f(vx, vy, vz);
 
         vx = (vx / len) * velocity;
