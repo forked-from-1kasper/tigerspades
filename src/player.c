@@ -701,8 +701,8 @@ void player_render(Player * p, int id) {
 
     float time = window_time() * 1000.0F;
 
-    kv6 * torso = &model[HASBIT(p->input.keys, INPUT_CROUCH) ? MODEL_PLAYERTORSOC : MODEL_PLAYERTORSO];
-    kv6 * leg   = &model[HASBIT(p->input.keys, INPUT_CROUCH) ? MODEL_PLAYERLEGC   : MODEL_PLAYERLEG];
+    kv6 * torso  = &model[HASBIT(p->input.keys, INPUT_CROUCH) ? MODEL_PLAYERTORSOC : MODEL_PLAYERTORSO];
+    kv6 * leg    = &model[HASBIT(p->input.keys, INPUT_CROUCH) ? MODEL_PLAYERLEGC   : MODEL_PLAYERLEG];
     float height = player_height(p);
 
     if (id != local_player.id)
@@ -1115,12 +1115,14 @@ int player_move(Player * p, float fsynctics, int id) {
     float sx  = p->orientation.x / len;
     float sy  = p->orientation.y / len;
 
+    // Servers (e.g. piqueserver) expects that player cannot move forwards/backwards while looking up.
+    // https://github.com/piqueserver/piqueserver/blob/17f43a559abd6472263382aef271f93a6cb01b7e/pyspades/world_c.cpp#L690-L699
     if (HASBIT(p->input.keys, INPUT_UP)) {
-        p->physics.velocity.x += sx * f;
-        p->physics.velocity.y += sy * f;
+        p->physics.velocity.x += p->orientation.x * f;
+        p->physics.velocity.y += p->orientation.y * f;
     } else if (HASBIT(p->input.keys, INPUT_DOWN)) {
-        p->physics.velocity.x -= sx * f;
-        p->physics.velocity.y -= sy * f;
+        p->physics.velocity.x -= p->orientation.x * f;
+        p->physics.velocity.y -= p->orientation.y * f;
     }
 
     if (HASBIT(p->input.keys, INPUT_LEFT)) {
