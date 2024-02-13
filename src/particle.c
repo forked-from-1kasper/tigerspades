@@ -106,7 +106,7 @@ void particle_init() {
 
 static bool particle_update_single(void * obj, void * user) {
     Particle * p = (Particle*) obj;
-    float dt = *(float*) user;
+    float dt = *(float *) user;
     float size = p->size * (1.0F - ((float) (window_time() - p->fade) / 2.0F));
 
     if (size < 0.01F) {

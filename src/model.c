@@ -75,7 +75,7 @@ static Blob kv6_model(enum kv6 index) {
 
 static void kv6_load_file(kv6 * model, const char * filename, float scale) {
     uint8_t * data = file_load(filename);
-    kv6_load(model, data, scale);
+    kv6_load(model, filename, data, scale);
     free(data);
 }
 
@@ -101,57 +101,65 @@ void kv6_rebuild_complete() {
         kv6_rebuild(&model[i]);
 }
 
-void kv6_load(kv6 * model, uint8_t * bytes, float scale) {
-    model->colorize = false;
+#pragma pack(push, 1)
+
+typedef struct {
+    uint32_t magic;
+    uint32_t xsize, ysize, zsize;
+    float    xpivot, ypivot, zpivot;
+    uint32_t numvoxels;
+} VoxelHeader;
+
+typedef struct {
+    uint8_t  blue, green, red, alpha; // for whatever reason .kv6 seems to be stored in BGRA
+    uint16_t zpos;
+    uint8_t  visfaces;                // 0x00zZyYxX
+    uint8_t  lighting;                // compressed normal vector (also referred to as lighting)
+} VoxelData;
+
+#pragma pack(pop)
+
+static inline TrueColor voxel_color(VoxelData * data)
+{ return (TrueColor) {.r = data->red, .g = data->green, .b = data->blue, .a = data->lighting}; }
+
+void kv6_load(kv6 * model, const char * name, uint8_t * buff, float scale) {
+    // https://gist.github.com/falkreon/8b873ec6797ffad247375fc73614fd08
+
+    VoxelHeader * header = (VoxelHeader *) buff;
+
+    model->colorize         = false;
     model->has_display_list = false;
-    model->scale = scale;
+    model->scale            = scale;
 
-    size_t index = 0;
-    if (buffer_read32(bytes, index) == 0x6C78764B) { //"Kvxl"
-        index += 4;
-        model->xsiz = buffer_read32(bytes, index);
-        index += 4;
-        model->ysiz = buffer_read32(bytes, index);
-        index += 4;
-        model->zsiz = buffer_read32(bytes, index);
-        index += 4;
+    if (letohu32(header->magic) == 0x6C78764B) { // Kvxl
+        model->xsiz = letohu32(header->xsize);
+        model->ysiz = letohu32(header->ysize);
+        model->zsiz = letohu32(header->zsize);
 
-        model->xpiv = buffer_readf(bytes, index);
-        index += 4;
-        model->ypiv = buffer_readf(bytes, index);
-        index += 4;
-        model->zpiv = model->zsiz - buffer_readf(bytes, index);
-        index += 4;
+        model->xpiv = letohf(header->xpivot);
+        model->ypiv = letohf(header->ypivot);
+        model->zpiv = model->zsiz - letohf(header->zpivot);
 
-        model->voxel_count = buffer_read32(bytes, index);
-        index += 4;
+        model->voxel_count = letohu32(header->numvoxels);
 
         model->voxels = malloc(sizeof(Voxel) * model->voxel_count);
         CHECK_ALLOCATION_ERROR(model->voxels)
 
+        VoxelData * voxels = (VoxelData *) (buff + sizeof(VoxelHeader));
+
         for (size_t k = 0; k < model->voxel_count; k++) {
-            TrueColor color = readBGRA((uint32_t *) (bytes + index)); index += 4;
-            uint16_t zpos = buffer_read16(bytes, index); index += 2;
-            uint8_t visfaces = buffer_read8(bytes, index++); // 0x00zZyYxX
-            uint8_t lighting = buffer_read8(bytes, index++); // compressed normal vector (also referred to as lighting)
-
-            color.a = lighting;
-
-            model->voxels[k] = (Voxel) {
-                .color = color,
-                .visfaces = visfaces,
-                .z = (model->zsiz - 1) - zpos,
-            };
+            model->voxels[k].color    = voxel_color(&voxels[k]);
+            model->voxels[k].visfaces = voxels[k].visfaces;
+            model->voxels[k].z        = (model->zsiz - 1) - letohu16(voxels[k].zpos);
         }
 
-        index += 4 * model->xsiz;
-
-        Voxel * voxel = model->voxels;
+        uint8_t  * xlen  = buff + sizeof(VoxelHeader) + sizeof(VoxelData) * model->voxel_count;
+        uint16_t * ylen  = (uint16_t *) (xlen + sizeof(uint32_t) * model->xsiz);
+        Voxel    * voxel = model->voxels;
 
         for (size_t x = 0; x < model->xsiz; x++) {
             for (size_t y = 0; y < model->ysiz; y++) {
-                uint16_t size = buffer_read16(bytes, index);
-                index += 2;
+                uint16_t size = letohu16(*(ylen++));
 
                 for (size_t z = 0; z < size; z++, voxel++) {
                     voxel->x = x;
@@ -160,7 +168,7 @@ void kv6_load(kv6 * model, uint8_t * bytes, float scale) {
             }
         }
     } else {
-        log_error("Data not in kv6 format");
+        log_error("%s: data not in kv6 format", name);
         model->xsiz = model->ysiz = model->zsiz = 0;
         model->voxel_count = 0;
     }
@@ -228,7 +236,7 @@ static void greedy_mesh(kv6 * model, Voxel * voxel, uint8_t * marked, size_t * m
         Voxel lookup = *voxel;
 
         for (size_t a = 0; a < *max_a; a++) {
-            Voxel* recent[*max_b];
+            Voxel * recent[*max_b];
             size_t b;
             for (b = 0; b < *max_b; b++) {
                 switch (face) {

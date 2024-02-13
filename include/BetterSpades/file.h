@@ -30,10 +30,6 @@ int file_dir_exists(const char * path);
 int file_dir_create(const char * path);
 int file_exists(const char * name);
 uint8_t * file_load(const char * name);
-float buffer_readf(uint8_t * buffer, int index);
-uint32_t buffer_read32(uint8_t * buffer, int index);
-uint16_t buffer_read16(uint8_t * buffer, int index);
-uint8_t buffer_read8(uint8_t * buffer, int index);
 void file_url(char * url);
 
 #endif

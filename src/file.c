@@ -247,20 +247,3 @@ void file_close(void * file) {
     fclose((FILE *) file);
 #endif
 }
-
-float buffer_readf(uint8_t * buffer, int index) {
-    return letohf(*((float*) (buffer + index)));
-}
-
-// kv6 models are stored little-endian, so this code is always correct
-uint32_t buffer_read32(uint8_t * buffer, int index) {
-    return (buffer[index + 3] << 24) | (buffer[index + 2] << 16) | (buffer[index + 1] << 8) | buffer[index];
-}
-
-uint16_t buffer_read16(uint8_t * buffer, int index) {
-    return (buffer[index + 1] << 8) | buffer[index];
-}
-
-uint8_t buffer_read8(uint8_t * buffer, int index) {
-    return buffer[index];
-}

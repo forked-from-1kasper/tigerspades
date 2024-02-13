@@ -371,7 +371,7 @@ void map_collapsing_render() {
 
 static bool falling_blocks_collision(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t *) key;
-    MapCollapsing * collapsing = ((MapCollapsing**) user)[0];
+    MapCollapsing * collapsing = ((MapCollapsing **) user)[0];
     float dt = *(((float **) user)[1]);
 
     vec4 v = {pos_keyx(pos) + collapsing->v.x * dt * 32.0F - collapsing->p2.x + 0.5F,
@@ -386,7 +386,7 @@ static bool falling_blocks_collision(void * key, void * value, void * user) {
 static bool falling_blocks_particles(void * key, void * value, void * user) {
     uint32_t pos = *(uint32_t *) key;
     TrueColor color = *(TrueColor *) value;
-    MapCollapsing * collapsing = (MapCollapsing*) user;
+    MapCollapsing * collapsing = (MapCollapsing *) user;
 
     vec4 v = {pos_keyx(pos) - collapsing->p2.x + 0.5F, pos_keyy(pos) - collapsing->p2.y + 0.5F,
               pos_keyz(pos) - collapsing->p2.z + 0.5F, 1.0F};
@@ -398,7 +398,7 @@ static bool falling_blocks_particles(void * key, void * value, void * user) {
 
 static bool falling_blocks_update(void * obj, void * user) {
     MapCollapsing * collapsing = (MapCollapsing*) obj;
-    float dt = *(float*) user;
+    float dt = *(float *) user;
 
     collapsing->v.y -= dt;
 
@@ -565,8 +565,7 @@ void map_set(int x, int y, int z, TrueColor color) {
 
     chunk_block_update(x, y, z);
 
-    int x_off = x % CHUNK_SIZE;
-    int z_off = z % CHUNK_SIZE;
+    int x_off = x % CHUNK_SIZE, z_off = z % CHUNK_SIZE;
 
     if (x > 0 && x_off == 0)
         chunk_block_update(x - 1, y, z);
@@ -655,7 +654,7 @@ int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, Point * cube_a
     if (izi >= 0)
         dz = dzi - dz;
 
-    while (1) {
+    for (;;) {
         if (cube_array != NULL)
             cube_array[count] = c;
 

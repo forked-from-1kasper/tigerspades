@@ -91,7 +91,7 @@ void kv6_calclight(int x, int y, int z);
 void kv6_rebuild_complete(void);
 void kv6_rebuild(kv6 *);
 void kv6_render(kv6 *, unsigned char team);
-void kv6_load(kv6 *, uint8_t * bytes, float scale);
+void kv6_load(kv6 *, const char *, uint8_t * buff, float scale);
 void kv6_init(void);
 
 extern float kv6_normals[256][3];
