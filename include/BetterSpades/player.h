@@ -27,6 +27,11 @@
 
 #define PLAYERS_MAX 256 // just because 32 players are not enough
 
+typedef enum {
+    GAMEMODE_CTF = 0,
+    GAMEMODE_TC  = 1
+} GameMode;
+
 enum {
     TEAM_1          = 0,
     TEAM_2          = 1,
@@ -51,11 +56,6 @@ typedef struct {
 } GameState;
 
 extern GameState gamestate;
-
-enum {
-    GAMEMODE_CTF = 0,
-    GAMEMODE_TC  = 1
-};
 
 typedef struct { bool lmb, mmb, rmb; } MouseButtons;
 extern MouseButtons button_map;
@@ -153,7 +153,7 @@ void player_reset(Player * p);
 int player_move(Player * p, float fsynctics, int id);
 int player_uncrouch(Player * p);
 
-#define ISSCOPING(player) (HASBIT((player)->input.buttons, BUTTON_SECONDARY) && player->held_item == TOOL_GUN)
+#define ISSCOPING(player) (HASBIT((player)->input.buttons, BUTTON_SECONDARY) && (player)->held_item == TOOL_GUN)
 
 #define ISMOVING(player) (HASBIT((player)->input.keys, INPUT_UP)   || \
                           HASBIT((player)->input.keys, INPUT_DOWN) || \
