@@ -22,10 +22,8 @@
 #include <math.h>
 
 #include <BetterSpades/common.h>
-#include <BetterSpades/map.h>
 #include <BetterSpades/aabb.h>
-#include <BetterSpades/tesselator.h>
-#include <BetterSpades/matrix.h>
+#include <BetterSpades/map.h>
 
 void aabb_render(AABB * a) { }
 

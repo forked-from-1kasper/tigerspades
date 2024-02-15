@@ -17,6 +17,7 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdint.h>
 #include <math.h>
 
 #ifndef COMMON_H
@@ -82,20 +83,6 @@
 #endif
 
 #define BETTERSPADES_VERSION_SUMMARY BETTERSPADES_VERSION " " ARCH " " GIT_COMMIT_HASH
-
-#ifndef OPENGL_ES
-    #define GLEW_STATIC
-    #include <GL/glew.h>
-#else
-    #ifdef USE_SDL
-        #include <SDL2/SDL_opengles.h>
-    #endif
-
-    #define glColor3f(r, g, b) glColor4f(r, g, b, 1.0F)
-    #define glColor3ub(r, g, b) glColor4ub(r, g, b, 255)
-    #define glDepthRange(a, b) glDepthRangef(a, b)
-    #define glClearDepth(a) glClearDepthf(a)
-#endif
 
 #ifdef USE_RPC
     #include <discord_rpc.h>
@@ -191,10 +178,6 @@ void chat_add(int channel, TrueColor, const char *, Codepage);
 void chat_showpopup(const char *, float duration, TrueColor, Codepage);
 const char * reason_disconnect(int code);
 
-#define SCREEN_NONE        0
-#define SCREEN_TEAM_SELECT 1
-#define SCREEN_GUN_SELECT  2
-
 extern int ms_seed;
 int ms_rand(void);
 
@@ -230,6 +213,48 @@ int ms_rand(void);
 #define htolef(x)   letohf(x)
 #define htoleu32(x) letohu32(x)
 #define htoles32(x) letohs32(x)
+
+static inline uint8_t decode8le(uint8_t * const buff)
+{ return buff[0]; }
+
+static inline uint16_t decode16le(uint8_t * const buff)
+{ return buff[0] | (buff[1] << 8); }
+
+static inline uint32_t decode32le(uint8_t * const buff)
+{ return buff[0] | (buff[1] << 8) | (buff[2] << 16) | (buff[3] << 24); }
+
+static inline void encode8le(uint8_t * const buff, uint8_t value)
+{ buff[0] = value; }
+
+static inline void encode16le(uint8_t * const buff, uint16_t value)
+{ buff[0] = value & 0xFF; buff[1] = (value >> 8) & 0xFF; }
+
+static inline void encode32le(uint8_t * const buff, uint32_t value)
+{ buff[0] = (value >> 0)  & 0xFF; buff[1] = (value >> 8)  & 0xFF;
+  buff[2] = (value >> 16) & 0xFF; buff[3] = (value >> 24) & 0xFF; }
+
+#define DEFGETTER(T, U, ident, decoder) static inline T ident(uint8_t * const buff, size_t * index) \
+                                        { union _Return { T val; U data; } ret; \
+                                          ret.data = decoder(buff + *index); \
+                                          *index += sizeof(U); return ret.val; }
+
+DEFGETTER(uint8_t,  uint8_t,  getu8le,   decode8le)
+DEFGETTER(uint16_t, uint16_t, getu16le,  decode16le)
+DEFGETTER(uint32_t, uint32_t, getu32le,  decode32le)
+DEFGETTER(int8_t,   uint8_t,  gets8le,   decode8le)
+DEFGETTER(int16_t,  uint16_t, gets16le,  decode16le)
+DEFGETTER(int32_t,  uint32_t, gets32le,  decode32le)
+DEFGETTER(float,    uint32_t, getf32le,  decode32le)
+DEFGETTER(char,     uint8_t,  getc8le,   decode8le)
+
+static inline TrueColor getBGRA(uint8_t * const buff, size_t * index) {
+    uint8_t b = getu8le(buff, index);
+    uint8_t g = getu8le(buff, index);
+    uint8_t r = getu8le(buff, index);
+    uint8_t a = getu8le(buff, index);
+
+    return (TrueColor) {r, g, b, a};
+}
 
 void writeRGBA(uint32_t *, TrueColor);
 void writeBGR(uint32_t *, TrueColor);

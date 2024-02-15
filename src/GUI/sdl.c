@@ -9,6 +9,7 @@
 #include <BetterSpades/window.h>
 #include <BetterSpades/config.h>
 #include <BetterSpades/hud.h>
+#include <BetterSpades/gui.h>
 
 #ifdef OS_WINDOWS
     #include <sysinfoapi.h>
@@ -125,7 +126,7 @@ void window_update() {
 
             case SDL_FINGERDOWN:
                 if (hud_active->input_touch) {
-                    struct window_finger* f;
+                    struct window_finger * f;
                     for (int k = 0; k < 8; k++) {
                         if (!fingers[k].full) {
                             fingers[k].finger = event.tfinger.fingerId;
@@ -147,7 +148,7 @@ void window_update() {
 
             case SDL_FINGERUP:
                 if (hud_active->input_touch) {
-                    struct window_finger* f;
+                    struct window_finger * f;
                     for (int k = 0; k < 8; k++) {
                         if (fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
                             fingers[k].full = 0;
@@ -163,7 +164,7 @@ void window_update() {
 
             case SDL_FINGERMOTION:
                 if (hud_active->input_touch) {
-                    struct window_finger* f;
+                    struct window_finger * f;
                     for (int k = 0; k < 8; k++) {
                         if (fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
                             f = fingers + k;

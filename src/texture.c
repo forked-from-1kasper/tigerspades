@@ -19,17 +19,32 @@
 
 #include <math.h>
 
-#include <BetterSpades/common.h>
 #include <BetterSpades/texture.h>
-#include <BetterSpades/map.h>
+#include <BetterSpades/opengl.h>
+#include <BetterSpades/common.h>
 #include <BetterSpades/file.h>
+#include <BetterSpades/map.h>
 
 #include <log.h>
 #include <lodepng/lodepng.c>
 
-Texture texture[TEXTURE_TOTAL];
+struct _Texture {
+    unsigned int width, height;
+    GLuint texture_id;
+    unsigned char * pixels;
+};
 
-Texture texture_color_selection, texture_minimap, texture_dummy, texture_gradient;
+#define TEXTURE_TOTAL (TEXTURE_LAST + 1)
+Texture _textures[TEXTURE_TOTAL];
+
+Texture _texture_color_selection, _texture_minimap, _texture_dummy, _texture_gradient;
+
+Texture * const texture_color_selection = &_texture_color_selection;
+Texture * const texture_minimap         = &_texture_minimap;
+Texture * const texture_dummy           = &_texture_dummy;
+Texture * const texture_gradient        = &_texture_gradient;
+
+Texture * texture(enum Texture index) { return &_textures[index]; }
 
 const char * texture_filename(enum Texture index) {
     switch (index) {
@@ -105,10 +120,18 @@ void texture_flag_offset(int index, float * u, float * v) {
     }
 }
 
-void texture_filter(Texture * t, int filter) {
+static inline GLuint GLfiltering(Filtering filter) {
+    switch (filter) {
+        case TEXTURE_FILTER_NEAREST: return GL_NEAREST;
+        case TEXTURE_FILTER_LINEAR:  return GL_LINEAR;
+        default:                     return GL_NEAREST;
+    }
+}
+
+void texture_filter(Texture * t, Filtering filter) {
     glBindTexture(GL_TEXTURE_2D, t->texture_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLfiltering(filter));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLfiltering(filter));
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -206,8 +229,8 @@ void texture_draw_empty_rotated(float x, float y, float w, float h, float angle)
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void texture_load(enum Texture index, GLuint filter) {
-    Texture * t = &texture[index];
+void texture_load(enum Texture index, Filtering filter) {
+    Texture * t = &_textures[index];
     const char * filename = texture_filename(index);
 
     int sz = file_size(filename);
@@ -226,8 +249,8 @@ void texture_load(enum Texture index, GLuint filter) {
     glBindTexture(GL_TEXTURE_2D, t->texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t->width, t->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLfiltering(filter));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLfiltering(filter));
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -347,15 +370,37 @@ void texture_init() {
         }
     }
 
-    texture_create_buffer(&texture_color_selection, "texture_color_selection", 64, 64, (unsigned char *) pixels, 1);
+    texture_create_buffer(texture_color_selection, "_texture_color_selection", 64, 64, (unsigned char *) pixels, 1);
 
-    texture_create_buffer(&texture_minimap, "texture_minimap", map_size_x, map_size_z, NULL, 1);
+    texture_create_buffer(texture_minimap, "_texture_minimap", map_size_x, map_size_z, NULL, 1);
 
     unsigned int * gradient = malloc(512 * 512 * sizeof(unsigned int));
     CHECK_ALLOCATION_ERROR(gradient)
     texture_gradient_fog(gradient);
-    texture_create_buffer(&texture_gradient, "texture_gradient", 512, 512, (unsigned char *) gradient, 1);
-    texture_filter(&texture_gradient, TEXTURE_FILTER_LINEAR);
+    texture_create_buffer(texture_gradient, "_texture_gradient", 512, 512, (unsigned char *) gradient, 1);
+    texture_filter(texture_gradient, TEXTURE_FILTER_LINEAR);
 
-    texture_create_buffer(&texture_dummy, "texture_dummy", 1, 1, (unsigned char[]) {0, 0, 0, 0}, 1);
+    texture_create_buffer(texture_dummy, "_texture_dummy", 1, 1, (unsigned char[]) {0, 0, 0, 0}, 1);
+}
+
+void texture_bind(Texture * t) {
+    glBindTexture(GL_TEXTURE_2D, t->texture_id);
+}
+
+float texture_width(Texture * t) {
+    return t->width;
+}
+
+float texture_height(Texture * t) {
+    return t->height;
+}
+
+Texture * texture_alloc() {
+    return calloc(1, sizeof(Texture));
+}
+
+void texture_subimage(Texture * t, int xoffset, int yoffset, size_t width, size_t height, const void * buff) {
+    glBindTexture(GL_TEXTURE_2D, t->texture_id);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buff);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

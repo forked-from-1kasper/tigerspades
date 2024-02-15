@@ -31,6 +31,7 @@
 #include <BetterSpades/model.h>
 #include <BetterSpades/model_normals.h>
 #include <BetterSpades/texture.h>
+#include <BetterSpades/opengl.h>
 
 #include <log.h>
 
@@ -101,65 +102,42 @@ void kv6_rebuild_complete() {
         kv6_rebuild(&model[i]);
 }
 
-#pragma pack(push, 1)
-
-typedef struct {
-    uint32_t magic;
-    uint32_t xsize, ysize, zsize;
-    float    xpivot, ypivot, zpivot;
-    uint32_t numvoxels;
-} VoxelHeader;
-
-typedef struct {
-    uint8_t  blue, green, red, alpha; // for whatever reason .kv6 seems to be stored in BGRA
-    uint16_t zpos;
-    uint8_t  visfaces;                // 0x00zZyYxX
-    uint8_t  lighting;                // compressed normal vector (also referred to as lighting)
-} VoxelData;
-
-#pragma pack(pop)
-
-static inline TrueColor voxel_color(VoxelData * data)
-{ return (TrueColor) {.r = data->red, .g = data->green, .b = data->blue, .a = data->lighting}; }
-
 void kv6_load(kv6 * model, const char * name, uint8_t * buff, float scale) {
     // https://gist.github.com/falkreon/8b873ec6797ffad247375fc73614fd08
-
-    VoxelHeader * header = (VoxelHeader *) buff;
 
     model->colorize         = false;
     model->has_display_list = false;
     model->scale            = scale;
 
-    if (letohu32(header->magic) == 0x6C78764B) { // Kvxl
-        model->xsiz = letohu32(header->xsize);
-        model->ysiz = letohu32(header->ysize);
-        model->zsiz = letohu32(header->zsize);
+    size_t index = 0;
 
-        model->xpiv = letohf(header->xpivot);
-        model->ypiv = letohf(header->ypivot);
-        model->zpiv = model->zsiz - letohf(header->zpivot);
+    if (getu32le(buff, &index) == 0x6C78764B) { // Kvxl
+        model->xsiz = getu32le(buff, &index);
+        model->ysiz = getu32le(buff, &index);
+        model->zsiz = getu32le(buff, &index);
 
-        model->voxel_count = letohu32(header->numvoxels);
+        model->xpiv = getf32le(buff, &index);
+        model->ypiv = getf32le(buff, &index);
+        model->zpiv = model->zsiz - getf32le(buff, &index);
+
+        model->voxel_count = getu32le(buff, &index);
 
         model->voxels = malloc(sizeof(Voxel) * model->voxel_count);
         CHECK_ALLOCATION_ERROR(model->voxels)
 
-        VoxelData * voxels = (VoxelData *) (buff + sizeof(VoxelHeader));
-
         for (size_t k = 0; k < model->voxel_count; k++) {
-            model->voxels[k].color    = voxel_color(&voxels[k]);
-            model->voxels[k].visfaces = voxels[k].visfaces;
-            model->voxels[k].z        = (model->zsiz - 1) - letohu16(voxels[k].zpos);
+            model->voxels[k].color    = getBGRA(buff, &index); // for whatever reason .kv6 seems to be stored in BGRA
+            model->voxels[k].z        = (model->zsiz - 1) - getu16le(buff, &index);
+            model->voxels[k].visfaces = getu8le(buff, &index); // 0x00zZyYxX
+            model->voxels[k].color.a  = getu8le(buff, &index); // compressed normal vector (also referred to as lighting)
         }
 
-        uint8_t  * xlen  = buff + sizeof(VoxelHeader) + sizeof(VoxelData) * model->voxel_count;
-        uint16_t * ylen  = (uint16_t *) (xlen + sizeof(uint32_t) * model->xsiz);
-        Voxel    * voxel = model->voxels;
+        index += sizeof(uint32_t) * model->xsiz;
 
+        Voxel * voxel = model->voxels;
         for (size_t x = 0; x < model->xsiz; x++) {
             for (size_t y = 0; y < model->ysiz; y++) {
-                uint16_t size = letohu16(*(ylen++));
+                uint16_t size = getu16le(buff, &index);
 
                 for (size_t z = 0; z < size; z++, voxel++) {
                     voxel->x = x;
@@ -401,7 +379,7 @@ void kv6_render(kv6 * model, unsigned char team) {
             glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
             glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
             glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-            glBindTexture(GL_TEXTURE_2D, texture_dummy.texture_id);
+            texture_bind(texture_dummy);
 
             if (model->colorize) {
                 glEnable(GL_TEXTURE_2D);

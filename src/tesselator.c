@@ -21,6 +21,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include <BetterSpades/opengl.h>
 #include <BetterSpades/common.h>
 #include <BetterSpades/tesselator.h>
 

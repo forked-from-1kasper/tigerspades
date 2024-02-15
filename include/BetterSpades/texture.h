@@ -22,11 +22,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-typedef struct {
-    unsigned int width, height;
-    GLuint texture_id;
-    unsigned char * pixels;
-} Texture;
+typedef struct _Texture Texture;
 
 enum Texture {
     TEXTURE_SPLASH,
@@ -63,22 +59,24 @@ enum Texture {
     TEXTURE_LAST  = TEXTURE_UI_ALERT
 };
 
-#define TEXTURE_TOTAL (TEXTURE_LAST + 1)
+extern Texture * const texture_color_selection;
+extern Texture * const texture_minimap;
+extern Texture * const texture_dummy;
+extern Texture * const texture_gradient;
+Texture * texture(enum Texture);
 
-extern Texture texture[TEXTURE_TOTAL];
-
-extern Texture texture_color_selection, texture_minimap, texture_dummy, texture_gradient;
-
-#define TEXTURE_FILTER_NEAREST GL_NEAREST
-#define TEXTURE_FILTER_LINEAR  GL_LINEAR
+typedef enum {
+    TEXTURE_FILTER_NEAREST,
+    TEXTURE_FILTER_LINEAR
+} Filtering;
 
 const char * texture_filename(enum Texture);
 
 int texture_flag_index(const char * country);
 void texture_flag_offset(int index, float * u, float * v);
-void texture_filter(Texture *, int filter);
+void texture_filter(Texture *, Filtering filter);
 void texture_init(void);
-void texture_load(enum Texture, GLuint filter);
+void texture_load(enum Texture, Filtering filter);
 void texture_create_buffer(Texture *, const char *, unsigned int width, unsigned int height, unsigned char * buff, int new);
 void texture_delete(Texture *);
 void texture_draw(Texture *, float x, float y, float w, float h);
@@ -89,5 +87,10 @@ void texture_draw_rotated(Texture *, float x, float y, float w, float h, float a
 void texture_resize_pow2(Texture *, const char *, int min_size);
 TrueColor texture_block_color(int x, int y);
 void texture_gradient_fog(unsigned int *);
+void texture_bind(Texture *);
+float texture_width(Texture *);
+float texture_height(Texture *);
+Texture * texture_alloc();
+void texture_subimage(Texture *, int xoffset, int yoffset, size_t width, size_t height, const void *);
 
 #endif

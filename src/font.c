@@ -23,8 +23,9 @@
 
 #include <hashtable.h>
 
-#include <BetterSpades/unicode.h>
+#include <BetterSpades/opengl.h>
 #include <BetterSpades/common.h>
+#include <BetterSpades/unicode.h>
 #include <BetterSpades/file.h>
 #include <BetterSpades/font.h>
 #include <BetterSpades/utils.h>

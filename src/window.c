@@ -25,6 +25,7 @@
 #include <BetterSpades/window.h>
 #include <BetterSpades/config.h>
 #include <BetterSpades/hud.h>
+#include <BetterSpades/gui.h>
 
 #ifdef OS_WINDOWS
 #include <sysinfoapi.h>

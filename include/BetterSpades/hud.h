@@ -21,8 +21,8 @@
 #define HUD_H
 
 #include <stdbool.h>
-
 #include <microui.h>
+
 #include <BetterSpades/texture.h>
 #include <BetterSpades/window.h>
 #include <BetterSpades/common.h>
@@ -54,8 +54,6 @@ typedef struct {
     char    country[4];
     Version version;
 } Server;
-
-extern int screen_current;
 
 extern HUD hud_ingame;
 extern HUD hud_mapload;

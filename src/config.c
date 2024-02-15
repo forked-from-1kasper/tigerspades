@@ -31,6 +31,7 @@
 #include <BetterSpades/model.h>
 #include <BetterSpades/camera.h>
 #include <BetterSpades/utils.h>
+#include <BetterSpades/gui.h>
 
 #include <ini.h>
 

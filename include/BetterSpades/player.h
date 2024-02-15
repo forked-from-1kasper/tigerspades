@@ -138,20 +138,20 @@ typedef struct {
 extern Player players[PLAYERS_MAX];
 // pyspades/pysnip/piqueserver sometimes uses ids that are out of range
 
-void player_on_held_item_change(Player * p);
-int player_can_spectate(Player * p);
+void player_on_held_item_change(Player *);
+int player_can_spectate(Player *);
 float player_section_height(int section);
 void player_init(void);
-float player_height(const Player * p);
-float player_height2(const Player * p);
-void player_reposition(Player * p);
+float player_height(const Player *);
+float player_height2(const Player *);
+void player_reposition(Player *);
 void player_update(float dt, int locked);
 void player_render_all(void);
 void player_render(Player * p, int id);
-void player_collision(const Player * p, Ray * ray, Hit * intersects);
-void player_reset(Player * p);
-int player_move(Player * p, float fsynctics, int id);
-int player_uncrouch(Player * p);
+void player_collision(const Player *, Ray * ray, Hit * intersects);
+void player_reset(Player *);
+int player_move(Player *, float fsynctics, int id);
+int player_uncrouch(Player *);
 
 #define ISSCOPING(player) (HASBIT((player)->input.buttons, BUTTON_SECONDARY) && (player)->held_item == TOOL_GUN)
 

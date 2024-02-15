@@ -27,6 +27,7 @@
 #include <BetterSpades/matrix.h>
 #include <BetterSpades/texture.h>
 #include <BetterSpades/glx.h>
+#include <BetterSpades/opengl.h>
 
 // for future opengl-es abstraction layer
 
@@ -227,7 +228,7 @@ void glx_enable_sphericalfog() {
         glEnable(GL_TEXTURE_2D);
         glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, (float[]) {fog_color[0], fog_color[1], fog_color[2], 1.0F});
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-        glBindTexture(GL_TEXTURE_2D, texture_gradient.texture_id);
+        texture_bind(texture_gradient);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);

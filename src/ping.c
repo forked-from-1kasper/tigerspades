@@ -62,15 +62,15 @@ void ping_deinit() {
 float lan_ping_start = 0.0F;
 
 static void ping_lan() {
-    ENetAddress addr  = {.host = 0xFFFFFFFF}; // 255.255.255.255
-    ENetBuffer buffer = {.data = "HELLOLAN", .dataLength = 8};
+    static const ENetBuffer hellolan = {.data = "HELLOLAN", .dataLength = 8};
+    static ENetAddress addr = {.host = 0xFFFFFFFF}; // 255.255.255.255
 
     lan_ping_start = window_time();
 
     int begin = max(0, settings.min_lan_port), end = min(65535, settings.max_lan_port);
 
     for (addr.port = begin; addr.port <= end; addr.port++)
-        enet_socket_send(lan, &addr, &buffer, 1);
+        enet_socket_send(lan, &addr, &hellolan, 1);
 }
 
 static bool pings_retry(void * key, void * value, void * user) {
@@ -112,10 +112,9 @@ void * ping_update(void * data) {
 
     float ping_start = window_time();
 
-    HashTable pings;
-    ht_setup(&pings, sizeof(uint64_t), sizeof(PingEntry), 64);
+    HashTable pings; ht_setup(&pings, sizeof(uint64_t), sizeof(PingEntry), 64);
 
-    while (1) {
+    for (;;) {
         size_t drain = channel_size(&ping_queue);
         for (size_t k = 0; (k < drain) || (!pings.size && window_time() - ping_start >= 8.0F); k++) {
             PingEntry entry;
@@ -130,7 +129,7 @@ void * ping_update(void * data) {
 
         ENetBuffer buf = {.data = tmp, .dataLength = sizeof(tmp)};
 
-        while (1) {
+        for (;;) {
             int recvLength = enet_socket_receive(sock, &from, &buf, 1);
             uint64_t ID = IP_KEY(from);
 
@@ -150,8 +149,7 @@ void * ping_update(void * data) {
 
         ht_iterate_remove(&pings, NULL, pings_retry);
 
-        int length = enet_socket_receive(lan, &from, &buf, 1);
-        if (length) {
+        if (enet_socket_receive(lan, &from, &buf, 1) > 0) {
             // “ping_result” before can block, so sometimes this value is very inaccurate
             float ping = window_time() - lan_ping_start;
 
@@ -162,7 +160,6 @@ void * ping_update(void * data) {
                 Server e;
 
                 strcpy(e.country, "LAN");
-                e.ping = ceil(ping * 1000.0F);
                 snprintf(e.identifier, sizeof(e.identifier) - 1, "aos://%u:%u", from.host, from.port);
 
                 strnzcpy(e.name,     json_object_get_string(root, "name"),      sizeof(e.name));
@@ -172,6 +169,7 @@ void * ping_update(void * data) {
                 e.current = json_object_get_number(root, "players_current");
                 e.max     = json_object_get_number(root, "players_max");
                 e.version = json_get_game_version(root);
+                e.ping    = ceil(ping * 1000.0F);
 
                 if (ping_result) ping_result(&e, ping, NULL);
                 json_value_free(js);
@@ -183,6 +181,8 @@ void * ping_update(void * data) {
 }
 
 void ping_check(char * addr, int port, char * aos) {
+    static const ENetBuffer hello = {.data = "HELLO", .dataLength = 5};
+
     PingEntry entry = {
         .trycount   = 0,
         .addr.port  = port,
@@ -196,7 +196,7 @@ void ping_check(char * addr, int port, char * aos) {
 
     channel_put(&ping_queue, &entry);
 
-    enet_socket_send(sock, &entry.addr, &(ENetBuffer) {.data = "HELLO", .dataLength = 5}, 1);
+    enet_socket_send(sock, &entry.addr, &hello, 1);
 }
 
 void ping_start(void (*result)(void *, float, char *)) {

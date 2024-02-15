@@ -23,23 +23,6 @@
 #include <BetterSpades/common.h>
 #include <stddef.h>
 
-#ifdef USE_GLFW
-    #include <GLFW/glfw3.h>
-#endif
-
-#ifdef USE_SDL
-    #define SDL_MAIN_HANDLED
-    #include <SDL2/SDL.h>
-#endif
-
-#ifdef USE_GLUT
-    #ifdef __APPLE__
-        #include <GLUT/glut.h>
-    #else
-        #include <GL/glut.h>
-    #endif
-#endif
-
 typedef struct {
     void * impl;
 } WindowInstance;
@@ -118,11 +101,7 @@ enum window_buttons {
 };
 
 struct window_finger {
-#ifdef USE_SDL
-    SDL_FingerID finger;
-#else
-    int finger;
-#endif
+    int64_t finger;
     float down_time;
     int full;
     struct {
@@ -134,8 +113,17 @@ extern int window_pressed_keys[64];
 
 #define WINDOW_NOMOUSELOC -1
 
-void window_textinput(int allow);
 float window_time(void);
+
+enum {
+    SCREEN_NONE        = 0,
+    SCREEN_TEAM_SELECT = 1,
+    SCREEN_GUN_SELECT  = 2,
+};
+
+extern int screen_current;
+
+void window_textinput(int allow);
 void window_keyname(int keycode, char * output, size_t length);
 const char * window_clipboard(void);
 int window_key_down(int key);

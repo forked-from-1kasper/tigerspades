@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <BetterSpades/opengl.h>
 #include <BetterSpades/common.h>
 #include <BetterSpades/matrix.h>
 

@@ -43,6 +43,7 @@
 #include <BetterSpades/config.h>
 #include <BetterSpades/channel.h>
 #include <BetterSpades/entitysystem.h>
+#include <BetterSpades/opengl.h>
 
 int map_size_x = 512;
 int map_size_y = 64;

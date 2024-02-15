@@ -48,6 +48,8 @@
 #include <BetterSpades/chunk.h>
 #include <BetterSpades/unicode.h>
 #include <BetterSpades/main.h>
+#include <BetterSpades/opengl.h>
+#include <BetterSpades/gui.h>
 
 int fps = 0;
 
@@ -463,7 +465,7 @@ void display() {
                             float u, v;
                             texture_flag_offset(cmd->icon.id - HUD_FLAG_INDEX_START, &u, &v);
                             texture_draw_sector(
-                                &texture[TEXTURE_UI_FLAGS], cmd->icon.rect.x, settings.window_height - cmd->icon.rect.y,
+                                texture(TEXTURE_UI_FLAGS), cmd->icon.rect.x, settings.window_height - cmd->icon.rect.y,
                                 size, size, u, v, 16.0F / 256.0F, 16.0F / 256.0F
                             );
                             glEnable(GL_BLEND);

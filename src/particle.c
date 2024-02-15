@@ -32,6 +32,7 @@
 #include <BetterSpades/config.h>
 #include <BetterSpades/tesselator.h>
 #include <BetterSpades/entitysystem.h>
+#include <BetterSpades/opengl.h>
 
 EntitySystem particles;
 Tesselator particle_tesselator;

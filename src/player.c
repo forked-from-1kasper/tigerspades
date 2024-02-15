@@ -35,6 +35,7 @@
 #include <BetterSpades/weapon.h>
 #include <BetterSpades/window.h>
 #include <BetterSpades/particle.h>
+#include <BetterSpades/opengl.h>
 
 GameState gamestate;
 

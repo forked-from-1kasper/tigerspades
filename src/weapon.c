@@ -19,13 +19,12 @@
 
 #include <math.h>
 
-#include <BetterSpades/window.h>
+#include <BetterSpades/particle.h>
 #include <BetterSpades/weapon.h>
 #include <BetterSpades/camera.h>
-#include <BetterSpades/particle.h>
-#include <BetterSpades/map.h>
 #include <BetterSpades/tracer.h>
-#include <BetterSpades/hud.h>
+#include <BetterSpades/window.h>
+#include <BetterSpades/map.h>
 
 float weapon_reload_start, weapon_last_shot;
 unsigned char weapon_reload_inprogress = 0;

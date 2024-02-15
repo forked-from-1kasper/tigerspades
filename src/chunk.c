@@ -781,10 +781,10 @@ void chunk_update_all() {
 
                 tesselator_glx(&result->tesselator, &result->chunk->display_list);
 
-                glBindTexture(GL_TEXTURE_2D, texture_minimap.texture_id);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, result->chunk->x * CHUNK_SIZE, result->chunk->y * CHUNK_SIZE,
-                                CHUNK_SIZE, CHUNK_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, result->minimap_data);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                texture_subimage(
+                    texture_minimap, result->chunk->x * CHUNK_SIZE, result->chunk->y * CHUNK_SIZE,
+                    CHUNK_SIZE, CHUNK_SIZE, result->minimap_data
+                );
             }
 
             tesselator_free(&result->tesselator);
@@ -826,10 +826,7 @@ void chunk_rebuild_all() {
         }
     }
 
-    glBindTexture(GL_TEXTURE_2D, texture_minimap.texture_id);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, map_size_x, map_size_z, GL_RGBA, GL_UNSIGNED_BYTE, buff);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
+    texture_subimage(texture_minimap, 0, 0, map_size_x, map_size_z, buff);
     free(buff);
 }
 

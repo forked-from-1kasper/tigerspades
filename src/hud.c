@@ -48,6 +48,7 @@
 #include <BetterSpades/font.h>
 #include <BetterSpades/unicode.h>
 #include <BetterSpades/player.h>
+#include <BetterSpades/opengl.h>
 
 #include <parson.h>
 #include <http.h>
@@ -541,7 +542,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
     if (network_map_transfer) {
         glColor3f(1.0F, 1.0F, 1.0F);
         texture_draw(
-            &texture[TEXTURE_SPLASH], (settings.window_width - settings.window_height * 4.0F / 3.0F * 0.7F) * 0.5F,
+            texture(TEXTURE_SPLASH), (settings.window_width - settings.window_height * 4.0F / 3.0F * 0.7F) * 0.5F,
             settings.window_height - 40 * scale, settings.window_height * 4.0F / 3.0F * 0.7F, settings.window_height * 0.7F
         );
 
@@ -549,10 +550,10 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         p = clamp(0.0F, 1.0F, p);
 
         glColor3ub(68, 68, 68);
-        texture_draw(&texture[TEXTURE_WHITE], (settings.window_width - 440.0F * scale) / 2.0F + 440.0F * scale * p,
+        texture_draw(texture(TEXTURE_WHITE), (settings.window_width - 440.0F * scale) / 2.0F + 440.0F * scale * p,
                      settings.window_height * 0.25F, 440.0F * scale * (1.0F - p), 20.0F * scale);
         glColor3ub(255, 255, 50);
-        texture_draw(&texture[TEXTURE_WHITE], (settings.window_width - 440.0F * scale) / 2.0F, settings.window_height * 0.25F,
+        texture_draw(texture(TEXTURE_WHITE), (settings.window_width - 440.0F * scale) / 2.0F, settings.window_height * 0.25F,
                      440.0F * scale * p, 20.0F * scale);
         glColor3ub(69, 69, 69);
 
@@ -671,7 +672,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == pt[k].id)) ||
                        (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL) &&
                         (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == pt[k].id)))) {
-                    texture_draw(&texture[TEXTURE_INTEL],
+                    texture_draw(texture(TEXTURE_INTEL),
                                  settings.window_width / 4.0F * mul
                                      - font_length(1.0F * scale, players[pt[k].id].name, UTF8) - 27.0F * scale,
                                  (427 - 16 * cntt[mul - 1]) * scale, 16.0F * scale, 16.0F * scale);
@@ -734,13 +735,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 players[local_id].alive) {
                 Texture * zoom;
                 switch (players[local_id].weapon) {
-                    case WEAPON_RIFLE:   zoom = &texture[TEXTURE_ZOOM_SEMI];    break;
-                    case WEAPON_SMG:     zoom = &texture[TEXTURE_ZOOM_SMG];     break;
-                    case WEAPON_SHOTGUN: zoom = &texture[TEXTURE_ZOOM_SHOTGUN]; break;
+                    case WEAPON_RIFLE:   zoom = texture(TEXTURE_ZOOM_SEMI);    break;
+                    case WEAPON_SMG:     zoom = texture(TEXTURE_ZOOM_SMG);     break;
+                    case WEAPON_SHOTGUN: zoom = texture(TEXTURE_ZOOM_SHOTGUN); break;
                 }
+
                 float last_shot = is_local ? weapon_last_shot : players[local_id].gun_shoot_timer;
                 float zoom_factor = fmax(0.25F * (1.0F - ((window_time() - last_shot) / weapon_delay(players[local_id].weapon))) + 1.0F, 1.0F);
-                float aspect_ratio = (float) zoom->width / (float) zoom->height;
+                float aspect_ratio = texture_width(zoom) / texture_height(zoom);
 
                 texture_draw(zoom, (settings.window_width - settings.window_height * aspect_ratio * zoom_factor) / 2.0F,
                              settings.window_height * (zoom_factor * 0.5F + 0.5F),
@@ -748,17 +750,17 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 texture_draw_sector(zoom, 0, settings.window_height * (zoom_factor * 0.5F + 0.5F),
                                     (settings.window_width - settings.window_height * aspect_ratio * zoom_factor)
                                         / 2.0F,
-                                    settings.window_height * zoom_factor, 0.0F, 0.0F, 1.0F / (float)zoom->width, 1.0F);
+                                    settings.window_height * zoom_factor, 0.0F, 0.0F, 1.0F / texture_width(zoom), 1.0F);
                 texture_draw_sector(
                     zoom, (settings.window_width + settings.window_height * aspect_ratio * zoom_factor) / 2.0F,
                     settings.window_height * (zoom_factor * 0.5F + 0.5F),
                     (settings.window_width - settings.window_height * aspect_ratio * zoom_factor) / 2.0F,
-                    settings.window_height * zoom_factor, (float)(zoom->width - 1) / (float)zoom->width, 0.0F,
-                    1.0F / (float) zoom->width, 1.0F
+                    settings.window_height * zoom_factor, (texture_width(zoom) - 1) / texture_width(zoom), 0.0F,
+                    1.0F / texture_width(zoom), 1.0F
                 );
             } else {
                 texture_draw(
-                    HASBIT(players[local_player.id].input.buttons, BUTTON_PRIMARY) ? &texture[TEXTURE_CROSSHAIR2] : &texture[TEXTURE_CROSSHAIR1],
+                    texture(HASBIT(players[local_player.id].input.buttons, BUTTON_PRIMARY) ? TEXTURE_CROSSHAIR2 : TEXTURE_CROSSHAIR1),
                     (settings.window_width - 32) / 2.0F, (settings.window_height + 32) / 2.0F, 32, 32
                 );
             }
@@ -766,7 +768,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             if (window_time() - local_player.last_damage_timer <= 0.5F && is_local) {
                 float ang = atan2(players[local_player.id].orientation.z, players[local_player.id].orientation.x)
                           - atan2(camera.pos.z - local_player.last_damage.z, camera.pos.x - local_player.last_damage.x) + PI;
-                texture_draw_rotated(&texture[TEXTURE_INDICATOR], settings.window_width / 2.0F, settings.window_height / 2.0F, 200, 200, ang);
+                texture_draw_rotated(texture(TEXTURE_INDICATOR), settings.window_width / 2.0F, settings.window_height / 2.0F, 200, 200, ang);
             }
 
             int health = is_local ? (players[local_id].alive ? local_player.health : 0) : (players[local_id].alive ? 100 : 0);
@@ -815,7 +817,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
                 glColor3f(1.0F, 1.0F, 1.0F);
 
-                texture_draw(&texture_color_selection, settings.window_width - 64 * scale, 64 * scale, 64 * scale, 64 * scale);
+                texture_draw(texture_color_selection, settings.window_width - 64 * scale, 64 * scale, 64 * scale, 64 * scale);
             }
         }
 
@@ -898,7 +900,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             glColor3f(1.0F, 1.0F, 1.0F);
         } else {
             glColor3f(1.0F, 1.0F, 1.0F);
-            texture_draw(&texture[TEXTURE_SPLASH], (settings.window_width - 240 * scale) * 0.5F, settings.window_height - 1 * scale, 240 * scale, 180 * scale);
+            texture_draw(texture(TEXTURE_SPLASH), (settings.window_width - 240 * scale) * 0.5F, settings.window_height - 1 * scale, 240 * scale, 180 * scale);
             glColor3f(1.0F, 1.0F, 0.0F);
             font_centered(settings.window_width / 2.0F, settings.window_height - 180 * scale, 2 * scale, "CONTROLS", UTF8);
             char help_str[2][12][16] = {{"Movement", "Weapons", "Reload", "Jump", "Crouch", "Sneak",
@@ -935,14 +937,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
                     default: glColor3ub(0, 0, 0);
                 }
-                texture_draw(&texture[TEXTURE_WHITE], (settings.window_width - 440.0F * scale) / 2.0F + 440.0F * scale * p,
+                texture_draw(texture(TEXTURE_WHITE), (settings.window_width - 440.0F * scale) / 2.0F + 440.0F * scale * p,
                              settings.window_height * 0.25F, 440.0F * scale * (1.0F - p), 20.0F * scale);
                 switch (gamestate.progressbar.team_capturing) {
                     case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
                     case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
                     default: glColor3ub(0, 0, 0);
                 }
-                texture_draw(&texture[TEXTURE_WHITE], (settings.window_width - 440.0F * scale) / 2.0F,
+                texture_draw(texture(TEXTURE_WHITE), (settings.window_width - 440.0F * scale) / 2.0F,
                              settings.window_height * 0.25F, 440.0F * scale * p, 20.0F * scale);
             }
         }
@@ -955,7 +957,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 float minimap_x = (settings.window_width  - (map_size_x + 1) * scale) / 2.0F;
                 float minimap_y = (settings.window_height - (map_size_z + 1) * scale) / 2.0F + (map_size_z + 1) * scale;
 
-                texture_draw(&texture_minimap, minimap_x, minimap_y, 512 * scale, 512 * scale);
+                texture_draw(texture_minimap, minimap_x, minimap_y, 512 * scale, 512 * scale);
 
                 font_select(FONT_SMALLFNT);
                 char c[2] = {0};
@@ -971,7 +973,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
                         glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
                         texture_draw_rotated(
-                            &texture[TEXTURE_INTEL], minimap_x + gamestate.gamemode.ctf.team_1_intel_location.dropped.x * scale,
+                            texture(TEXTURE_INTEL), minimap_x + gamestate.gamemode.ctf.team_1_intel_location.dropped.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_1_intel_location.dropped.y * scale, 16 * scale,
                             16 * scale, 0.0F
                         );
@@ -979,7 +981,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     if (map_object_visible(gamestate.gamemode.ctf.team_1_base.x, 0.0F, gamestate.gamemode.ctf.team_1_base.y)) {
                         glColor3ub(gamestate.team_1.red * 0.94F, gamestate.team_1.green * 0.94F, gamestate.team_1.blue * 0.94F);
                         texture_draw_rotated(
-                            &texture[TEXTURE_MEDICAL], minimap_x + gamestate.gamemode.ctf.team_1_base.x * scale,
+                            texture(TEXTURE_MEDICAL), minimap_x + gamestate.gamemode.ctf.team_1_base.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_1_base.y * scale, 16 * scale, 16 * scale, 0.0F
                         );
                     }
@@ -987,14 +989,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
                         glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
                         texture_draw_rotated(
-                            &texture[TEXTURE_INTEL], minimap_x + gamestate.gamemode.ctf.team_2_intel_location.dropped.x * scale,
+                            texture(TEXTURE_INTEL), minimap_x + gamestate.gamemode.ctf.team_2_intel_location.dropped.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_2_intel_location.dropped.y * scale, 16 * scale, 16 * scale, 0.0F
                         );
                     }
                     if (map_object_visible(gamestate.gamemode.ctf.team_2_base.x, 0.0F, gamestate.gamemode.ctf.team_2_base.y)) {
                         glColor3ub(gamestate.team_2.red * 0.94F, gamestate.team_2.green * 0.94F, gamestate.team_2.blue * 0.94F);
                         texture_draw_rotated(
-                            &texture[TEXTURE_MEDICAL], minimap_x + gamestate.gamemode.ctf.team_2_base.x * scale,
+                            texture(TEXTURE_MEDICAL), minimap_x + gamestate.gamemode.ctf.team_2_base.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_2_base.y * scale, 16 * scale, 16 * scale, 0.0F
                         );
                     }
@@ -1014,7 +1016,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                             case TEAM_SPECTATOR: glColor3ub(0, 0, 0);
                         }
                         texture_draw_rotated(
-                            &texture[TEXTURE_COMMAND], minimap_x + gamestate.gamemode.tc.territory[k].x * scale,
+                            texture(TEXTURE_COMMAND), minimap_x + gamestate.gamemode.tc.territory[k].x * scale,
                             minimap_y - gamestate.gamemode.tc.territory[k].y * scale, 12 * scale, 12 * scale, 0.0F);
                     }
                 }
@@ -1036,13 +1038,13 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                                 break;
                         }
                         float ang = -atan2(players[k].orientation.z, players[k].orientation.x) - HALFPI;
-                        texture_draw_rotated(&texture[TEXTURE_PLAYER], minimap_x + players[k].pos.x * scale,
+                        texture_draw_rotated(texture(TEXTURE_PLAYER), minimap_x + players[k].pos.x * scale,
                                              minimap_y - players[k].pos.z * scale, 16 * scale, 16 * scale, ang);
                     }
                 }
 
                 glColor3f(0.0F, 1.0F, 1.0F);
-                texture_draw_rotated(&texture[TEXTURE_PLAYER], minimap_x + camera.pos.x * scale, minimap_y - camera.pos.z * scale,
+                texture_draw_rotated(texture(TEXTURE_PLAYER), minimap_x + camera.pos.x * scale, minimap_y - camera.pos.z * scale,
                                      16 * scale, 16 * scale, camera.rot.x + PI);
                 glColor3f(1.0F, 1.0F, 1.0F);
             } else if (settings.show_minimap) {
@@ -1067,7 +1069,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 texture_draw_empty(minimap_x - 1 * scale, minimap_y + 1 * scale, 130 * scale, 130 * scale);
                 glColor3f(1.0F, 1.0F, 1.0F);
 
-                texture_draw_sector(&texture_minimap, minimap_x, minimap_y, 128 * scale,
+                texture_draw_sector(texture_minimap, minimap_x, minimap_y, 128 * scale,
                                     128 * scale, (camera.pos.x - 64.0F) / 512.0F, (camera.pos.z - 64.0F) / 512.0F, 0.25F,
                                     0.25F);
 
@@ -1083,7 +1085,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     if (map_object_visible(gamestate.gamemode.ctf.team_1_base.x, 0.0F,
                                           gamestate.gamemode.ctf.team_1_base.y)) {
                         glColor3ub(gamestate.team_1.red * 0.94F, gamestate.team_1.green * 0.94F, gamestate.team_1.blue * 0.94F);
-                        texture_draw_rotated(&texture[TEXTURE_MEDICAL], minimap_x + tent1_x * scale,
+                        texture_draw_rotated(texture(TEXTURE_MEDICAL), minimap_x + tent1_x * scale,
                                              minimap_y - tent1_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
@@ -1094,14 +1096,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                             = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.y, view_z), view_z + 128.0F)
                             - view_z;
                         glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
-                        texture_draw_rotated(&texture[TEXTURE_INTEL], minimap_x + intel_x * scale,
+                        texture_draw_rotated(texture(TEXTURE_INTEL), minimap_x + intel_x * scale,
                                              minimap_y - intel_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
 
                     if (map_object_visible(gamestate.gamemode.ctf.team_2_base.x, 0.0F,
                                           gamestate.gamemode.ctf.team_2_base.y)) {
                         glColor3ub(gamestate.team_2.red * 0.94F, gamestate.team_2.green * 0.94F, gamestate.team_2.blue * 0.94F);
-                        texture_draw_rotated(&texture[TEXTURE_MEDICAL], minimap_x + tent2_x * scale,
+                        texture_draw_rotated(texture(TEXTURE_MEDICAL), minimap_x + tent2_x * scale,
                                              minimap_y - tent2_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
@@ -1112,7 +1114,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                             = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.y, view_z), view_z + 128.0F)
                             - view_z;
                         glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
-                        texture_draw_rotated(&texture[TEXTURE_INTEL], minimap_x + intel_x * scale,
+                        texture_draw_rotated(texture(TEXTURE_INTEL), minimap_x + intel_x * scale,
                                              minimap_y - intel_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
                 }
@@ -1132,7 +1134,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         }
                         float t_x = min(max(gamestate.gamemode.tc.territory[k].x, view_x), view_x + 128.0F) - view_x;
                         float t_y = min(max(gamestate.gamemode.tc.territory[k].y, view_z), view_z + 128.0F) - view_z;
-                        texture_draw_rotated(&texture[TEXTURE_COMMAND], minimap_x + t_x * scale,
+                        texture_draw_rotated(texture(TEXTURE_COMMAND), minimap_x + t_x * scale,
                                              minimap_y - t_y * scale, 12 * scale, 12 * scale, 0.0F);
                     }
                 }
@@ -1165,7 +1167,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                             float ang = (k == local_player.id) ?
                                 camera.rot.x + PI :
                                 -atan2(players[k].orientation.z, players[k].orientation.x) - HALFPI;
-                            texture_draw_rotated(&texture[TEXTURE_PLAYER],
+                            texture_draw_rotated(texture(TEXTURE_PLAYER),
                                                  minimap_x + player_x * scale,
                                                  minimap_y - player_y * scale, 16 * scale, 16 * scale, ang);
                         }
@@ -1223,11 +1225,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 #ifdef USE_TOUCH
     glColor3f(1.0F, 1.0F, 1.0F);
     if (camera.mode == CAMERAMODE_FPS || camera.mode == CAMERAMODE_SPECTATOR) {
-        texture_draw_rotated(&texture[TEXTURE_UI_JOYSTICK], settings.window_height * 0.3F, settings.window_height * 0.3F,
+        texture_draw_rotated(texture(TEXTURE_UI_JOYSTICK), settings.window_height * 0.3F, settings.window_height * 0.3F,
                              settings.window_height * 0.4F, settings.window_height * 0.4F, 0.0F);
-        texture_draw_rotated(&texture[TEXTURE_UI_KNOB], settings.window_height * 0.3F, settings.window_height * 0.3F,
+        texture_draw_rotated(texture(TEXTURE_UI_KNOB), settings.window_height * 0.3F, settings.window_height * 0.3F,
                              settings.window_height * 0.075F, settings.window_height * 0.075F, 0.0F);
-        texture_draw_rotated(&texture[TEXTURE_UI_KNOB], hud_ingame_touch_x + settings.window_height * 0.3F,
+        texture_draw_rotated(texture(TEXTURE_UI_KNOB), hud_ingame_touch_x + settings.window_height * 0.3F,
                              hud_ingame_touch_y + settings.window_height * 0.3F, settings.window_height * 0.1F,
                              settings.window_height * 0.1F, 0.0F);
     }
@@ -1235,7 +1237,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
     int k = 0;
     char str[128];
     while (hud_ingame_onscreencontrol(k, str, -1)) {
-        texture_draw_rotated(&texture[TEXTURE_UI_INPUT], settings.window_height * (0.2F + 0.175F * k),
+        texture_draw_rotated(texture(TEXTURE_UI_INPUT), settings.window_height * (0.2F + 0.175F * k),
                              settings.window_height * 0.96F, settings.window_height * 0.15F,
                              settings.window_height * 0.1F, 0.0F);
         font_centered(settings.window_height * (0.2F + 0.175F * k), settings.window_height * 0.98F,
@@ -1243,14 +1245,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         k++;
     }
     if (hud_ingame_onscreencontrol(64, str, -1)) {
-        texture_draw_rotated(&texture[TEXTURE_UI_INPUT], settings.window_width - settings.window_height * 0.075F,
+        texture_draw_rotated(texture(TEXTURE_UI_INPUT), settings.window_width - settings.window_height * 0.075F,
                              settings.window_height * 0.6F, settings.window_height * 0.15F,
                              settings.window_height * 0.1F, 0.0F);
         font_centered(settings.window_width - settings.window_height * 0.075F, settings.window_height * 0.62F,
                       settings.window_height * 0.04F, str, UTF8);
     }
     if (hud_ingame_onscreencontrol(65, str, -1)) {
-        texture_draw_rotated(&texture[TEXTURE_UI_INPUT], settings.window_width - settings.window_height * 0.075F,
+        texture_draw_rotated(texture(TEXTURE_UI_INPUT), settings.window_width - settings.window_height * 0.075F,
                              settings.window_height * 0.45F, settings.window_height * 0.15F,
                              settings.window_height * 0.1F, 0.0F);
         font_centered(settings.window_width - settings.window_height * 0.075F, settings.window_height * 0.47F,
@@ -2020,7 +2022,7 @@ static Server * serverlist;
 static int serverlist_con_established;
 
 typedef struct News {
-    Texture image;
+    Texture * image;
     char caption[65];
     char url[129];
     float tile_size;
@@ -2185,7 +2187,7 @@ static Texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
         int index = 32;
         while (current) {
             if (index == icon_id)
-                return &current->image;
+                return current->image;
 
             index++;
             current = current->next;
@@ -2193,8 +2195,8 @@ static Texture * hud_serverlist_ui_images(int icon_id, bool * resize) {
     }
 
     switch (icon_id) {
-        case MU_ICON_EXPANDED:  return &texture[TEXTURE_UI_EXPANDED];
-        case MU_ICON_COLLAPSED: return &texture[TEXTURE_UI_COLLAPSED];
+        case MU_ICON_EXPANDED:  return texture(TEXTURE_UI_EXPANDED);
+        case MU_ICON_COLLAPSED: return texture(TEXTURE_UI_COLLAPSED);
         default:                return NULL;
     }
 }
@@ -2212,7 +2214,7 @@ static void hud_render_tab_button(mu_Context * ctx, float scale, const char * ta
 static int hud_header_render(mu_Context * ctx, float scale, const char * text) {
     glColor3f(0.5F, 0.5F, 0.5F);
     float t = window_time() * 0.03125F;
-    texture_draw_sector(&texture[TEXTURE_UI_BG], 0.0F, settings.window_height, settings.window_width, settings.window_height, t,
+    texture_draw_sector(texture(TEXTURE_UI_BG), 0.0F, settings.window_height, settings.window_width, settings.window_height, t,
                         t, settings.window_width / 512.0F, settings.window_height / 512.0F);
 
     mu_Rect frame = mu_rect(settings.window_width * 0.125F, 0, settings.window_width * 0.75F, settings.window_height);
@@ -2426,7 +2428,8 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                         strncpy(current->url, json_object_get_string(s, "url"), sizeof(current->url) - 1);
 
                     current->tile_size = json_object_get_number(s, "tilesize");
-                    current->color = json_object_get_number(s, "color");
+                    current->color     = json_object_get_number(s, "color");
+                    current->image     = NULL;
 
                     if (json_object_get_string(s, "image")) {
                         char * img = (char *) json_object_get_string(s, "image");
@@ -2438,8 +2441,9 @@ static void hud_serverlist_render(mu_Context * ctx, float scale) {
                             unsigned char * buffer; unsigned int width, height;
                             lodepng_decode32(&buffer, &width, &height, (uint8_t *) img, size);
 
-                            texture_create_buffer(&current->image, "image", width, height, buffer, 1);
-                            texture_filter(&current->image, TEXTURE_FILTER_LINEAR);
+                            current->image = texture_alloc();
+                            texture_create_buffer(current->image, "image", width, height, buffer, 1);
+                            texture_filter(current->image, TEXTURE_FILTER_LINEAR);
                         }
                     }
 
@@ -2607,8 +2611,8 @@ static void hud_bool(mu_Context * ctx, bool * value) {
 
 static Texture * hud_settings_ui_images(int icon_id, bool * resize) {
     switch (icon_id) {
-        case MU_ICON_EXPANDED:  return &texture[TEXTURE_UI_EXPANDED];
-        case MU_ICON_COLLAPSED: return &texture[TEXTURE_UI_COLLAPSED];
+        case MU_ICON_EXPANDED:  return texture(TEXTURE_UI_EXPANDED);
+        case MU_ICON_COLLAPSED: return texture(TEXTURE_UI_COLLAPSED);
         default:                return NULL;
     }
 }
