@@ -17,10 +17,10 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <BetterSpades/common.h>
-
 #ifndef TEXTURE_H
 #define TEXTURE_H
+
+#include <BetterSpades/common.h>
 
 typedef struct _Texture Texture;
 

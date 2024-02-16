@@ -17,10 +17,10 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-
 #ifndef FILE_H
 #define FILE_H
+
+#include <stdint.h>
 
 void * file_open(const char * name, const char * mode);
 void file_printf(void * file, const char * fmt, ...);

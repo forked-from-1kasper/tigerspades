@@ -17,11 +17,11 @@
     along with BetterSpades.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <math.h>
-
 #ifndef COMMON_H
 #define COMMON_H
+
+#include <stdint.h>
+#include <math.h>
 
 #ifdef _WIN32
     #define OS_WINDOWS
@@ -234,9 +234,14 @@ static inline void encode32le(uint8_t * const buff, uint32_t value)
   buff[2] = (value >> 16) & 0xFF; buff[3] = (value >> 24) & 0xFF; }
 
 #define DEFGETTER(T, U, ident, decoder) static inline T ident(uint8_t * const buff, size_t * index) \
-                                        { union _Return { T val; U data; } ret; \
+                                        { union _Blob { T val; U data; } ret; \
                                           ret.data = decoder(buff + *index); \
                                           *index += sizeof(U); return ret.val; }
+
+#define DEFSETTER(T, U, ident, encoder) static inline void ident(uint8_t * buff, size_t * index, T value) \
+                                        { union _Blob { T val; U data; } ret; \
+                                          ret.val = value; encoder(buff + *index, ret.data); \
+                                          *index += sizeof(U); }
 
 DEFGETTER(uint8_t,  uint8_t,  getu8le,   decode8le)
 DEFGETTER(uint16_t, uint16_t, getu16le,  decode16le)
@@ -246,6 +251,15 @@ DEFGETTER(int16_t,  uint16_t, gets16le,  decode16le)
 DEFGETTER(int32_t,  uint32_t, gets32le,  decode32le)
 DEFGETTER(float,    uint32_t, getf32le,  decode32le)
 DEFGETTER(char,     uint8_t,  getc8le,   decode8le)
+
+DEFSETTER(uint8_t,  uint8_t,  setu8le,   encode8le)
+DEFSETTER(uint16_t, uint16_t, setu16le,  encode16le)
+DEFSETTER(uint32_t, uint32_t, setu32le,  encode32le)
+DEFSETTER(int8_t,   uint8_t,  sets8le,   encode8le)
+DEFSETTER(int16_t,  uint16_t, sets16le,  encode16le)
+DEFSETTER(int32_t,  uint32_t, sets32le,  encode32le)
+DEFSETTER(float,    uint32_t, setf32le,  encode32le)
+DEFSETTER(char,     uint8_t,  setc8le,   encode8le)
 
 static inline TrueColor getBGRA(uint8_t * const buff, size_t * index) {
     uint8_t b = getu8le(buff, index);

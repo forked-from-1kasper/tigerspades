@@ -40,38 +40,38 @@ kv6 model[MODEL_TOTAL];
 typedef struct {
     const char * filename;
     float scale, max_size;
-} Blob;
+} Resource;
 
-static Blob kv6_model(enum kv6 index) {
+static Resource kv6_model(enum kv6 index) {
     switch (index) {
-        case MODEL_PLAYERDEAD:     return (Blob) {"kv6/playerdead.kv6",    0.1000F, INFINITY};
-        case MODEL_PLAYERHEAD:     return (Blob) {"kv6/playerhead.kv6",    0.1000F, 1.2F};
-        case MODEL_PLAYERTORSO:    return (Blob) {"kv6/playertorso.kv6",   0.1000F, 1.8F};
-        case MODEL_PLAYERTORSOC:   return (Blob) {"kv6/playertorsoc.kv6",  0.1000F, 1.6F};
-        case MODEL_PLAYERARMS:     return (Blob) {"kv6/playerarms.kv6",    0.1000F, 2.0F};
-        case MODEL_PLAYERLEG:      return (Blob) {"kv6/playerleg.kv6",     0.1000F, 2.0F};
-        case MODEL_PLAYERLEGC:     return (Blob) {"kv6/playerlegc.kv6",    0.1000F, 1.6F};
+        case MODEL_PLAYERDEAD:     return (Resource) {"kv6/playerdead.kv6",    0.1000F, INFINITY};
+        case MODEL_PLAYERHEAD:     return (Resource) {"kv6/playerhead.kv6",    0.1000F, 1.2F};
+        case MODEL_PLAYERTORSO:    return (Resource) {"kv6/playertorso.kv6",   0.1000F, 1.8F};
+        case MODEL_PLAYERTORSOC:   return (Resource) {"kv6/playertorsoc.kv6",  0.1000F, 1.6F};
+        case MODEL_PLAYERARMS:     return (Resource) {"kv6/playerarms.kv6",    0.1000F, 2.0F};
+        case MODEL_PLAYERLEG:      return (Resource) {"kv6/playerleg.kv6",     0.1000F, 2.0F};
+        case MODEL_PLAYERLEGC:     return (Resource) {"kv6/playerlegc.kv6",    0.1000F, 1.6F};
 
-        case MODEL_INTEL:          return (Blob) {"kv6/intel.kv6",         0.2000F, INFINITY};
-        case MODEL_TENT:           return (Blob) {"kv6/cp.kv6",            0.2780F, INFINITY};
+        case MODEL_INTEL:          return (Resource) {"kv6/intel.kv6",         0.2000F, INFINITY};
+        case MODEL_TENT:           return (Resource) {"kv6/cp.kv6",            0.2780F, INFINITY};
 
-        case MODEL_SEMI:           return (Blob) {"kv6/semi.kv6",          0.0500F, 2.25F};
-        case MODEL_SMG:            return (Blob) {"kv6/smg.kv6",           0.0500F, 2.25F};
-        case MODEL_SHOTGUN:        return (Blob) {"kv6/shotgun.kv6",       0.0500F, 2.25F};
-        case MODEL_SPADE:          return (Blob) {"kv6/spade.kv6",         0.0500F, 2.25F};
-        case MODEL_BLOCK:          return (Blob) {"kv6/block.kv6",         0.0500F, 2.25F};
-        case MODEL_GRENADE:        return (Blob) {"kv6/grenade.kv6",       0.0500F, 2.25F};
+        case MODEL_SEMI:           return (Resource) {"kv6/semi.kv6",          0.0500F, 2.25F};
+        case MODEL_SMG:            return (Resource) {"kv6/smg.kv6",           0.0500F, 2.25F};
+        case MODEL_SHOTGUN:        return (Resource) {"kv6/shotgun.kv6",       0.0500F, 2.25F};
+        case MODEL_SPADE:          return (Resource) {"kv6/spade.kv6",         0.0500F, 2.25F};
+        case MODEL_BLOCK:          return (Resource) {"kv6/block.kv6",         0.0500F, 2.25F};
+        case MODEL_GRENADE:        return (Resource) {"kv6/grenade.kv6",       0.0500F, 2.25F};
 
-        case MODEL_SEMI_TRACER:    return (Blob) {"kv6/semitracer.kv6",    0.0500F, INFINITY};
-        case MODEL_SMG_TRACER:     return (Blob) {"kv6/smgtracer.kv6",     0.0500F, INFINITY};
-        case MODEL_SHOTGUN_TRACER: return (Blob) {"kv6/shotguntracer.kv6", 0.0500F, INFINITY};
+        case MODEL_SEMI_TRACER:    return (Resource) {"kv6/semitracer.kv6",    0.0500F, INFINITY};
+        case MODEL_SMG_TRACER:     return (Resource) {"kv6/smgtracer.kv6",     0.0500F, INFINITY};
+        case MODEL_SHOTGUN_TRACER: return (Resource) {"kv6/shotguntracer.kv6", 0.0500F, INFINITY};
 
-        case MODEL_SEMI_CASING:    return (Blob) {"kv6/semicasing.kv6",    0.0125F, INFINITY};
-        case MODEL_SMG_CASING:     return (Blob) {"kv6/smgcasing.kv6",     0.0125F, INFINITY};
-        case MODEL_SHOTGUN_CASING: return (Blob) {"kv6/shotguncasing.kv6", 0.0125F, INFINITY};
+        case MODEL_SEMI_CASING:    return (Resource) {"kv6/semicasing.kv6",    0.0125F, INFINITY};
+        case MODEL_SMG_CASING:     return (Resource) {"kv6/smgcasing.kv6",     0.0125F, INFINITY};
+        case MODEL_SHOTGUN_CASING: return (Resource) {"kv6/shotguncasing.kv6", 0.0125F, INFINITY};
     }
 
-    return (Blob) {NULL, 0.0F, 0.0F};
+    return (Resource) {NULL, 0.0F, 0.0F};
 }
 
 static void kv6_load_file(kv6 * model, const char * filename, float scale) {
@@ -89,9 +89,9 @@ static void kv6_check_dimensions(kv6 * model, const char * name, float max) {
 
 void kv6_init() {
     for (enum kv6 i = MODEL_FIRST; i <= MODEL_LAST; i++) {
-        Blob blob = kv6_model(i);
-        kv6_load_file(&model[i], blob.filename, blob.scale);
-        kv6_check_dimensions(&model[i], blob.filename, blob.max_size);
+        Resource res = kv6_model(i);
+        kv6_load_file(&model[i], res.filename, res.scale);
+        kv6_check_dimensions(&model[i], res.filename, res.max_size);
     }
 
     model[MODEL_BLOCK].colorize = true;
