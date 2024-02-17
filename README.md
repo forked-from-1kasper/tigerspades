@@ -2,7 +2,7 @@
 
 ## TigerSpades
 
-* Replicate of the great game *Ace of Spades* (classic voxlap).
+* Compatible client of *Ace of Spades* (classic voxlap).
 * Runs on very old systems back to OpenGL 1.1 (OpenGL ES support too).
 * Shares similar if not even better performance to voxlap.
 
@@ -18,6 +18,7 @@
 * Support of big-endian systems (e.g. PowerPC).
 * Unicode & UTF-8.
 * Customizable key bindings.
+* Cleaned up user interface.
 
 ## System requirements
 
@@ -25,9 +26,9 @@
 | ------- | ---------------------------------------------------- |
 | OS      | Windows 98 or Linux                                  |
 | CPU     | 1 GHz single core processor                          |
-| GPU     | 64MB VRAM, Mobile Intel 945GM or equivalent          |
-| RAM     | 256MB                                                |
-| Display | 800x600px                                            |
+| GPU     | 64 MiB VRAM, Mobile Intel 945GM or equivalent        |
+| RAM     | 256 MiB                                              |
+| Display | 800×600                                              |
 | Others  | Keyboard and mouse<br />Dial up network connection   |
 
 ## Build requirements
