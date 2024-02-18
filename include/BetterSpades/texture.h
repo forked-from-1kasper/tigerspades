@@ -85,7 +85,7 @@ void texture_draw_empty(float x, float y, float w, float h);
 void texture_draw_empty_rotated(float x, float y, float w, float h, float angle);
 void texture_draw_rotated(Texture *, float x, float y, float w, float h, float angle);
 void texture_resize_pow2(Texture *, const char *, int min_size);
-TrueColor texture_block_color(int x, int y);
+RGB3i texture_block_color(int x, int y);
 void texture_gradient_fog(unsigned int *);
 void texture_bind(Texture *);
 float texture_width(Texture *);

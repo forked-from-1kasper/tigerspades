@@ -307,7 +307,7 @@ static void hud_ingame_render3D() {
             switch (players[local_player.id].team) {
                 case TEAM_1: {
                     if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)
-                    && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == local_player.id)) {
+                    && (gamestate.gamemode.ctf.team_2_intel_location.held == local_player.id)) {
                         rotating_model      = &model[MODEL_INTEL];
                         rotating_model_team = TEAM_2;
                     }
@@ -316,7 +316,7 @@ static void hud_ingame_render3D() {
 
                 case TEAM_2: {
                     if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)
-                    && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == local_player.id)) {
+                    && (gamestate.gamemode.ctf.team_1_intel_location.held == local_player.id)) {
                         rotating_model      = &model[MODEL_INTEL];
                         rotating_model_team = TEAM_1;
                     }
@@ -327,9 +327,9 @@ static void hud_ingame_render3D() {
 
         if (gamestate.gamemode_type == GAMEMODE_TC) {
             for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
-                float n = norm3f(gamestate.gamemode.tc.territory[k].x,
-                                 63.0F - gamestate.gamemode.tc.territory[k].z,
-                                 gamestate.gamemode.tc.territory[k].y,
+                float n = norm3f(gamestate.gamemode.tc.territory[k].pos.x,
+                                 63.0F - gamestate.gamemode.tc.territory[k].pos.z,
+                                 gamestate.gamemode.tc.territory[k].pos.y,
                                  players[local_player.id].pos.x,
                                  players[local_player.id].pos.y,
                                  players[local_player.id].pos.z);
@@ -358,7 +358,7 @@ static void hud_ingame_render3D() {
 
 static void hud_ingame_keyboard(int key, int action, int mods, int internal);
 
-static int hud_ingame_onscreencontrol(int index, char* str, int activate) {
+static int hud_ingame_onscreencontrol(int index, char * str, int activate) {
     if (chat_input_mode == CHAT_NO_INPUT) {
         if (show_exit) {
             switch (index) {
@@ -602,7 +602,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             }
 
             char score_str[8];
-            glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
+            glColorRGB3i(gamestate.team_1.color);
+
             switch (gamestate.gamemode_type) {
                 case GAMEMODE_CTF:
                     sprintf(score_str, "%i/%i", gamestate.gamemode.ctf.team_1_score,
@@ -621,7 +622,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             font_centered(settings.window_width * 0.25F, settings.window_height - 15 * scale, 2.0F * scale, gamestate.team_1.name, UTF8);
             font_centered(settings.window_width * 0.25F, settings.window_height - 47 * scale, 3.0F * scale, score_str, UTF8);
 
-            glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
+            glColorRGB3i(gamestate.team_2.color);
             switch (gamestate.gamemode_type) {
                 case GAMEMODE_CTF:
                     sprintf(score_str, "%i/%i", gamestate.gamemode.ctf.team_2_score,
@@ -669,9 +670,9 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 sprintf(id_str, "#%i", pt[k].id);
                 if (gamestate.gamemode_type == GAMEMODE_CTF &&
                       ((HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL) &&
-                        (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == pt[k].id)) ||
+                        (gamestate.gamemode.ctf.team_1_intel_location.held == pt[k].id)) ||
                        (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL) &&
-                        (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == pt[k].id)))) {
+                        (gamestate.gamemode.ctf.team_2_intel_location.held == pt[k].id)))) {
                     texture_draw(texture(TEXTURE_INTEL),
                                  settings.window_width / 4.0F * mul
                                      - font_length(1.0F * scale, players[pt[k].id].name, UTF8) - 27.0F * scale,
@@ -698,8 +699,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             if (cameracontroller_bodyview_player != local_player.id) {
                 font_select(FONT_SMALLFNT);
                 switch (players[cameracontroller_bodyview_player].team) {
-                    case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
-                    case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
+                    case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+                    case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
                 }
                 font_centered(settings.window_width / 2.0F, settings.window_height * 0.25F, 1.0F * scale,
                               players[cameracontroller_bodyview_player].name, UTF8);
@@ -924,24 +925,25 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                != gamestate.progressbar.team_capturing) {
             float p = clamp(0.0F, 1.0F, gamestate.progressbar.progress + 0.05F * gamestate.progressbar.rate * (window_time() - gamestate.progressbar.update));
 
-            float l = norm3f(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].x,
-                             63.0F - gamestate.gamemode.tc.territory[gamestate.progressbar.tent].z,
-                             gamestate.gamemode.tc.territory[gamestate.progressbar.tent].y,
+            float l = norm3f(gamestate.gamemode.tc.territory[gamestate.progressbar.tent].pos.x,
+                             63.0F - gamestate.gamemode.tc.territory[gamestate.progressbar.tent].pos.z,
+                             gamestate.gamemode.tc.territory[gamestate.progressbar.tent].pos.y,
                              players[local_player.id].pos.x,
                              players[local_player.id].pos.y,
                              players[local_player.id].pos.z);
 
             if (p < 1.0F && l < 20.0F * 20.0F) {
                 switch (gamestate.gamemode.tc.territory[gamestate.progressbar.tent].team) {
-                    case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
-                    case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
+                    case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+                    case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
                     default: glColor3ub(0, 0, 0);
                 }
                 texture_draw(texture(TEXTURE_WHITE), (settings.window_width - 440.0F * scale) / 2.0F + 440.0F * scale * p,
                              settings.window_height * 0.25F, 440.0F * scale * (1.0F - p), 20.0F * scale);
+
                 switch (gamestate.progressbar.team_capturing) {
-                    case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
-                    case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
+                    case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+                    case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
                     default: glColor3ub(0, 0, 0);
                 }
                 texture_draw(texture(TEXTURE_WHITE), (settings.window_width - 440.0F * scale) / 2.0F,
@@ -971,15 +973,16 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
                 if (gamestate.gamemode_type == GAMEMODE_CTF) {
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
-                        glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
+                        glColorRGB3i(gamestate.team_1.color);
                         texture_draw_rotated(
                             texture(TEXTURE_INTEL), minimap_x + gamestate.gamemode.ctf.team_1_intel_location.dropped.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_1_intel_location.dropped.y * scale, 16 * scale,
                             16 * scale, 0.0F
                         );
                     }
+
                     if (map_object_visible(gamestate.gamemode.ctf.team_1_base.x, 0.0F, gamestate.gamemode.ctf.team_1_base.y)) {
-                        glColor3ub(gamestate.team_1.red * 0.94F, gamestate.team_1.green * 0.94F, gamestate.team_1.blue * 0.94F);
+                        glColorRGB3ib(gamestate.team_1.color, 0.94F);
                         texture_draw_rotated(
                             texture(TEXTURE_MEDICAL), minimap_x + gamestate.gamemode.ctf.team_1_base.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_1_base.y * scale, 16 * scale, 16 * scale, 0.0F
@@ -987,37 +990,34 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     }
 
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
-                        glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
+                        glColorRGB3i(gamestate.team_2.color);
                         texture_draw_rotated(
                             texture(TEXTURE_INTEL), minimap_x + gamestate.gamemode.ctf.team_2_intel_location.dropped.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_2_intel_location.dropped.y * scale, 16 * scale, 16 * scale, 0.0F
                         );
                     }
+
                     if (map_object_visible(gamestate.gamemode.ctf.team_2_base.x, 0.0F, gamestate.gamemode.ctf.team_2_base.y)) {
-                        glColor3ub(gamestate.team_2.red * 0.94F, gamestate.team_2.green * 0.94F, gamestate.team_2.blue * 0.94F);
+                        glColorRGB3ib(gamestate.team_2.color, 0.94F);
                         texture_draw_rotated(
                             texture(TEXTURE_MEDICAL), minimap_x + gamestate.gamemode.ctf.team_2_base.x * scale,
                             minimap_y - gamestate.gamemode.ctf.team_2_base.y * scale, 16 * scale, 16 * scale, 0.0F
                         );
                     }
                 }
+
                 if (gamestate.gamemode_type == GAMEMODE_TC) {
                     for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
                         switch (gamestate.gamemode.tc.territory[k].team) {
-                            case TEAM_1:
-                                glColor3f(gamestate.team_1.red * 0.94F, gamestate.team_1.green * 0.94F,
-                                          gamestate.team_1.blue * 0.94F);
-                                break;
-                            case TEAM_2:
-                                glColor3f(gamestate.team_2.red * 0.94F, gamestate.team_2.green * 0.94F,
-                                          gamestate.team_2.blue * 0.94F);
-                                break;
-                            default:
-                            case TEAM_SPECTATOR: glColor3ub(0, 0, 0);
+                            case TEAM_1: glColorRGB3ib(gamestate.team_1.color, 0.94F); break;
+                            case TEAM_2: glColorRGB3ib(gamestate.team_2.color, 0.94F); break;
+                            default: case TEAM_SPECTATOR: glColor3ub(0, 0, 0);
                         }
+
                         texture_draw_rotated(
-                            texture(TEXTURE_COMMAND), minimap_x + gamestate.gamemode.tc.territory[k].x * scale,
-                            minimap_y - gamestate.gamemode.tc.territory[k].y * scale, 12 * scale, 12 * scale, 0.0F);
+                            texture(TEXTURE_COMMAND), minimap_x + gamestate.gamemode.tc.territory[k].pos.x * scale,
+                            minimap_y - gamestate.gamemode.tc.territory[k].pos.y * scale, 12 * scale, 12 * scale, 0.0F
+                        );
                     }
                 }
 
@@ -1030,12 +1030,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 #endif
                     {
                         switch (players[k].team) {
-                            case TEAM_1:
-                                glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
-                                break;
-                            case TEAM_2:
-                                glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
-                                break;
+                            case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+                            case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
                         }
                         float ang = -atan2(players[k].orientation.z, players[k].orientation.x) - HALFPI;
                         texture_draw_rotated(texture(TEXTURE_PLAYER), minimap_x + players[k].pos.x * scale,
@@ -1053,10 +1049,9 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 float view_z = camera.pos.z - 64.0F; // min(max(camera.pos.z-64.0F,0.0F),map_size_z+1-128.0F);
 
                 switch (players[local_player.id].team) {
-                    case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
-                    case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
-                    case TEAM_SPECTATOR:
-                    default: glColor3f(0.0F, 0.0F, 0.0F); // same as chat
+                    case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+                    case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
+                    case TEAM_SPECTATOR: default: glColor3f(0.0F, 0.0F, 0.0F); // same as chat
                 }
 
                 float minimap_x = settings.window_width - 143 * scale;
@@ -1084,10 +1079,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
                     if (map_object_visible(gamestate.gamemode.ctf.team_1_base.x, 0.0F,
                                           gamestate.gamemode.ctf.team_1_base.y)) {
-                        glColor3ub(gamestate.team_1.red * 0.94F, gamestate.team_1.green * 0.94F, gamestate.team_1.blue * 0.94F);
+                        glColorRGB3ib(gamestate.team_1.color, 0.94F);
                         texture_draw_rotated(texture(TEXTURE_MEDICAL), minimap_x + tent1_x * scale,
                                              minimap_y - tent1_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
+
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.x, view_x), view_x + 128.0F)
@@ -1095,17 +1091,18 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         float intel_y
                             = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.y, view_z), view_z + 128.0F)
                             - view_z;
-                        glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
+                        glColorRGB3i(gamestate.team_1.color);
                         texture_draw_rotated(texture(TEXTURE_INTEL), minimap_x + intel_x * scale,
                                              minimap_y - intel_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
 
                     if (map_object_visible(gamestate.gamemode.ctf.team_2_base.x, 0.0F,
                                           gamestate.gamemode.ctf.team_2_base.y)) {
-                        glColor3ub(gamestate.team_2.red * 0.94F, gamestate.team_2.green * 0.94F, gamestate.team_2.blue * 0.94F);
+                        glColorRGB3ib(gamestate.team_2.color, 0.94F);
                         texture_draw_rotated(texture(TEXTURE_MEDICAL), minimap_x + tent2_x * scale,
                                              minimap_y - tent2_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
+
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
                         float intel_x
                             = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.x, view_x), view_x + 128.0F)
@@ -1113,27 +1110,22 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                         float intel_y
                             = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.y, view_z), view_z + 128.0F)
                             - view_z;
-                        glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
+                        glColorRGB3i(gamestate.team_2.color);
                         texture_draw_rotated(texture(TEXTURE_INTEL), minimap_x + intel_x * scale,
                                              minimap_y - intel_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
                 }
+
                 if (gamestate.gamemode_type == GAMEMODE_TC) {
                     for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
                         switch (gamestate.gamemode.tc.territory[k].team) {
-                            case TEAM_1:
-                                glColor3f(gamestate.team_1.red * 0.94F, gamestate.team_1.green * 0.94F,
-                                          gamestate.team_1.blue * 0.94F);
-                                break;
-                            case TEAM_2:
-                                glColor3f(gamestate.team_2.red * 0.94F, gamestate.team_2.green * 0.94F,
-                                          gamestate.team_2.blue * 0.94F);
-                                break;
-                            default:
-                            case TEAM_SPECTATOR: glColor3ub(0, 0, 0);
+                            case TEAM_1: glColorRGB3ib(gamestate.team_1.color, 0.94F); break;
+                            case TEAM_2: glColorRGB3ib(gamestate.team_2.color, 0.94F); break;
+                            default: case TEAM_SPECTATOR: glColor3ub(0, 0, 0);
                         }
-                        float t_x = min(max(gamestate.gamemode.tc.territory[k].x, view_x), view_x + 128.0F) - view_x;
-                        float t_y = min(max(gamestate.gamemode.tc.territory[k].y, view_z), view_z + 128.0F) - view_z;
+
+                        float t_x = min(max(gamestate.gamemode.tc.territory[k].pos.x, view_x), view_x + 128.0F) - view_x;
+                        float t_y = min(max(gamestate.gamemode.tc.territory[k].pos.y, view_z), view_z + 128.0F) - view_z;
                         texture_draw_rotated(texture(TEXTURE_COMMAND), minimap_x + t_x * scale,
                                              minimap_y - t_y * scale, 12 * scale, 12 * scale, 0.0F);
                     }
@@ -1153,14 +1145,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                             glColor3ub(0, 255, 255);
                         } else {
                             switch (players[k].team) {
-                                case TEAM_1:
-                                    glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue);
-                                    break;
-                                case TEAM_2:
-                                    glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue);
-                                    break;
+                                case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+                                case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
                             }
                         }
+
                         float player_x = ((k == local_player.id) ? camera.pos.x : players[k].pos.x) - view_x;
                         float player_y = ((k == local_player.id) ? camera.pos.z : players[k].pos.z) - view_z;
                         if (player_x > 0.0F && player_x < 128.0F && player_y > 0.0F && player_y < 128.0F) {
@@ -1183,8 +1172,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
             char * th[4] = {"torso", "head", "arms", "legs"}; char str[32];
             switch (players[player_intersection_player].team) {
-                case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
-                case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
+                case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+                case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
                 default: glColor3f(1.0F, 1.0F, 1.0F);
             }
             sprintf(str, "%s (%s)", players[player_intersection_player].name, th[player_intersection_type]);
@@ -1345,15 +1334,16 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                 int amount = map_cube_line(local_player.drag[X], local_player.drag[Z], 63 - local_player.drag[Y], pos[0],
                                            pos[2], 63 - pos[1], NULL);
                 if (amount <= local_player.blocks) {
-                    PacketBlockLine line;
-                    line.player_id = local_player.id;
-                    line.sx = htoles32(local_player.drag[X]);
-                    line.sy = htoles32(local_player.drag[Z]);
-                    line.sz = htoles32(63 - local_player.drag[Y]);
-                    line.ex = htoles32(pos[0]);
-                    line.ey = htoles32(pos[2]);
-                    line.ez = htoles32(63 - pos[1]);
-                    network_send(PACKET_BLOCKLINE_ID, &line, sizeof(line));
+                    PacketBlockLine contained;
+                    contained.player_id = local_player.id;
+                    contained.start.x   = local_player.drag[X];
+                    contained.start.y   = local_player.drag[Z];
+                    contained.start.z   = 63 - local_player.drag[Y];
+                    contained.end.x     = pos[X];
+                    contained.end.y     = pos[Z];
+                    contained.end.z     = 63 - pos[Y];
+
+                    sendPacketBlockLine(&contained, 0);
                     local_player.blocks -= amount;
                 }
 
@@ -1412,26 +1402,22 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                 if (action == WINDOW_RELEASE) {
                     local_player.grenades = max(local_player.grenades - 1, 0);
 
-                    PacketGrenade g;
-                    g.player_id   = local_player.id;
-                    g.fuse_length = htolef(max(3.0F - (window_time() - players[local_player.id].start.lmb), 0.0F));
+                    PacketGrenade contained;
+                    contained.player_id   = local_player.id;
+                    contained.fuse_length = max(3.0F - (window_time() - players[local_player.id].start.lmb), 0.0F);
 
-                    g.x = htolef(players[local_player.id].pos.x);
-                    g.y = htolef(players[local_player.id].pos.z);
-                    g.z = htolef(63.0F - players[local_player.id].pos.y);
+                    contained.pos = htonv3(players[local_player.id].pos);
 
-                    g.vx = htolef((g.fuse_length == 0.0F) ?
-                        0.0F :
-                              (players[local_player.id].orientation.x + players[local_player.id].physics.velocity.x));
-                    g.vy = htolef((g.fuse_length == 0.0F) ?
-                        0.0F :
-                              (players[local_player.id].orientation.z + players[local_player.id].physics.velocity.z));
-                    g.vz = htolef((g.fuse_length == 0.0F) ?
-                        0.0F :
-                              (-players[local_player.id].orientation.y - players[local_player.id].physics.velocity.y));
+                    contained.vel.x = (contained.fuse_length == 0.0F) ? 0.0F :
+                                      (players[local_player.id].orientation.x + players[local_player.id].physics.velocity.x);
+                    contained.vel.y = (contained.fuse_length == 0.0F) ? 0.0F :
+                                      (players[local_player.id].orientation.z + players[local_player.id].physics.velocity.z);
+                    contained.vel.z = (contained.fuse_length == 0.0F) ? 0.0F :
+                                      (-players[local_player.id].orientation.y - players[local_player.id].physics.velocity.y);
 
-                    network_send(PACKET_GRENADE_ID, &g, sizeof(g));
-                    read_PacketGrenade(&g, sizeof(g)); // server won’t loop packet back
+                    sendPacketGrenade(&contained, 0);
+
+                    handlePacketGrenade(&contained); // server won’t loop packet back
                     players[local_player.id].item_showup = window_time();
                 }
 
@@ -1482,12 +1468,14 @@ static int autocomplete_type_cmp(const void * a, const void * b) {
 }
 
 void broadcast_chat(unsigned char chat_type, const char * message, size_t size) {
+    char buff[2048]; size_t written = encodeMagic(buff, message, size, sizeof(buff));
+
     PacketChatMessage contained;
     contained.player_id = local_player.id;
     contained.chat_type = chat_type;
+    contained.message   = buff;
 
-    size_t written = encodeMagic((char *) contained.message, message, size, sizeof(contained.message));
-    network_send(PACKET_CHATMESSAGE_ID, &contained, sizeof(contained) - sizeof(contained.message) + written + 1);
+    sendPacketChatMessage(&contained, written + 1);
 }
 
 static const char * hud_ingame_completeword(const char * s) {
@@ -1756,11 +1744,11 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
 
                 if (new_team >= 0) {
                     if (network_logged_in) {
-                        PacketChangeTeam p;
-                        p.player_id = local_player.id;
-                        p.team      = new_team;
+                        PacketChangeTeam contained;
+                        contained.player_id = local_player.id;
+                        contained.team      = new_team;
+                        sendPacketChangeTeam(&contained, 0);
 
-                        network_send(PACKET_CHANGETEAM_ID, &p, sizeof(p));
                         screen_current = SCREEN_NONE;
                         return;
                     } else {
@@ -1795,11 +1783,11 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
 
                 if (new_gun >= 0) {
                     if (network_logged_in) {
-                        PacketChangeWeapon p;
-                        p.player_id = local_player.id;
-                        p.weapon    = new_gun;
+                        PacketChangeWeapon contained;
+                        contained.player_id = local_player.id;
+                        contained.weapon    = new_gun;
 
-                        network_send(PACKET_CHANGEWEAPON_ID, &p, sizeof(p));
+                        sendPacketChangeWeapon(&contained, 0);
                     } else network_join_game(new_team >= 0 ? new_team : default_team, new_gun);
 
                     screen_current = SCREEN_NONE;

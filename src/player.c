@@ -340,20 +340,21 @@ void player_render_all() {
                 if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
                     hit.type = CAMERA_HITTYPE_NONE;
                 switch (hit.type) {
-                    case CAMERA_HITTYPE_BLOCK:
+                    case CAMERA_HITTYPE_BLOCK: {
                         sound_create(SOUND_WORLD, &sound_hitground, hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
 
                         if (k == local_player.id)
                             map_damage(hit.x, hit.y, hit.z, 50);
 
                         if (k == local_player.id && map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
-                            PacketBlockAction blk;
-                            blk.action_type = ACTION_DESTROY;
-                            blk.player_id = local_player.id;
-                            blk.x = htoles32(hit.x);
-                            blk.y = htoles32(hit.z);
-                            blk.z = htoles32(63 - hit.y);
-                            network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
+                            PacketBlockAction contained;
+                            contained.action_type = ACTION_DESTROY;
+                            contained.player_id   = local_player.id;
+                            contained.pos.x       = hit.x;
+                            contained.pos.y       = hit.z;
+                            contained.pos.z       = 63 - hit.y;
+                            sendPacketBlockAction(&contained, 0);
+
                             local_player.blocks = min(local_player.blocks + 1, 50);
                             // read_PacketBlockAction(&blk,sizeof(blk));
                         } else {
@@ -361,7 +362,9 @@ void player_render_all() {
                                             2.5F, 1.0F, 4, 0.1F, 0.25F);
                         }
                         break;
-                    case CAMERA_HITTYPE_PLAYER:
+                    }
+
+                    case CAMERA_HITTYPE_PLAYER: {
                         sound_create_sticky(&sound_spade_whack, players + k, k);
                         particle_create(
                             Red,
@@ -371,12 +374,14 @@ void player_render_all() {
                             3.5F, 1.0F, 8, 0.1F, 0.4F
                         );
                         if (k == local_player.id) {
-                            PacketHit h;
-                            h.player_id = hit.player_id;
-                            h.hit_type = HITTYPE_SPADE;
-                            network_send(PACKET_HIT_ID, &h, sizeof(h));
+                            PacketHit contained;
+                            contained.player_id = hit.player_id;
+                            contained.hit_type  = HITTYPE_SPADE;
+                            sendPacketHit(&contained, 0);
                         }
                         break;
+                    }
+
                     case CAMERA_HITTYPE_NONE: sound_create_sticky(&sound_spade_woosh, players + k, k); break;
                 }
                 players[k].spade_use_type = 1;
@@ -391,13 +396,13 @@ void player_render_all() {
                     if (hit.type == CAMERA_HITTYPE_BLOCK && hit.y > 1) {
                         sound_create(SOUND_WORLD, &sound_hitground, hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
                         if (k == local_player.id) {
-                            PacketBlockAction blk;
-                            blk.action_type = ACTION_SPADE;
-                            blk.player_id = local_player.id;
-                            blk.x = htoles32(hit.x);
-                            blk.y = htoles32(hit.z);
-                            blk.z = htoles32(63 - hit.y);
-                            network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
+                            PacketBlockAction contained;
+                            contained.action_type = ACTION_SPADE;
+                            contained.player_id   = local_player.id;
+                            contained.pos.x       = hit.x;
+                            contained.pos.y       = hit.z;
+                            contained.pos.z       = 63 - hit.y;
+                            sendPacketBlockAction(&contained, 0);
                         }
                     } else {
                         sound_create_sticky(&sound_spade_woosh, players + k, k);
@@ -664,8 +669,8 @@ void player_render(Player * p, int id) {
         matrix_upload();
 
         switch (p->team) {
-            case TEAM_1: glColor3ub(gamestate.team_1.red, gamestate.team_1.green, gamestate.team_1.blue); break;
-            case TEAM_2: glColor3ub(gamestate.team_2.red, gamestate.team_2.green, gamestate.team_2.blue); break;
+            case TEAM_1: glColorRGB3i(gamestate.team_1.color); break;
+            case TEAM_2: glColorRGB3i(gamestate.team_2.color); break;
         }
 
         font_select(FONT_FIXEDSYS);
@@ -751,9 +756,9 @@ void player_render(Player * p, int id) {
 
         if (gamestate.gamemode_type == GAMEMODE_CTF &&
             ((HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL) &&
-              (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id)) ||
+              (gamestate.gamemode.ctf.team_1_intel_location.held == id)) ||
              (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL) &&
-              (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id)))) {
+              (gamestate.gamemode.ctf.team_2_intel_location.held == id)))) {
             static kv6 * const model_intel = &model[MODEL_INTEL];
 
             matrix_push(matrix_model);
@@ -774,11 +779,11 @@ void player_render(Player * p, int id) {
             int t = TEAM_SPECTATOR;
 
             if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)
-             && (gamestate.gamemode.ctf.team_1_intel_location.held.player_id == id))
+             && (gamestate.gamemode.ctf.team_1_intel_location.held == id))
                 t = TEAM_1;
 
             if (HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)
-             && (gamestate.gamemode.ctf.team_2_intel_location.held.player_id == id))
+             && (gamestate.gamemode.ctf.team_2_intel_location.held == id))
                 t = TEAM_2;
 
             kv6_render(model_intel, t);

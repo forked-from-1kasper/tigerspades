@@ -183,10 +183,19 @@ void drawScene() {
     if (gamestate.gamemode_type == GAMEMODE_TC) {
         for (int k = 0; k < gamestate.gamemode.tc.territory_count; k++) {
             matrix_push(matrix_model);
-            matrix_translate(matrix_model, gamestate.gamemode.tc.territory[k].x,
-                             63.0F - gamestate.gamemode.tc.territory[k].z + 1.0F, gamestate.gamemode.tc.territory[k].y);
-            kv6_calclight(gamestate.gamemode.tc.territory[k].x, 63.0F - gamestate.gamemode.tc.territory[k].z + 1.0F,
-                          gamestate.gamemode.tc.territory[k].y);
+            matrix_translate(
+                matrix_model,
+                gamestate.gamemode.tc.territory[k].pos.x,
+                63.0F - gamestate.gamemode.tc.territory[k].pos.z + 1.0F,
+                gamestate.gamemode.tc.territory[k].pos.y
+            );
+
+            kv6_calclight(
+                gamestate.gamemode.tc.territory[k].pos.x,
+                63.0F - gamestate.gamemode.tc.territory[k].pos.z + 1.0F,
+                gamestate.gamemode.tc.territory[k].pos.y
+            );
+
             matrix_upload();
             kv6_render(&model[MODEL_TENT], min(gamestate.gamemode.tc.territory[k].team, 2));
             matrix_pop(matrix_model);
@@ -255,14 +264,13 @@ void display() {
                         players[local_player.id].item_showup = window_time();
                         local_player.blocks = max(local_player.blocks - 1, 0);
 
-                        PacketBlockAction blk;
-                        blk.player_id = local_player.id;
-                        blk.action_type = ACTION_BUILD;
-                        blk.x = htoles32(pos[0]);
-                        blk.y = htoles32(pos[2]);
-                        blk.z = htoles32(63 - pos[1]);
-                        network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
-                        // read_PacketBlockAction(&blk,sizeof(blk));
+                        PacketBlockAction contained;
+                        contained.player_id   = local_player.id;
+                        contained.action_type = ACTION_BUILD;
+                        contained.pos.x       = pos[0];
+                        contained.pos.y       = pos[2];
+                        contained.pos.z       = 63 - pos[1];
+                        sendPacketBlockAction(&contained, 0);
                     }
                 }
 
@@ -270,14 +278,15 @@ void display() {
                    (players[local_player.id].held_item == TOOL_GRENADE) &&
                    (window_time() - players[local_player.id].start.lmb > 3.0F)) {
                     local_player.grenades = max(local_player.grenades - 1, 0);
-                    PacketGrenade g;
-                    g.player_id = local_player.id;
-                    g.x = htolef(players[local_player.id].pos.x);
-                    g.y = htolef(players[local_player.id].pos.z);
-                    g.z = htolef(63.0F - players[local_player.id].pos.y);
-                    g.fuse_length = g.vx = g.vy = g.vz = 0.0F;
-                    network_send(PACKET_GRENADE_ID, &g, sizeof(g));
-                    read_PacketGrenade(&g, sizeof(g));
+                    PacketGrenade contained;
+                    contained.player_id   = local_player.id;
+                    contained.pos         = htonv3(players[local_player.id].pos);
+                    contained.vel         = (Vector3f) {0.0F, 0.0F, 0.0F};
+                    contained.fuse_length = 0.0F;
+
+                    sendPacketGrenade(&contained, 0);
+                    handlePacketGrenade(&contained); // see “src/hud.c”
+
                     players[local_player.id].start.lmb = window_time();
                 }
             }
@@ -303,7 +312,7 @@ void display() {
                 glLineWidth(1.0F);
                 glDisable(GL_DEPTH_TEST);
                 glDepthMask(GL_FALSE);
-                Point cubes[64];
+                Vector3i cubes[64];
                 int amount = 0;
                 if (is_local && local_player.drag_active && HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY)
                    && players[local_player.id].held_item == TOOL_BLOCK) {

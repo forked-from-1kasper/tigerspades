@@ -73,7 +73,7 @@ static int grenade_move(Grenade * g, float dt) {
     g->velocity.z = -g->velocity.y;
     g->velocity.y = tmp;
 
-    Position fpos = g->pos; // old position
+    Vector3f fpos = g->pos; // old position
 
     // do velocity & gravity (friction is negligible)
     float f = dt * 32.0F;
@@ -95,20 +95,19 @@ static int grenade_move(Grenade * g, float dt) {
     int lpz = floor(g->pos.z);
 
     if (grenade_clipworld(lpx, lpy, lpz)) { // hit a wall
-
         ret = 1;
         if (fabs(g->velocity.x) > 0.1F || fabs(g->velocity.y) > 0.1F || fabs(g->velocity.z) > 0.1F)
             ret = 2; // play sound
 
-        int lp2x = floor(fpos.x);
-        int lp2y = floor(fpos.y);
-        int lp2z = floor(fpos.z);
+        int lp2x = floor(fpos.x), lp2y = floor(fpos.y), lp2z = floor(fpos.z);
+
         if (lpz != lp2z && ((lpx == lp2x && lpy == lp2y) || !grenade_clipworld(lpx, lpy, lp2z)))
             g->velocity.z *= -1;
         else if (lpx != lp2x && ((lpy == lp2y && lpz == lp2z) || !grenade_clipworld(lp2x, lpy, lpz)))
             g->velocity.x *= -1;
         else if (lpy != lp2y && ((lpx == lp2x && lpz == lp2z) || !grenade_clipworld(lpx, lp2y, lpz)))
             g->velocity.y *= -1;
+
         g->pos = fpos; // set back to old position
         g->velocity.x *= 0.36F;
         g->velocity.y *= 0.36F;

@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <math.h>
 
+#include <AceOfSpades/types.h>
+
 #ifdef _WIN32
     #define OS_WINDOWS
 #endif
@@ -110,6 +112,9 @@ static inline float norm2f(float x1, float y1, float x2, float y2)
 static inline float norm3f(float x1, float y1, float z1, float x2, float y2, float z2)
 { return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1); }
 
+static inline float normv3f(const Vector3f v1, const Vector3f v2)
+{ return norm3f(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z); }
+
 static inline int norm3i(int x1, int y1, int z1, int x2, int y2, int z2)
 { return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1); }
 
@@ -139,22 +144,6 @@ static inline float hypot3f(float x, float y, float z) { return sqrtf(x * x + y 
 typedef enum {
     VER075, VER076, UNKNOWN
 } Version;
-
-typedef struct {
-    float x, y, z;
-} Position;
-
-typedef struct {
-    float x, y, z;
-} Orientation;
-
-typedef struct {
-    float x, y, z;
-} Velocity;
-
-typedef struct {
-    uint8_t r, g, b, a;
-} TrueColor;
 
 typedef enum {
     UTF8, CP437, CP1252
@@ -261,6 +250,48 @@ DEFSETTER(int32_t,  uint32_t, sets32le,  encode32le)
 DEFSETTER(float,    uint32_t, setf32le,  encode32le)
 DEFSETTER(char,     uint8_t,  setc8le,   encode8le)
 
+static inline Vector3f getv3f(uint8_t * const buff, size_t * index) {
+    float x = getf32le(buff, index);
+    float y = getf32le(buff, index);
+    float z = getf32le(buff, index);
+
+    return (Vector3f) {.x = x, .y = y, .z = z};
+}
+
+static inline void setv3f(uint8_t * buff, size_t * index, Vector3f vec) {
+    setf32le(buff, index, vec.x);
+    setf32le(buff, index, vec.y);
+    setf32le(buff, index, vec.z);
+}
+
+static inline Vector3i getv3i(uint8_t * const buff, size_t * index) {
+    uint32_t x = getu32le(buff, index);
+    uint32_t y = getu32le(buff, index);
+    uint32_t z = getu32le(buff, index);
+
+    return (Vector3i) {.x = x, .y = y, .z = z};
+}
+
+static inline void setv3i(uint8_t * const buff, size_t * index, Vector3i vec) {
+    setu32le(buff, index, vec.x);
+    setu32le(buff, index, vec.y);
+    setu32le(buff, index, vec.z);
+}
+
+static inline RGB3i getbgr(uint8_t * const buff, size_t * index) {
+    uint8_t b = getu8le(buff, index);
+    uint8_t g = getu8le(buff, index);
+    uint8_t r = getu8le(buff, index);
+
+    return (RGB3i) {.r = r, .g = g, .b = b};
+}
+
+static inline void setbgr(uint8_t * const buff, size_t * index, RGB3i color) {
+    setu8le(buff, index, color.b);
+    setu8le(buff, index, color.g);
+    setu8le(buff, index, color.r);
+}
+
 static inline TrueColor getBGRA(uint8_t * const buff, size_t * index) {
     uint8_t b = getu8le(buff, index);
     uint8_t g = getu8le(buff, index);
@@ -269,6 +300,9 @@ static inline TrueColor getBGRA(uint8_t * const buff, size_t * index) {
 
     return (TrueColor) {r, g, b, a};
 }
+
+static inline TrueColor opaque(RGB3i color)
+{ return (TrueColor) {.r = color.r, .g = color.g, .b = color.b, .a = 255}; }
 
 void writeRGBA(uint32_t *, TrueColor);
 void writeBGR(uint32_t *, TrueColor);

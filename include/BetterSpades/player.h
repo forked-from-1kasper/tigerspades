@@ -42,13 +42,37 @@ enum {
 
 typedef struct {
     char name[11];
-    unsigned char red, green, blue;
+    RGB3i color;
 } Team;
+
+typedef union _IntelLocation {
+    uint8_t held;
+    Vector3f dropped;
+} IntelLocation;
+
+typedef struct {
+    Vector3f pos;
+    uint8_t team;
+} Territory;
+
+typedef union _Gamemode {
+    struct {
+        uint8_t team_1_score, team_2_score;
+        uint8_t capture_limit, intels;
+        IntelLocation team_1_intel_location, team_2_intel_location;
+        Vector3f team_1_base, team_2_base;
+    } ctf;
+
+    struct {
+        unsigned char territory_count;
+        Territory territory[16];
+    } tc;
+} Gamemode;
 
 typedef struct {
     Team team_1, team_2;
     unsigned char gamemode_type;
-    union Gamemodes gamemode;
+    Gamemode gamemode;
     struct {
         unsigned char team_capturing, tent;
         float progress, rate, update;
@@ -63,7 +87,7 @@ extern MouseButtons button_map;
 typedef struct {
     uint8_t id, health, blocks, grenades, ammo, ammo_reserved;
     uint8_t last_tool, respawn_time, respawn_cnt_last;
-    float death_time, last_damage_timer; Position last_damage;
+    float death_time, last_damage_timer; Vector3f last_damage;
     bool drag_active; int drag[3]; int color[2];
 } LocalPlayer;
 
@@ -96,12 +120,10 @@ int player_intersection_choose(Hit * s, float * distance);
 
 typedef struct {
     char name[17];
-    Position pos;
-    Orientation orientation;
+    Vector3f pos, orientation;
     AABB bb_2d;
-    Orientation orientation_smooth;
-    Position gun_pos;
-    Position casing_dir;
+    Vector3f orientation_smooth;
+    Vector3f gun_pos, casing_dir;
     float gun_shoot_timer;
     int ammo, ammo_reserved;
     float spade_use_timer;
@@ -111,7 +133,7 @@ typedef struct {
     unsigned char alive, connected;
     float item_showup, item_disabled, items_show_start;
     unsigned char items_show;
-    TrueColor block;
+    RGB3i block;
 
     struct {
         unsigned char keys, buttons;
@@ -124,8 +146,7 @@ typedef struct {
     struct {
         unsigned char jump, airborne, wade;
         float lastclimb;
-        Velocity velocity;
-        Position eye;
+        Vector3f velocity, eye;
     } physics;
 
     struct {

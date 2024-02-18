@@ -29,7 +29,7 @@ typedef enum {
 } CameraMode;
 
 typedef struct {
-    CameraMode mode; Position pos; Velocity v, movement;
+    CameraMode mode; Vector3f pos, v, movement;
     float size, height, eye_height, speed;
     struct { float x, y; } rot;
 } Camera;

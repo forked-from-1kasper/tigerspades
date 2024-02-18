@@ -24,8 +24,8 @@ typedef struct {
     unsigned char team;
     float fuse_length;
     float created;
-    Position pos;
-    Velocity velocity;
+    Vector3f pos;
+    Vector3f velocity;
 } Grenade;
 
 void grenade_init(void);

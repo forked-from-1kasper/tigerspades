@@ -1,6 +1,8 @@
 #ifndef OPENGL_H
 #define OPENGL_H
 
+#include <AceOfSpades/types.h>
+
 #ifndef OPENGL_ES
     #define GLEW_STATIC
     #include <GL/glew.h>
@@ -14,5 +16,11 @@
     #define glDepthRange(a, b)  glDepthRangef(a, b)
     #define glClearDepth(a)     glClearDepthf(a)
 #endif
+
+static inline void glColorRGB3i(const RGB3i color)
+{ glColor3ub(color.r, color.g, color.b); }
+
+static inline void glColorRGB3ib(const RGB3i color, const float brightness)
+{ glColor3ub(color.r * brightness, color.g * brightness, color.b * brightness); }
 
 #endif

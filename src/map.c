@@ -170,10 +170,7 @@ Channel map_work_queue, map_result_queue;
 
 typedef struct {
     HashTable voxels;
-    Velocity v;
-    Position p;
-    Position p2;
-    Orientation o;
+    Vector3f v, p, p2, o;
     int voxel_count;
     int rotation, has_displaylist;
     GLXDisplayList displaylist;
@@ -308,9 +305,9 @@ static bool map_update_physics_sub(MapCollapsing * collapsing, int x, int y, int
         pivot[k] = (pivot[k] / (float)closedlist.size) + 0.5F;
 
     collapsing->voxels = closedlist;
-    collapsing->v = (Velocity) {0, 0, 0};
-    collapsing->o = (Orientation) {0, 0, 0};
-    collapsing->p = (Position) {pivot[0], pivot[1], pivot[2]};
+    collapsing->v = (Vector3f) {0, 0, 0};
+    collapsing->o = (Vector3f) {0, 0, 0};
+    collapsing->p = (Vector3f) {pivot[0], pivot[1], pivot[2]};
     collapsing->p2 = collapsing->p;
     collapsing->rotation = rand() & 3;
     collapsing->voxel_count = closedlist.size;
@@ -599,8 +596,8 @@ void map_set(int x, int y, int z, TrueColor color) {
 }
 
 // Copyright (c) Mathias Kaerlev 2011-2012 (but might be original code by Ben himself)
-int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, Point * cube_array) {
-    Point c, d;
+int map_cube_line(int x1, int y1, int z1, int x2, int y2, int z2, Vector3i * cube_array) {
+    Vector3i c, d;
     long ixi, iyi, izi, dx, dy, dz, dxi, dyi, dzi;
     int count = 0;
 

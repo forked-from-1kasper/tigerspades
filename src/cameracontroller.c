@@ -31,9 +31,9 @@ int cameracontroller_bodyview_mode = 0;
 int cameracontroller_bodyview_player = 0;
 float cameracontroller_bodyview_zoom = 0.0F;
 
-Velocity cameracontroller_death_velocity;
+Vector3f cameracontroller_death_velocity;
 
-void cameracontroller_death_init(int player, Position r) {
+void cameracontroller_death_init(int player, Vector3f r) {
     camera.mode = CAMERAMODE_DEATH;
 
     float len = hypot3f(camera.pos.x - r.x, camera.pos.y - r.y, camera.pos.z - r.z);
@@ -381,8 +381,8 @@ void cameracontroller_bodyview_render() {
 }
 
 void cameracontroller_selection(float dt) {
-    camera.pos = (Position) {256.0F, 79.0F, 256.0F};
-    camera.v   = (Velocity) {0.0F, 0.0F, 0.0F};
+    camera.pos = (Vector3f) {256.0F, 79.0F, 256.0F};
+    camera.v   = (Vector3f) {0.0F, 0.0F, 0.0F};
 
     matrix_rotate(matrix_view, 90.0F, 1.0F, 0.0F, 0.0F);
     matrix_translate(matrix_view, -camera.pos.x, -camera.pos.y, -camera.pos.z);

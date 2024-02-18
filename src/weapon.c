@@ -222,11 +222,12 @@ void weapon_reload() {
         players[local_player.id].pos.z
     );
 
-    PacketWeaponReload reloadp;
-    reloadp.player_id = local_player.id;
-    reloadp.ammo      = local_player.ammo;
-    reloadp.reserved  = local_player.ammo_reserved;
-    network_send(PACKET_WEAPONRELOAD_ID, &reloadp, sizeof(reloadp));
+    PacketWeaponReload contained;
+    contained.player_id = local_player.id;
+    contained.ammo      = local_player.ammo;
+    contained.reserved  = local_player.ammo_reserved;
+
+    sendPacketWeaponReload(&contained, 0);
 }
 
 void weapon_reload_abort() {
@@ -273,20 +274,20 @@ void weapon_shoot() {
 
         #if !(HACKS_ENABLED && HACK_NORELOAD)
         if (players[local_player.id].input.buttons != network_buttons_last) {
-            PacketWeaponInput in;
-            in.player_id = local_player.id;
-            in.input     = players[local_player.id].input.buttons;
-            network_send(PACKET_WEAPONINPUT_ID, &in, sizeof(in));
+            PacketWeaponInput contained;
+            contained.player_id = local_player.id;
+            contained.input     = players[local_player.id].input.buttons;
+            sendPacketWeaponInput(&contained, 0);
 
             network_buttons_last = players[local_player.id].input.buttons;
         }
         #endif
 
-        PacketOrientationData orient;
-        orient.x = htolef(players[local_player.id].orientation.x);
-        orient.y = htolef(players[local_player.id].orientation.z);
-        orient.z = htolef(-players[local_player.id].orientation.y);
-        network_send(PACKET_ORIENTATIONDATA_ID, &orient, sizeof(orient));
+        {
+            PacketOrientationData contained;
+            contained.orient = htonov3(players[local_player.id].orientation);
+            sendPacketOrientationData(&contained, 0);
+        }
 
         if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
             hit.type = CAMERA_HITTYPE_NONE;
@@ -303,10 +304,11 @@ void weapon_shoot() {
                     3.5F, 1.0F, 8, 0.1F, 0.4F
                 );
 
-                PacketHit h;
-                h.player_id = hit.player_id;
-                h.hit_type  = hit.player_section;
-                network_send(PACKET_HIT_ID, &h, sizeof(h));
+                PacketHit contained;
+                contained.player_id = hit.player_id;
+                contained.hit_type  = hit.player_section;
+                sendPacketHit(&contained, 0);
+
                 // printf("hit on %s (%i)\n", players[hit.player_id].name, h.hit_type);
                 break;
             }
@@ -314,14 +316,13 @@ void weapon_shoot() {
             case CAMERA_HITTYPE_BLOCK: {
                 map_damage(hit.x, hit.y, hit.z, weapon_block_damage(players[local_player.id].weapon));
                 if (map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
-                    PacketBlockAction blk;
-                    blk.action_type = ACTION_DESTROY;
-                    blk.player_id   = local_player.id;
-                    blk.x           = htoles32(hit.x);
-                    blk.y           = htoles32(hit.z);
-                    blk.z           = htoles32(63 - hit.y);
-                    network_send(PACKET_BLOCKACTION_ID, &blk, sizeof(blk));
-                    // read_PacketBlockAction(&blk,sizeof(blk));
+                    PacketBlockAction contained;
+                    contained.action_type = ACTION_DESTROY;
+                    contained.player_id   = local_player.id;
+                    contained.pos.x       = hit.x;
+                    contained.pos.y       = hit.z;
+                    contained.pos.z       = 63 - hit.y;
+                    sendPacketBlockAction(&contained, 0);
                 } else {
                     particle_create(map_get(hit.x, hit.y, hit.z), hit.xb + 0.5F, hit.yb + 0.5F, hit.zb + 0.5F, 2.5F,
                                     1.0F, 4, 0.1F, 0.25F);
