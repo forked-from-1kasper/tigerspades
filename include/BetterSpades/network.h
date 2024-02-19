@@ -73,16 +73,22 @@ extern NetworkStat network_stats[40];
 
 extern float network_stats_last;
 
-static inline Vector3f ntohv3(const Vector3f v)
+static inline Vector3f ntohv3f(const Vector3f v)
 { return (Vector3f) {.x = v.x, .y = 63.0F - v.z, .z = v.y}; }
 
-static inline Vector3f htonv3(const Vector3f v)
+static inline Vector3f htonv3f(const Vector3f v)
 { return (Vector3f) {.x = v.x, .y = v.z, .z = 63.0F - v.y}; }
 
-static inline Vector3f ntohov3(const Vector3f v)
+static inline Vector3i ntohv3i(const Vector3i v)
+{ return (Vector3i) {.x = v.x, .y = 63 - v.z, .z = v.y}; }
+
+static inline Vector3i htonv3i(const Vector3i v)
+{ return (Vector3i) {.x = v.x, .y = v.z, .z = 63 - v.y}; }
+
+static inline Vector3f ntohov3f(const Vector3f v)
 { return (Vector3f) {.x = v.x, .y = -v.z, .z = v.y}; }
 
-static inline Vector3f htonov3(const Vector3f v)
+static inline Vector3f htonov3f(const Vector3f v)
 { return (Vector3f) {.x = v.x, .y = v.z, .z = -v.y}; }
 
 void handlePacketGrenade(PacketGrenade *);

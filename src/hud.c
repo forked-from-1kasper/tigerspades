@@ -1331,14 +1331,12 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
         if (local_player.drag_active && action == WINDOW_RELEASE && players[local_player.id].held_item == TOOL_BLOCK) {
             int * pos = camera_terrain_pick(0);
             if (pos != NULL && pos[1] > 1 && norm3i(pos[X], pos[Y], pos[Z], camera.pos.x, camera.pos.y, camera.pos.z) < 25) {
-                int amount = map_cube_line(local_player.drag[X], local_player.drag[Z], 63 - local_player.drag[Y], pos[0],
-                                           pos[2], 63 - pos[1], NULL);
+                int amount = map_cube_line(local_player.drag.x, local_player.drag.z, 63 - local_player.drag.y,
+                                           pos[0], pos[2], 63 - pos[1], NULL);
                 if (amount <= local_player.blocks) {
                     PacketBlockLine contained;
                     contained.player_id = local_player.id;
-                    contained.start.x   = local_player.drag[X];
-                    contained.start.y   = local_player.drag[Z];
-                    contained.start.z   = 63 - local_player.drag[Y];
+                    contained.start     = htonv3i(local_player.drag);
                     contained.end.x     = pos[X];
                     contained.end.y     = pos[Z];
                     contained.end.z     = 63 - pos[Y];
@@ -1357,9 +1355,9 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
 
             if (pos != NULL && pos[Y] > 1 && norm3f(camera.pos.x, camera.pos.y, camera.pos.z, pos[X], pos[Y], pos[Z]) < 25.0F) {
                 local_player.drag_active = 1;
-                local_player.drag[X] = pos[X];
-                local_player.drag[Y] = pos[Y];
-                local_player.drag[Z] = pos[Z];
+                local_player.drag.x = pos[X];
+                local_player.drag.y = pos[Y];
+                local_player.drag.z = pos[Z];
             }
         }
 
@@ -1406,7 +1404,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                     contained.player_id   = local_player.id;
                     contained.fuse_length = max(3.0F - (window_time() - players[local_player.id].start.lmb), 0.0F);
 
-                    contained.pos = htonv3(players[local_player.id].pos);
+                    contained.pos = htonv3f(players[local_player.id].pos);
 
                     contained.vel.x = (contained.fuse_length == 0.0F) ? 0.0F :
                                       (players[local_player.id].orientation.x + players[local_player.id].physics.velocity.x);
@@ -1437,7 +1435,9 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
 
                 if (local_player.ammo == 0 && window_time() - players[local_player.id].item_showup >= 0.5F) {
                     sound_create(SOUND_LOCAL, &sound_empty, 0.0F, 0.0F, 0.0F);
-                    chat_showpopup("RELOAD", 0.4F, Red, UTF8);
+
+                    static const char popup[] = "RELOAD";
+                    chat_showpopup(popup, sizeof(popup), UTF8, 0.4F, Red);
                 }
             }
         }
@@ -1468,14 +1468,14 @@ static int autocomplete_type_cmp(const void * a, const void * b) {
 }
 
 void broadcast_chat(unsigned char chat_type, const char * message, size_t size) {
-    char buff[2048]; size_t written = encodeMagic(buff, message, size, sizeof(buff));
+    char buff[2048]; size_t written = encodeMagic(buff, sizeof(buff), message, size);
 
     PacketChatMessage contained;
     contained.player_id = local_player.id;
     contained.chat_type = chat_type;
     contained.message   = buff;
 
-    sendPacketChatMessage(&contained, written + 1);
+    sendPacketChatMessage(&contained, written);
 }
 
 static const char * hud_ingame_completeword(const char * s) {
@@ -1619,7 +1619,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 sound_volume(settings.volume / 10.0F);
                 char volstr[64];
                 sprintf(volstr, "Volume: %i", settings.volume);
-                chat_add(0, Red, volstr, UTF8);
+                chat_add(0, Red, volstr, sizeof(volstr), UTF8);
             }
 
             if ((key == WINDOW_KEY_CURSOR_UP || key == WINDOW_KEY_CURSOR_DOWN || key == WINDOW_KEY_CURSOR_LEFT || key == WINDOW_KEY_CURSOR_RIGHT)
@@ -1675,7 +1675,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 Keybind * keybind = list_get(&config_keybind, k);
 
                 if (keybind->key == internal) {
-                    size_t size = strlen(keybind->value);
+                    size_t size = strsize(keybind->value, sizeof(keybind->value));
                     if (size > 0) broadcast_chat(CHAT_ALL, keybind->value, size);
 
                     break;
@@ -1844,12 +1844,11 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
         if (action != WINDOW_RELEASE) {
             if (key == WINDOW_KEY_V && mods) {
                 const char * clipboard = window_clipboard();
-                if (clipboard)
-                    strcat(chat[0][0], clipboard);
+                if (clipboard) strcat(chat[0][0], clipboard);
             }
 
             if (key == WINDOW_KEY_ESCAPE || key == WINDOW_KEY_ENTER) {
-                size_t size = strlen(chat[0][0]);
+                size_t size = strsize(chat[0][0], sizeof(chat[0][0]));
 
                 if (key == WINDOW_KEY_ENTER && size > 0)
                     broadcast_chat(chat_input_mode == CHAT_ALL_INPUT ? CHAT_ALL : CHAT_TEAM, chat[0][0], size);

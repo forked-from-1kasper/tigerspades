@@ -79,7 +79,8 @@ static void window_impl_reshape(GLFWwindow * window, int width, int height) {
 }
 
 static void window_impl_textinput(GLFWwindow * window, unsigned int codepoint) {
-    uint8_t buff[5]; buff[encode(buff, codepoint, UTF8)] = 0;
+    uint8_t buff[5] = {0};
+    encode(UTF8, buff, codepoint);
     text_input(hud_window, buff);
 }
 

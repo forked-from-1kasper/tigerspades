@@ -9,11 +9,16 @@
 #define OCT4(c) ((((uint8_t) c) & 0xF8) == 0xF0)
 #define CONT(c) ((((uint8_t) c) & 0xC0) == 0x80)
 
-uint8_t encode(uint8_t *, uint32_t, Codepage);
-uint8_t decode(const uint8_t *, uint32_t *, Codepage);
-void reencode(char *, const char *, Codepage inpage, Codepage outpage);
+uint8_t encodeSize(Codepage, uint32_t);
+void encode(Codepage, uint8_t *, uint32_t);
 
-size_t encodeMagic(char * dest, const char * src, size_t insize, size_t outsize);
-void decodeMagic(char * dest, const char * src, size_t size);
+uint8_t decodeSize(Codepage, const uint8_t);
+uint32_t decode(Codepage, const uint8_t *);
+
+void convert(char * dest, size_t outsize, Codepage outpage,
+             const char * src, size_t insize, Codepage inpage);
+
+size_t encodeMagic(char * dest, size_t outsize, const char * src, size_t insize);
+void decodeMagic(char * dest, size_t outsize, const char * src, size_t insize);
 
 #endif

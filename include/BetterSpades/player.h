@@ -88,7 +88,7 @@ typedef struct {
     uint8_t id, health, blocks, grenades, ammo, ammo_reserved;
     uint8_t last_tool, respawn_time, respawn_cnt_last;
     float death_time, last_damage_timer; Vector3f last_damage;
-    bool drag_active; int drag[3]; int color[2];
+    bool drag_active; Vector3i drag; int color[2];
 } LocalPlayer;
 
 extern LocalPlayer local_player;

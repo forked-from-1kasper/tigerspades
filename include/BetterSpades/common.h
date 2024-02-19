@@ -163,11 +163,10 @@ extern char chat_popup[256];
 extern float chat_popup_timer;
 extern float chat_popup_duration;
 extern TrueColor chat_popup_color;
-void chat_add(int channel, TrueColor, const char *, Codepage);
-void chat_showpopup(const char *, float duration, TrueColor, Codepage);
+void chat_add(int channel, TrueColor, const char *, size_t, Codepage);
+void chat_showpopup(const char *, size_t, Codepage, float duration, TrueColor);
 const char * reason_disconnect(int code);
 
-extern int ms_seed;
 int ms_rand(void);
 
 #include <stdlib.h>
@@ -311,6 +310,7 @@ TrueColor readBGR(uint32_t *);
 TrueColor readBGRA(uint32_t *);
 
 void strnzcpy(char * dest, const char * src, size_t);
+size_t strsize(const char *, size_t maxsize);
 
 // QUESTION: should we allow players to change this?
 #define RENDER_DISTANCE 128.0F

@@ -408,8 +408,9 @@ void player_render_all() {
                         sound_create_sticky(&sound_spade_woosh, players + k, k);
                     }
                 }
-                players[k].spade_use_type = 2;
-                players[k].spade_used = 1;
+
+                players[k].spade_use_type  = 2;
+                players[k].spade_used      = 1;
                 players[k].spade_use_timer = window_time();
             }
         }
@@ -462,10 +463,12 @@ void player_render_all() {
                             );
                             break;
                         }
-                        case CAMERA_HITTYPE_BLOCK:
+
+                        case CAMERA_HITTYPE_BLOCK: {
                             particle_create(map_get(hit.x, hit.y, hit.z), hit.xb + 0.5F, hit.yb + 0.5F, hit.zb + 0.5F,
                                             2.5F, 1.0F, 4, 0.1F, 0.25F);
                             break;
+                        }
                     }
                     players[k].gun_shoot_timer = window_time();
                 }
@@ -547,7 +550,8 @@ static bool hitbox_intersection(mat4 model, const Hitbox * box, Ray * r, float *
             .origin = {origin[0], origin[1], origin[2]},
             .direction = {dir[0], dir[1], dir[2]},
         },
-        distance);
+        distance
+    );
 }
 
 void player_collision(const Player * p, Ray * ray, Hit * intersects) {

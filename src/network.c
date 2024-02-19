@@ -96,8 +96,8 @@ static void printJoinMsg(int team, char * name) {
         case TEAM_SPECTATOR: t = "Spectator"; break;
     }
 
-    char s[64]; sprintf(s, "%s joined the %s team", name, t);
-    chat_add(0, Red, s, UTF8);
+    char buff[64]; sprintf(buff, "%s joined the %s team", name, t);
+    chat_add(0, Red, buff, sizeof(buff), UTF8);
 }
 
 static uint8_t network_buffer[512];
@@ -111,7 +111,7 @@ static void network_send(int id, int len) {
 }
 
 void network_join_game(unsigned char team, unsigned char weapon) {
-    char namebuff[17]; encodeMagic(namebuff, settings.name, strlen(settings.name), sizeof(namebuff));
+    char namebuff[17]; encodeMagic(namebuff, sizeof(namebuff), settings.name, sizeof(settings.name));
 
     PacketExistingPlayer contained;
     contained.player_id = local_player.id;
@@ -122,26 +122,27 @@ void network_join_game(unsigned char team, unsigned char weapon) {
     contained.color     = players[local_player.id].block;
     contained.name      = namebuff;
 
-    sendPacketExistingPlayer(&contained, strlen(contained.name) + 1);
+    sendPacketExistingPlayer(&contained, strsize(namebuff, sizeof(namebuff)));
 }
 
 #define PACKET_INCOMPLETE 0
 #define PACKET_EXTRA      0
 #define PACKET_SERVERSIDE 0
 #define begin(T) void send##T(T * contained, size_t len) \
-                 { write##T(network_buffer + 1, contained); network_send(id##T, size##T + len); }
+                 { write##T(network_buffer + 1, contained); \
+                   network_send(id##T, size##T + len); }
 #include <AceOfSpades/packets.h>
 
 #define READPACKET(T, contained, src) T contained; read##T(src, &contained)
 
 void getPacketPositionData(uint8_t * data, int len) {
     READPACKET(PacketPositionData, p, data);
-    players[local_player.id].pos = ntohv3(p.pos);
+    players[local_player.id].pos = ntohv3f(p.pos);
 }
 
 void getPacketOrientationData(uint8_t * data, int len) {
     READPACKET(PacketOrientationData, p, data);
-    players[local_player.id].orientation = ntohov3(p.orient);
+    players[local_player.id].orientation = ntohov3f(p.orient);
 }
 
 void getPacketInputData(uint8_t * data, int len) {
@@ -174,8 +175,8 @@ void handlePacketGrenade(PacketGrenade * p) {
     grenade_add(&(Grenade) {
         .team        = players[p->player_id].team,
         .fuse_length = p->fuse_length,
-        .pos         = ntohv3(p->pos),
-        .velocity    = ntohov3(p->vel),
+        .pos         = ntohv3f(p->pos),
+        .velocity    = ntohov3f(p->vel),
     });
 }
 
@@ -202,7 +203,7 @@ void getPacketExistingPlayer(uint8_t * data, int len) {
     READPACKET(PacketExistingPlayer, p, data);
 
     if (p.player_id < PLAYERS_MAX) {
-        decodeMagic(players[p.player_id].name, p.name, len - sizePacketExistingPlayer);
+        decodeMagic(players[p.player_id].name, sizeof(players[p.player_id].name), p.name, len - sizePacketExistingPlayer);
 
         if (!players[p.player_id].connected) printJoinMsg(p.team, players[p.player_id].name);
 
@@ -324,17 +325,19 @@ void getPacketBlockLine(uint8_t * data, int len) {
 void getPacketChatMessage(uint8_t * data, int len) {
     READPACKET(PacketChatMessage, p, data);
 
+    size_t size = len - sizePacketChatMessage;
+
     Codepage codepage = CP437; char * msg = p.message;
-    if (*((uint8_t *) msg) == 0xFF) { msg++; codepage = UTF8; }
+    if (*((uint8_t *) msg) == 0xFF) { msg++; size--; codepage = UTF8; }
 
     char n[32] = {0}; char m[256];
     switch (p.chat_type) {
         case CHAT_ERROR: sound_create(SOUND_LOCAL, &sound_beep2, 0.0F, 0.0F, 0.0F);
-        case CHAT_BIG: chat_showpopup(msg, 5.0F, Red, codepage); return;
-        case CHAT_INFO: chat_showpopup(msg, 5.0F, White, codepage); return;
+        case CHAT_BIG: chat_showpopup(msg, size, codepage, 5.0F, Red); return;
+        case CHAT_INFO: chat_showpopup(msg, size, codepage, 5.0F, White); return;
         case CHAT_WARNING:
             sound_create(SOUND_LOCAL, &sound_beep1, 0.0F, 0.0F, 0.0F);
-            chat_showpopup(msg, 5.0F, Yellow, codepage);
+            chat_showpopup(msg, size, codepage, 5.0F, Yellow);
             return;
         case CHAT_SYSTEM:
             if (p.player_id == 255) {
@@ -358,13 +361,10 @@ void getPacketChatMessage(uint8_t * data, int len) {
             break;
     }
 
-    size_t m_remaining = sizeof(m) - 1 - strlen(m);
-    size_t body_len = len - offsetof(PacketChatMessage, message);
-    if (body_len > m_remaining) {
-        body_len = m_remaining;
+    {
+        size_t offset = strlen(m);
+        convert(m + offset, sizeof(m) - offset, UTF8, msg, size, codepage);
     }
-
-    reencode(m + strlen(m), msg, codepage, UTF8);
 
     TrueColor color = {0, 0, 0, 255};
     switch (p.chat_type) {
@@ -381,7 +381,7 @@ void getPacketChatMessage(uint8_t * data, int len) {
         default: color.r = color.g = color.b = 255; break;
     }
 
-    chat_add(0, color, m, UTF8);
+    chat_add(0, color, m, sizeof(m), UTF8);
 }
 
 static inline void addExtInfoEntry(uint8_t id, uint8_t version, size_t * index) {
@@ -434,12 +434,12 @@ void getPacketWorldUpdate(uint8_t * data, int len) {
                 PacketWorldUpdate075 p; index += readPacketWorldUpdate075(data + index, &p);
 
                 if (players[k].connected && players[k].alive && k != local_player.id) {
-                    Vector3f r = ntohv3(p.pos);
+                    Vector3f r = ntohv3f(p.pos);
 
                     if (normv3f(players[k].pos, r) > 0.01F)
                         players[k].pos = r;
 
-                    players[k].orientation = ntohov3(p.orient);
+                    players[k].orientation = ntohov3f(p.orient);
                 }
             }
         } else if (is076) {
@@ -447,12 +447,12 @@ void getPacketWorldUpdate(uint8_t * data, int len) {
                 PacketWorldUpdate076 p; index += readPacketWorldUpdate076(data + index, &p);
 
                 if (players[p.player_id].connected && players[p.player_id].alive && p.player_id != local_player.id) {
-                    Vector3f r = ntohv3(p.pos);
+                    Vector3f r = ntohv3f(p.pos);
 
                     if (normv3f(players[k].pos, r) > 0.01F)
                         players[p.player_id].pos = r;
 
-                    players[p.player_id].orientation = ntohov3(p.orient);
+                    players[p.player_id].orientation = ntohov3f(p.orient);
                 }
             }
         }
@@ -469,7 +469,7 @@ void getPacketSetHP(uint8_t * data, int len) {
         sound_create(SOUND_LOCAL, &sound_hitplayer, 0.0F, 0.0F, 0.0F);
     }
 
-    local_player.last_damage = ntohv3(p.pos);
+    local_player.last_damage = ntohv3f(p.pos);
 }
 
 void getPacketShortPlayerData(uint8_t * data, int len) {
@@ -507,7 +507,7 @@ void getPacketCreatePlayer(uint8_t * data, int len) {
     READPACKET(PacketCreatePlayer, p, data);
 
     if (p.player_id < PLAYERS_MAX) {
-        decodeMagic(players[p.player_id].name, p.name, len - sizePacketCreatePlayer);
+        decodeMagic(players[p.player_id].name, sizeof(players[p.player_id].name), p.name, len - sizePacketCreatePlayer);
 
         if (!players[p.player_id].connected) printJoinMsg(p.team, players[p.player_id].name);
 
@@ -517,7 +517,7 @@ void getPacketCreatePlayer(uint8_t * data, int len) {
         players[p.player_id].team      = TEAM(p.team);
         players[p.player_id].held_item = TOOL_GUN;
         players[p.player_id].weapon    = WEAPON(p.weapon);
-        players[p.player_id].pos       = ntohv3(p.pos);
+        players[p.player_id].pos       = ntohv3f(p.pos);
 
         Vector3f o = {p.team == TEAM_1 ? 1.0F : -1.0F, 0.0F, 0.0F};
 
@@ -533,7 +533,7 @@ void getPacketCreatePlayer(uint8_t * data, int len) {
 
         if (p.player_id == local_player.id) {
             if (p.team == TEAM_SPECTATOR)
-                camera.pos = ntohv3(p.pos);
+                camera.pos = ntohv3f(p.pos);
 
             camera.mode            = (p.team == TEAM_SPECTATOR) ? CAMERAMODE_SPECTATOR : CAMERAMODE_FPS;
             camera.rot.x           = (p.team == TEAM_1) ? 0.5F * PI : 1.5F * PI;
@@ -558,10 +558,10 @@ static inline Vector3f readv3f(uint8_t * buff)
 void getPacketStateData(uint8_t * data, int len) {
     PacketStateData p; size_t index = readPacketStateData(data, &p);
 
-    decodeMagic(gamestate.team_1.name, (char *) p.team_1_name.data, p.team_1_name.size);
+    decodeMagic(gamestate.team_1.name, sizeof(gamestate.team_1.name), (char *) p.team_1_name.data, p.team_1_name.size);
     gamestate.team_1.color = p.team_1;
 
-    decodeMagic(gamestate.team_2.name, (char *) p.team_2_name.data, p.team_2_name.size);
+    decodeMagic(gamestate.team_2.name, sizeof(gamestate.team_2.name), (char *) p.team_2_name.data, p.team_2_name.size);
     gamestate.team_2.color = p.team_2;
 
     gamestate.gamemode_type = p.gamemode;
@@ -728,16 +728,16 @@ void getPacketKillAction(uint8_t * data, int len) {
         }
 
         if (p.killer_id == local_player.id || p.player_id == local_player.id) {
-            chat_add(1, Red, m, UTF8);
+            chat_add(1, Red, m, sizeof(m), UTF8);
         } else {
             switch (players[p.killer_id].team) {
                 case TEAM_1: {
-                    chat_add(1, (TrueColor) {gamestate.team_1.color.r, gamestate.team_1.color.g, gamestate.team_1.color.b, 255}, m, UTF8);
+                    chat_add(1, (TrueColor) {gamestate.team_1.color.r, gamestate.team_1.color.g, gamestate.team_1.color.b, 255}, m, sizeof(m), UTF8);
                     break;
                 }
 
                 case TEAM_2: {
-                    chat_add(1, (TrueColor) {gamestate.team_2.color.r, gamestate.team_2.color.g, gamestate.team_2.color.b, 255}, m, UTF8);
+                    chat_add(1, (TrueColor) {gamestate.team_2.color.r, gamestate.team_2.color.g, gamestate.team_2.color.b, 255}, m, sizeof(m), UTF8);
                     break;
                 }
             }
@@ -815,7 +815,7 @@ void getPacketPlayerLeft(uint8_t * data, int len) {
         players[p.player_id].score     = 0;
 
         char buff[32]; sprintf(buff, "%s disconnected", players[p.player_id].name);
-        chat_add(0, Red, buff, UTF8);
+        chat_add(0, Red, buff, sizeof(buff), UTF8);
     }
 }
 
@@ -839,11 +839,11 @@ void getPacketTerritoryCapture(uint8_t * data, int len) {
             char capture_str[128];
 
             sprintf(capture_str, "%s have captured %c%c", team_name, x, y);
-            chat_add(0, Red, capture_str, UTF8);
+            chat_add(0, Red, capture_str, sizeof(capture_str), UTF8);
 
             if (p.winning) {
                 sprintf(capture_str, "%s Team Wins!", team_name);
-                chat_showpopup(capture_str, 5.0F, Red, UTF8);
+                chat_showpopup(capture_str, sizeof(capture_str), UTF8, 5.0F, Red);
             }
         }
     }
@@ -878,7 +878,8 @@ void getPacketIntelCapture(uint8_t * data, int len) {
         }
         sound_create(SOUND_LOCAL, p.winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
         players[p.player_id].score += 10;
-        chat_add(0, Red, capture_str, UTF8);
+        chat_add(0, Red, capture_str, sizeof(capture_str), UTF8);
+
         if (p.winning) {
             char * name = NULL;
 
@@ -888,7 +889,7 @@ void getPacketIntelCapture(uint8_t * data, int len) {
             }
 
             sprintf(capture_str, "%s Team Wins!", name);
-            chat_showpopup(capture_str, 5.0F, Red, UTF8);
+            chat_showpopup(capture_str, sizeof(capture_str), UTF8, 5.0F, Red);
 
             gamestate.gamemode.ctf.team_1_score = 0;
             gamestate.gamemode.ctf.team_2_score = 0;
@@ -917,7 +918,7 @@ void getPacketIntelPickup(uint8_t * data, int len) {
             }
         }
 
-        chat_add(0, Red, pickup_str, UTF8);
+        chat_add(0, Red, pickup_str, sizeof(pickup_str), UTF8);
         sound_create(SOUND_LOCAL, &sound_pickup, 0.0F, 0.0F, 0.0F);
     }
 }
@@ -940,7 +941,7 @@ void getPacketIntelDrop(uint8_t * data, int len) {
                 break;
         }
 
-        chat_add(0, Red, drop_str, UTF8);
+        chat_add(0, Red, drop_str, sizeof(drop_str), UTF8);
     }
 }
 
@@ -1108,7 +1109,9 @@ int network_connect_sub(char * ip, int port, int version) {
         return 1;
     }
 
-    chat_showpopup("No response", 3.0F, Red, UTF8);
+    static const char popup[] = "No response";
+
+    chat_showpopup(popup, sizeof(popup), UTF8, 3.0F, Red);
     enet_peer_reset(peer);
     return 0;
 }
@@ -1216,7 +1219,7 @@ int network_update() {
 
                 case ENET_EVENT_TYPE_DISCONNECT: {
                     hud_change(&hud_serverlist);
-                    chat_showpopup(network_reason_disconnect(event.data), 10.0F, Red, UTF8);
+                    chat_showpopup(network_reason_disconnect(event.data), sizeof(network_custom_reason), UTF8, 10.0F, Red);
                     log_error("server disconnected! reason: %s", network_reason_disconnect(event.data));
                     event.peer->data = NULL;
                     network_connected = 0;
@@ -1270,7 +1273,7 @@ int network_update() {
                 network_pos_last   = players[local_player.id].pos;
 
                 PacketPositionData contained;
-                contained.pos = htonv3(players[local_player.id].pos);
+                contained.pos = htonv3f(players[local_player.id].pos);
                 sendPacketPositionData(&contained, 0);
             }
 
@@ -1284,7 +1287,7 @@ int network_update() {
                 network_orient_last   = players[local_player.id].orientation;
 
                 PacketOrientationData contained;
-                contained.orient = htonov3(players[local_player.id].orientation);
+                contained.orient = htonov3f(players[local_player.id].orientation);
                 sendPacketOrientationData(&contained, 0);
             }
         }

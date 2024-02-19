@@ -285,7 +285,7 @@ void weapon_shoot() {
 
         {
             PacketOrientationData contained;
-            contained.orient = htonov3(players[local_player.id].orientation);
+            contained.orient = htonov3f(players[local_player.id].orientation);
             sendPacketOrientationData(&contained, 0);
         }
 

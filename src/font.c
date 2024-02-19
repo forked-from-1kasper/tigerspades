@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <math.h>
 
 #include <hashtable.h>
@@ -215,6 +216,10 @@ void clear_buffers(Font * font) {
     }
 }
 
+static inline bool ignore(uint32_t codepoint) {
+    return codepoint <= 127 && !isprint(codepoint);
+}
+
 float font_length(int scale, const char * text, Codepage codepage) {
     Font * font = choose_font(font_current_type);
 
@@ -225,7 +230,12 @@ float font_length(int scale, const char * text, Codepage codepage) {
             length = fmax(length, x);
             x = 0; text++;
         } else {
-            uint32_t codepoint; text += decode((const uint8_t *) text, &codepoint, codepage);
+            size_t size = decodeSize(codepage, text[0]);
+            uint32_t codepoint = decode(codepage, (const uint8_t *) text);
+            text += size;
+
+            if (ignore(codepoint)) continue;
+
             Glyph glyph; get_glyph(font, codepoint, &glyph); x += scale * glyph.stride * 8;
         }
     }
@@ -245,7 +255,11 @@ void font_render(float x, float y, int scale, const char * text, Codepage codepa
             y0 += h;
             text++;
         } else {
-            uint32_t codepoint; text += decode((uint8_t *) text, &codepoint, codepage);
+            size_t size = decodeSize(codepage, text[0]);
+            uint32_t codepoint = decode(codepage, (uint8_t *) text);
+            text += size;
+
+            if (ignore(codepoint)) continue;
 
             Glyph glyph; Subfont * subfont = get_glyph(font, codepoint, &glyph);
             Buffer * buffer = &subfont->buffers[glyph.page];

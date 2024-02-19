@@ -53,13 +53,14 @@
 
 int fps = 0;
 
-int ms_seed = 1;
 int ms_rand() {
-    ms_seed = ms_seed * 0x343FD + 0x269EC3;
-    return (ms_seed >> 0x10) & 0x7FFF;
+    static int seed = 1;
+
+    seed = seed * 0x343FD + 0x269EC3;
+    return (seed >> 0x10) & 0x7FFF;
 }
 
-static mu_Rect window_clip = { .x = 0, .y = 0, .w = 0x1000000, .h = 0x1000000 };
+static mu_Rect window_clip = {.x = 0, .y = 0, .w = 0x1000000, .h = 0x1000000};
 
 void window_scissor() {
     glScissor(window_clip.x, settings.window_height - window_clip.y - window_clip.h, window_clip.w, window_clip.h);
@@ -72,19 +73,19 @@ char chat[2][10][256] = {{{0}}}; // chat[0] is current input
 TrueColor chat_color[2][10];
 float chat_timer[2][10];
 
-void chat_add(int channel, TrueColor color, const char * msg, Codepage codepage) {
+void chat_add(int channel, TrueColor color, const char * msg, size_t size, Codepage codepage) {
     for (int k = 9; k > 1; k--) {
         strcpy(chat[channel][k], chat[channel][k - 1]);
         chat_color[channel][k] = chat_color[channel][k - 1];
         chat_timer[channel][k] = chat_timer[channel][k - 1];
     }
 
-    reencode(chat[channel][1], msg, codepage, UTF8);
+    convert(chat[channel][1], sizeof(chat[channel][1]), UTF8, msg, size, codepage);
+
     chat_color[channel][1] = color;
     chat_timer[channel][1] = window_time();
 
-    if (channel == 0)
-        log_info("%s", msg);
+    if (channel == 0) log_info("%s", msg);
 }
 
 char chat_popup[256] = {0};
@@ -92,8 +93,8 @@ TrueColor chat_popup_color;
 float chat_popup_timer = 0.0F;
 float chat_popup_duration = 0.0F;
 
-void chat_showpopup(const char * msg, float duration, TrueColor color, Codepage codepage) {
-    reencode(chat_popup, msg, codepage, UTF8);
+void chat_showpopup(const char * msg, size_t size, Codepage codepage, float duration, TrueColor color) {
+    convert(chat_popup, sizeof(chat_popup), UTF8, msg, size, codepage);
     chat_popup_timer    = window_time();
     chat_popup_duration = duration;
     chat_popup_color    = color;
@@ -280,7 +281,7 @@ void display() {
                     local_player.grenades = max(local_player.grenades - 1, 0);
                     PacketGrenade contained;
                     contained.player_id   = local_player.id;
-                    contained.pos         = htonv3(players[local_player.id].pos);
+                    contained.pos         = htonv3f(players[local_player.id].pos);
                     contained.vel         = (Vector3f) {0.0F, 0.0F, 0.0F};
                     contained.fuse_length = 0.0F;
 
@@ -316,7 +317,7 @@ void display() {
                 int amount = 0;
                 if (is_local && local_player.drag_active && HASBIT(players[local_player.id].input.buttons, BUTTON_SECONDARY)
                    && players[local_player.id].held_item == TOOL_BLOCK) {
-                    amount = map_cube_line(local_player.drag[X], local_player.drag[Z], 63 - local_player.drag[Y],
+                    amount = map_cube_line(local_player.drag.x, local_player.drag.z, 63 - local_player.drag.y,
                                            pos[0], pos[2], 63 - pos[1], cubes);
                 } else {
                     amount = 1;
@@ -647,7 +648,7 @@ void keys(WindowInstance * window, int key, int action, int mods) {
         free(pic_data);
 
         sprintf(pic_name, "Saved screenshot as screenshots/%ld.png", (long) pic_time);
-        chat_add(0, Red, pic_name, UTF8);
+        chat_add(0, Red, pic_name, sizeof(pic_name), UTF8);
     }
 
     if (key == WINDOW_KEY_SAVE_MAP && action == WINDOW_PRESS) { // save map
@@ -659,7 +660,7 @@ void keys(WindowInstance * window, int key, int action, int mods) {
         map_save_file(save_name);
 
         sprintf(save_name, "Saved map as vxl/%ld.vxl", (long) save_time);
-        chat_add(0, Red, save_name, UTF8);
+        chat_add(0, Red, save_name, sizeof(save_name), UTF8);
     }
 }
 
