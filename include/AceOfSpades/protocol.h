@@ -164,16 +164,16 @@ enum Extension {
 #define begin(T) typedef struct _##T T; struct _##T {
 #define end() };
 
-#define c8(dest)       char dest;
-#define u8(dest)       uint8_t dest;
-#define u16(dest)      uint16_t dest;
-#define u32(dest)      uint32_t dest;
-#define f32(dest)      float dest;
-#define v3f(dest)      Vector3f dest;
-#define v3i(dest)      Vector3i dest;
-#define bgr(dest)      RGB3i dest;
-#define string(dest)   char * dest;
-#define blob(dest, n)  Blob dest;
+#define c8(dest)      char dest;
+#define u8(dest)      uint8_t dest;
+#define u16(dest)     uint16_t dest;
+#define u32(dest)     uint32_t dest;
+#define f32(dest)     float dest;
+#define v3f(dest)     Vector3f dest;
+#define v3i(dest)     Vector3i dest;
+#define bgr(dest)     RGB3i dest;
+#define string(dest)  char * dest;
+#define blob(dest, n) Blob dest;
 
 #include <AceOfSpades/packets.h>
 

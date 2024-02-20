@@ -178,30 +178,6 @@ int ms_rand(void);
         exit(1);                                                                           \
     }
 
-#ifdef __BIG_ENDIAN__
-    uint16_t letohu16(uint16_t);
-    int16_t  letohs16(int16_t);
-
-    float    letohf(float);
-    uint32_t letohu32(uint32_t);
-    int      letohs32(int);
-
-#else
-    #define letohu16(x) (x)
-    #define letohs16(x) (x)
-
-    #define letohf(x)   (x)
-    #define letohu32(x) (x)
-    #define letohs32(x) (x)
-#endif
-
-#define htoleu16(x) letohu16(x)
-#define htoles16(x) letohs16(x)
-
-#define htolef(x)   letohf(x)
-#define htoleu32(x) letohu32(x)
-#define htoles32(x) letohs32(x)
-
 static inline uint8_t decode8le(uint8_t * const buff)
 { return buff[0]; }
 

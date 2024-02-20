@@ -328,7 +328,7 @@ void getPacketChatMessage(uint8_t * data, int len) {
     size_t size = len - sizePacketChatMessage;
 
     Codepage codepage = CP437; char * msg = p.message;
-    if (*((uint8_t *) msg) == 0xFF) { msg++; size--; codepage = UTF8; }
+    if (msg[0] == '\xFF') { msg++; size--; codepage = UTF8; }
 
     char n[32] = {0}; char m[256];
     switch (p.chat_type) {

@@ -31,31 +31,37 @@
 #include <BetterSpades/font.h>
 #include <BetterSpades/utils.h>
 
-typedef struct {
-    char     fontname[128];
-    uint16_t high16;
-    uint8_t  height;
-} __attribute__((packed)) Header;
+#define begin(T) typedef struct _##T T; struct _##T {
+#define end() };
+#define u8(dest)      uint8_t dest;
+#define u16(dest)     uint16_t dest;
+#define blob(dest, n) Blob dest;
+#include <BetterSpades/bitmap.h>
 
-typedef struct {
-    uint16_t low16;
-    uint8_t  stride;
-} __attribute__((packed)) RawGlyph;
+#define begin(T) const size_t size##T = 0
+#define end() ;
+#define u8(dest)      + 1
+#define u16(dest)     + 2
+#define blob(dest, n) + n
+#include <BetterSpades/bitmap.h>
+
+#define begin(T) T read##T(uint8_t * pagebuff) { T retval; size_t index = 0;
+#define end() return retval; }
+#define u8(dest)      retval.dest = getu8le(pagebuff, &index);
+#define u16(dest)     retval.dest = getu16le(pagebuff, &index);
+#define blob(dest, n) retval.dest = (Blob) {.data = &pagebuff[index], .size = n}; index += n;
+#include <BetterSpades/bitmap.h>
 
 typedef struct {
     uint8_t  page, stride;
     uint16_t x, y;
 } Glyph;
 
-typedef struct {
-    uint16_t x, y;
-} __attribute__((packed)) Pixel16;
-
 #define BUFFSIZE 512
 typedef struct {
     uint16_t len;
-    Pixel16  vertex[BUFFSIZE * 4];
-    Pixel16  texcoords[BUFFSIZE * 4];
+    uint16_t vertex[BUFFSIZE * 8];
+    uint16_t texcoords[BUFFSIZE * 8];
 } Buffer;
 
 typedef struct {
@@ -68,10 +74,10 @@ typedef struct {
 } Subfont;
 
 typedef struct {
-    uint32_t  replacement;
-    size_t    length;
-    uint8_t   height;
-    Subfont * special;
+    uint32_t   replacement;
+    size_t     length;
+    uint8_t    height;
+    Subfont *  special;
     Subfont ** subfonts;
 } Font;
 
@@ -95,11 +101,13 @@ Subfont upload_subfont(const char * filename, int texsize, uint16_t height) {
         exit(1);
     }
 
-    Header header; if (fread(&header, sizeof(Header), 1, file) != 1) {
+    uint8_t * buff = malloc(max(sizeBitmapHeader, sizeBitmapGlyph));
+    if (fread(buff, sizeBitmapHeader, 1, file) != 1) {
         log_fatal("ERROR: short font header in %s", filename);
         exit(1);
     }
-    header.high16 = letohu16(header.high16);
+
+    BitmapHeader header = readBitmapHeader(buff);
 
     if (header.height != height) {
         log_fatal("ERROR: invalid font height (given %d, expected %d)", header.height, height);
@@ -109,18 +117,16 @@ Subfont upload_subfont(const char * filename, int texsize, uint16_t height) {
     Subfont font; font.high16 = header.high16;
     font.table = calloc(65536, sizeof(Glyph));
 
-    uint8_t * buff = calloc(texsize * texsize, 1);
+    uint8_t * pagebuff = calloc(texsize * texsize, 1);
     size_t x0 = 0, y0 = 0, pagenum = 0;
 
     for (;;) {
-        RawGlyph glyph;
-
-        if (fread(&glyph, sizeof(RawGlyph), 1, file) < 1) {
-            font.textures[pagenum] = upload_page(texsize, buff);
+        if (fread(buff, sizeBitmapGlyph, 1, file) < 1) {
+            font.textures[pagenum] = upload_page(texsize, pagebuff);
             break;
         }
 
-        glyph.low16 = letohu16(glyph.low16);
+        BitmapGlyph glyph = readBitmapGlyph(buff);
 
         size_t size = ((size_t) header.height) * ((size_t) glyph.stride);
         uint8_t * data = malloc(size);
@@ -134,7 +140,7 @@ Subfont upload_subfont(const char * filename, int texsize, uint16_t height) {
 
         if (x0 + width > texsize) { x0 = 0; y0 += header.height; }
         if (y0 + header.height > texsize) {
-            font.textures[pagenum] = upload_page(texsize, buff);
+            font.textures[pagenum] = upload_page(texsize, pagebuff);
             x0 = y0 = 0; pagenum++;
         }
 
@@ -148,7 +154,7 @@ Subfont upload_subfont(const char * filename, int texsize, uint16_t height) {
             for (size_t dx = 0; dx < glyph.stride; dx++) {
                 for (size_t bit = 0; bit < 8; bit++) {
                     size_t off = (y0 + dy) * texsize + (x0 + 8 * dx + 7 - bit);
-                    buff[off] = data[dy * glyph.stride + dx] & (1 << bit) ? 0xff : 0x00;
+                    pagebuff[off] = data[dy * glyph.stride + dx] & (1 << bit) ? 0xff : 0x00;
                 }
             }
         }
@@ -162,7 +168,7 @@ Subfont upload_subfont(const char * filename, int texsize, uint16_t height) {
 
     log_info("%s (0x%04xXXXX): height = %d, npages = %d", filename, font.high16, height, font.npages);
 
-    free(buff); fclose(file); return font;
+    free(buff); free(pagebuff); fclose(file); return font;
 }
 
 static enum font_type font_current_type = FONT_FIXEDSYS;
@@ -243,6 +249,24 @@ float font_length(int scale, const char * text, Codepage codepage) {
     return fmax(length, x);
 }
 
+static inline void emitTexcoords(uint16_t * buff, size_t offset, uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
+    uint16_t * dest = buff + offset * 8;
+
+    *(dest++) = x;     *(dest++) = y + h;
+    *(dest++) = x + w; *(dest++) = y + h;
+    *(dest++) = x + w; *(dest++) = y;
+    *(dest++) = x;     *(dest++) = y;
+}
+
+static inline void emitVertex(uint16_t * buff, size_t offset, uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
+    uint16_t * dest = buff + offset * 8;
+
+    *(dest++) = x;     *(dest++) = y - h;
+    *(dest++) = x + w; *(dest++) = y - h;
+    *(dest++) = x + w; *(dest++) = y;
+    *(dest++) = x;     *(dest++) = y;
+}
+
 void font_render(float x, float y, int scale, const char * text, Codepage codepage) {
     Font * font = choose_font(font_current_type);
     clear_buffers(font);
@@ -264,17 +288,10 @@ void font_render(float x, float y, int scale, const char * text, Codepage codepa
             Glyph glyph; Subfont * subfont = get_glyph(font, codepoint, &glyph);
             Buffer * buffer = &subfont->buffers[glyph.page];
 
-            float width = glyph.stride * 8;
+            uint16_t width = glyph.stride * 8;
 
-            buffer->texcoords[buffer->len * 4 + 0] = (Pixel16) {glyph.x, glyph.y + font->height};
-            buffer->texcoords[buffer->len * 4 + 1] = (Pixel16) {glyph.x + width, glyph.y + font->height};
-            buffer->texcoords[buffer->len * 4 + 2] = (Pixel16) {glyph.x + width, glyph.y};
-            buffer->texcoords[buffer->len * 4 + 3] = (Pixel16) {glyph.x, glyph.y};
-
-            buffer->vertex[buffer->len * 4 + 0] = (Pixel16) {x0, y0 - h};
-            buffer->vertex[buffer->len * 4 + 1] = (Pixel16) {x0 + scale * width, y0 - h};
-            buffer->vertex[buffer->len * 4 + 2] = (Pixel16) {x0 + scale * width, y0};
-            buffer->vertex[buffer->len * 4 + 3] = (Pixel16) {x0, y0};
+            emitTexcoords(buffer->texcoords, buffer->len, glyph.x, glyph.y, width, font->height);
+            emitVertex(buffer->vertex, buffer->len, x0, y0, scale * width, h);
 
             buffer->len++; x0 += scale * width;
         }
