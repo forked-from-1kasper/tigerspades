@@ -341,7 +341,7 @@ void player_render_all() {
                     hit.type = CAMERA_HITTYPE_NONE;
                 switch (hit.type) {
                     case CAMERA_HITTYPE_BLOCK: {
-                        sound_create(SOUND_WORLD, &sound_hitground, hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
+                        sound_create(SOUND_WORLD, sound(SOUND_HITGROUND), hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
 
                         if (k == local_player.id)
                             map_damage(hit.x, hit.y, hit.z, 50);
@@ -365,7 +365,7 @@ void player_render_all() {
                     }
 
                     case CAMERA_HITTYPE_PLAYER: {
-                        sound_create_sticky(&sound_spade_whack, players + k, k);
+                        sound_create_sticky(sound(SOUND_SPADE_WHACK), players + k, k);
                         particle_create(
                             Red,
                             players[hit.player_id].physics.eye.x,
@@ -382,7 +382,7 @@ void player_render_all() {
                         break;
                     }
 
-                    case CAMERA_HITTYPE_NONE: sound_create_sticky(&sound_spade_woosh, players + k, k); break;
+                    case CAMERA_HITTYPE_NONE: sound_create_sticky(sound(SOUND_SPADE_WOOSH), players + k, k); break;
                 }
                 players[k].spade_use_type = 1;
                 players[k].spade_used = 1;
@@ -394,7 +394,7 @@ void player_render_all() {
                 if (players[k].spade_used) {
                     camera_hit_fromplayer(&hit, k, 4.0F);
                     if (hit.type == CAMERA_HITTYPE_BLOCK && hit.y > 1) {
-                        sound_create(SOUND_WORLD, &sound_hitground, hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
+                        sound_create(SOUND_WORLD, sound(SOUND_HITGROUND), hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
                         if (k == local_player.id) {
                             PacketBlockAction contained;
                             contained.action_type = ACTION_SPADE;
@@ -405,7 +405,7 @@ void player_render_all() {
                             sendPacketBlockAction(&contained, 0);
                         }
                     } else {
-                        sound_create_sticky(&sound_spade_woosh, players + k, k);
+                        sound_create_sticky(sound(SOUND_SPADE_WOOSH), players + k, k);
                     }
                 }
 
@@ -451,9 +451,11 @@ void player_render_all() {
                     particle_create_casing(&players[k]);
                     switch (hit.type) {
                         case CAMERA_HITTYPE_PLAYER: {
-                            sound_create_sticky((hit.player_section == HITTYPE_HEAD) ? &sound_spade_whack :
-                                                                                       &sound_hitplayer,
-                                                players + hit.player_id, hit.player_id);
+                            sound_create_sticky(
+                                sound(hit.player_section == HITTYPE_HEAD ? SOUND_SPADE_WHACK : SOUND_HITPLAYER),
+                                players + hit.player_id, hit.player_id
+                            );
+
                             particle_create(
                                 Red,
                                 players[hit.player_id].physics.eye.x,
@@ -1101,9 +1103,12 @@ int player_move(Player * p, float fsynctics, int id) {
 
     // move player and perform simple physics (gravity, momentum, friction)
     if (p->physics.jump) {
-        sound_create(local ? SOUND_LOCAL : SOUND_WORLD, p->physics.wade ? &sound_jump_water : &sound_jump, p->pos.x,
-                     63.0F - p->pos.z, p->pos.y);
-        p->physics.jump = 0;
+        sound_create(
+            local ? SOUND_LOCAL : SOUND_WORLD, sound(p->physics.wade ? SOUND_JUMP_WATER : SOUND_JUMP),
+            p->pos.x, 63.0F - p->pos.z, p->pos.y
+        );
+
+        p->physics.jump       = 0;
         p->physics.velocity.z = -0.36f;
     }
 
@@ -1168,9 +1173,9 @@ int player_move(Player * p, float fsynctics, int id) {
         if (f2 > FALL_DAMAGE_VELOCITY) {
             f2 -= FALL_DAMAGE_VELOCITY;
             ret = f2 * f2 * FALL_DAMAGE_SCALAR;
-            sound_create(local ? SOUND_LOCAL : SOUND_WORLD, &sound_hurt_fall, p->pos.x, 63.0F - p->pos.z, p->pos.y);
+            sound_create(local ? SOUND_LOCAL : SOUND_WORLD, sound(SOUND_HURT_FALL), p->pos.x, 63.0F - p->pos.z, p->pos.y);
         } else {
-            sound_create(local ? SOUND_LOCAL : SOUND_WORLD, p->physics.wade ? &sound_land_water : &sound_land, p->pos.x,
+            sound_create(local ? SOUND_LOCAL : SOUND_WORLD, sound(p->physics.wade ? SOUND_LAND_WATER : SOUND_LAND), p->pos.x,
                          63.0F - p->pos.z, p->pos.y);
             ret = -1;
         }
@@ -1184,13 +1189,13 @@ int player_move(Player * p, float fsynctics, int id) {
            && !p->physics.airborne
            && norm2f(p->physics.velocity.x, p->physics.velocity.z, 0.0F, 0.0F) > sqrf(0.125F)) {
 
-            static WAV * footstep[] = {&sound_footstep1, &sound_footstep2, &sound_footstep3, &sound_footstep4};
-            static WAV * wade[]     = {&sound_wade1,     &sound_wade2,     &sound_wade3,     &sound_wade4};
+            static enum WAV footstep[] = {SOUND_FOOTSTEP1, SOUND_FOOTSTEP2, SOUND_FOOTSTEP3, SOUND_FOOTSTEP4};
+            static enum WAV wade[]     = {SOUND_WADE1,     SOUND_WADE2,     SOUND_WADE3,     SOUND_WADE4};
 
-            size_t num = rand() % 4; WAV * sound = p->physics.wade ? wade[num] : footstep[num];
+            size_t num = rand() % 4; WAV * wav = sound(p->physics.wade ? wade[num] : footstep[num]);
 
-            if (local) sound_create(SOUND_LOCAL, sound, p->pos.x, p->pos.y, p->pos.z);
-            else sound_create_sticky(sound, p, id);
+            if (local) sound_create(SOUND_LOCAL, wav, p->pos.x, p->pos.y, p->pos.z);
+            else sound_create_sticky(wav, p, id);
 
             p->sound.feet_started = window_time();
         }

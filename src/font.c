@@ -45,11 +45,11 @@
 #define blob(dest, n) + n
 #include <BetterSpades/bitmap.h>
 
-#define begin(T) T read##T(uint8_t * pagebuff) { T retval; size_t index = 0;
+#define begin(T) T read##T(uint8_t * buff) { T retval; size_t index = 0;
 #define end() return retval; }
-#define u8(dest)      retval.dest = getu8le(pagebuff, &index);
-#define u16(dest)     retval.dest = getu16le(pagebuff, &index);
-#define blob(dest, n) retval.dest = (Blob) {.data = &pagebuff[index], .size = n}; index += n;
+#define u8(dest)      retval.dest = getu8le(buff, &index);
+#define u16(dest)     retval.dest = getu16le(buff, &index);
+#define blob(dest, n) retval.dest = (Blob) {.data = &buff[index], .size = n}; index += n;
 #include <BetterSpades/bitmap.h>
 
 typedef struct {

@@ -131,7 +131,7 @@ static bool tracer_update_single(void * obj, void * user) {
     // 128.0[m] / 256.0[m/s] = 0.5[s]
     if ((t->hit.type != CAMERA_HITTYPE_NONE && len > sqrf(t->hit.distance)) || window_time() - t->created > 0.5F) {
         if (t->hit.type != CAMERA_HITTYPE_NONE)
-            sound_create(SOUND_WORLD, &sound_impact, t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
+            sound_create(SOUND_WORLD, sound(SOUND_IMPACT), t->r.origin[X], t->r.origin[Y], t->r.origin[Z]);
 
         return true;
     } else {

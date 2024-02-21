@@ -36,6 +36,16 @@
 #endif
 
 #ifdef USE_SOUND
+    #if __APPLE__
+        #include <OpenAL/al.h>
+        #include <OpenAL/alc.h>
+    #else
+        #include <AL/al.h>
+        #include <AL/alc.h>
+    #endif
+#endif
+
+#ifdef USE_SOUND
     #include <dr_wav.h>
 #endif
 
@@ -47,46 +57,67 @@ typedef struct {
 
 EntitySystem sound_sources;
 
-WAV sound_footstep1, sound_footstep2, sound_footstep3, sound_footstep4;
-WAV sound_wade1, sound_wade2, sound_wade3, sound_wade4;
-WAV sound_jump, sound_jump_water;
-WAV sound_land, sound_land_water;
+struct _WAV {
+    ALuint openal_buffer;
+    float min, max;
+};
 
-WAV sound_hurt_fall;
+#define SOUND_TOTAL (SOUND_LAST + 1)
+WAV _sounds[SOUND_TOTAL];
 
-WAV sound_explode;
-WAV sound_explode_water;
-WAV sound_grenade_bounce;
-WAV sound_grenade_pin;
+WAV * sound(enum WAV index) { return &_sounds[index]; }
 
-WAV sound_pickup;
-WAV sound_horn;
+typedef struct {
+    const char * filename;
+    float min, max;
+} Resource;
 
-WAV sound_rifle_shoot;
-WAV sound_rifle_reload;
-WAV sound_smg_shoot;
-WAV sound_smg_reload;
-WAV sound_shotgun_shoot;
-WAV sound_shotgun_reload;
-WAV sound_shotgun_cock;
+static Resource wav_sound(enum WAV index) {
+    switch (index) {
+        case SOUND_FOOTSTEP1:      return (Resource) {"wav/footstep1.wav", 0.1F, 32.0F};
+        case SOUND_FOOTSTEP2:      return (Resource) {"wav/footstep2.wav", 0.1F, 32.0F};
+        case SOUND_FOOTSTEP3:      return (Resource) {"wav/footstep3.wav", 0.1F, 32.0F};
+        case SOUND_FOOTSTEP4:      return (Resource) {"wav/footstep4.wav", 0.1F, 32.0F};
+        case SOUND_WADE1:          return (Resource) {"wav/wade1.wav", 0.1F, 32.0F};
+        case SOUND_WADE2:          return (Resource) {"wav/wade2.wav", 0.1F, 32.0F};
+        case SOUND_WADE3:          return (Resource) {"wav/wade3.wav", 0.1F, 32.0F};
+        case SOUND_WADE4:          return (Resource) {"wav/wade4.wav", 0.1F, 32.0F};
+        case SOUND_JUMP:           return (Resource) {"wav/jump.wav", 0.1F, 32.0F};
+        case SOUND_JUMP_WATER:     return (Resource) {"wav/waterjump.wav", 0.1F, 32.0F};
+        case SOUND_LAND:           return (Resource) {"wav/land.wav", 0.1F, 32.0F};
+        case SOUND_LAND_WATER:     return (Resource) {"wav/waterland.wav", 0.1F, 32.0F};
+        case SOUND_HURT_FALL:      return (Resource) {"wav/fallhurt.wav", 0.1F, 32.0F};
+        case SOUND_EXPLODE:        return (Resource) {"wav/explode.wav", 0.1F, 53.0F};
+        case SOUND_EXPLODE_WATER:  return (Resource) {"wav/waterexplode.wav", 0.1F, 53.0F};
+        case SOUND_GRENADE_BOUNCE: return (Resource) {"wav/grenadebounce.wav", 0.1F, 48.0F};
+        case SOUND_GRENADE_PIN:    return (Resource) {"wav/pin.wav", 0.1F, 48.0F};
+        case SOUND_RIFLE_SHOOT:    return (Resource) {"wav/semishoot.wav", 0.1F, 96.0F};
+        case SOUND_RIFLE_RELOAD:   return (Resource) {"wav/semireload.wav", 0.1F, 16.0F};
+        case SOUND_SMG_SHOOT:      return (Resource) {"wav/smgshoot.wav", 0.1F, 96.0F};
+        case SOUND_SMG_RELOAD:     return (Resource) {"wav/smgreload.wav", 0.1F, 16.0F};
+        case SOUND_SHOTGUN_SHOOT:  return (Resource) {"wav/shotgunshoot.wav", 0.1F, 96.0F};
+        case SOUND_SHOTGUN_RELOAD: return (Resource) {"wav/shotgunreload.wav", 0.1F, 16.0F};
+        case SOUND_SHOTGUN_COCK:   return (Resource) {"wav/cock.wav", 0.1F, 16.0F};
+        case SOUND_HITGROUND:      return (Resource) {"wav/hitground.wav", 0.1F, 32.0F};
+        case SOUND_HITPLAYER:      return (Resource) {"wav/hitplayer.wav", 0.1F, 32.0F};
+        case SOUND_BUILD:          return (Resource) {"wav/build.wav", 0.1F, 32.0F};
+        case SOUND_SPADE_WOOSH:    return (Resource) {"wav/woosh.wav", 0.1F, 32.0F};
+        case SOUND_SPADE_WHACK:    return (Resource) {"wav/whack.wav", 0.1F, 32.0F};
+        case SOUND_DEATH:          return (Resource) {"wav/death.wav", 0.1F, 24.0F};
+        case SOUND_BEEP1:          return (Resource) {"wav/beep1.wav", 0.1F, 1024.0F};
+        case SOUND_BEEP2:          return (Resource) {"wav/beep2.wav", 0.1F, 1024.0F};
+        case SOUND_SWITCH:         return (Resource) {"wav/switch.wav", 0.1F, 1024.0F};
+        case SOUND_EMPTY:          return (Resource) {"wav/empty.wav", 0.1F, 1024.0F};
+        case SOUND_INTRO:          return (Resource) {"wav/intro.wav", 0.1F, 1024.0F};
+        case SOUND_DEBRIS:         return (Resource) {"wav/debris.wav", 0.1F, 53.0F};
+        case SOUND_BOUNCE:         return (Resource) {"wav/bounce.wav", 0.1F, 32.0F};
+        case SOUND_IMPACT:         return (Resource) {"wav/impact.wav", 0.1F, 53.0F};
+        case SOUND_PICKUP:         return (Resource) {"wav/pickup.wav", 0.1F, 1024.0F};
+        case SOUND_HORN:           return (Resource) {"wav/horn.wav", 0.1F, 1024.0F};
+    }
 
-WAV sound_hitground;
-WAV sound_hitplayer;
-WAV sound_build;
-
-WAV sound_spade_woosh;
-WAV sound_spade_whack;
-
-WAV sound_death;
-WAV sound_beep1;
-WAV sound_beep2;
-WAV sound_switch;
-WAV sound_empty;
-WAV sound_intro;
-
-WAV sound_debris;
-WAV sound_bounce;
-WAV sound_impact;
+    return (Resource) {NULL, 0.0F, 0.0F};
+}
 
 void sound_volume(float vol) {
 #ifdef USE_SOUND
@@ -95,7 +126,7 @@ void sound_volume(float vol) {
 #endif
 }
 
-static void sound_createEx(enum sound_space option, WAV * w, float x, float y, float z, float vx, float vy,
+static void sound_createEx(SoundSpace option, WAV * w, float x, float y, float z, float vx, float vy,
                            float vz, int player) {
 #ifdef USE_SOUND
     if (!sound_enabled)
@@ -137,7 +168,7 @@ void sound_create_sticky(WAV * w, Player * player, int player_id) {
     sound_createEx(SOUND_WORLD, w, player->pos.x, player->pos.y, player->pos.z, 0.0F, 0.0F, 0.0F, player_id);
 }
 
-void sound_create(enum sound_space option, WAV * w, float x, float y, float z) {
+void sound_create(SoundSpace option, WAV * w, float x, float y, float z) {
     sound_createEx(option, w, x, y, z, 0.0F, 0.0F, 0.0F, -1);
 }
 
@@ -160,7 +191,7 @@ void sound_position(SoundSource * s, float x, float y, float z) {
 
 #ifdef USE_SOUND
 static bool sound_update_single(void * obj, void * user) {
-    SoundSource* s = (SoundSource*) obj;
+    SoundSource * s = (SoundSource *) obj;
 
     int source_state;
     alGetSourcei(s->openal_handle, AL_SOURCE_STATE, &source_state);
@@ -204,7 +235,7 @@ void sound_update() {
 #endif
 }
 
-void sound_load(WAV * wav, char * name, float min, float max) {
+void sound_load(WAV * wav, const char * name, float min, float max) {
 #ifdef USE_SOUND
     if (!sound_enabled)
         return;
@@ -234,11 +265,15 @@ void sound_load(WAV * wav, char * name, float min, float max) {
 #endif
 }
 
+#ifdef USE_SOUND
+static ALCdevice * device = NULL;
+#endif
+
 void sound_init() {
 #ifdef USE_SOUND
     entitysys_create(&sound_sources, sizeof(SoundSource), 256);
 
-    ALCdevice * device = alcOpenDevice(NULL);
+    device = alcOpenDevice(NULL);
 
     if (!device) {
         sound_enabled = 0;
@@ -246,7 +281,7 @@ void sound_init() {
         return;
     }
 
-    ALCcontext* context = alcCreateContext(device, NULL);
+    ALCcontext * context = alcCreateContext(device, NULL);
     if (!alcMakeContextCurrent(context)) {
         sound_enabled = 0;
         log_warn("Could not enter sound device context!");
@@ -257,55 +292,16 @@ void sound_init() {
 
     sound_volume(settings.volume / 10.0F);
 
-    sound_load(&sound_footstep1, "wav/footstep1.wav", 0.1F, 32.0F);
-    sound_load(&sound_footstep2, "wav/footstep2.wav", 0.1F, 32.0F);
-    sound_load(&sound_footstep3, "wav/footstep3.wav", 0.1F, 32.0F);
-    sound_load(&sound_footstep4, "wav/footstep4.wav", 0.1F, 32.0F);
+    for (enum WAV i = SOUND_FIRST; i <= SOUND_LAST; i++) {
+        Resource res = wav_sound(i);
+        sound_load(&_sounds[i], res.filename, res.min, res.max);
+    }
+#endif
+}
 
-    sound_load(&sound_wade1, "wav/wade1.wav", 0.1F, 32.0F);
-    sound_load(&sound_wade2, "wav/wade2.wav", 0.1F, 32.0F);
-    sound_load(&sound_wade3, "wav/wade3.wav", 0.1F, 32.0F);
-    sound_load(&sound_wade4, "wav/wade4.wav", 0.1F, 32.0F);
-
-    sound_load(&sound_jump, "wav/jump.wav", 0.1F, 32.0F);
-    sound_load(&sound_land, "wav/land.wav", 0.1F, 32.0F);
-    sound_load(&sound_jump_water, "wav/waterjump.wav", 0.1F, 32.0F);
-    sound_load(&sound_land_water, "wav/waterland.wav", 0.1F, 32.0F);
-
-    sound_load(&sound_explode, "wav/explode.wav", 0.1F, 53.0F);
-    sound_load(&sound_explode_water, "wav/waterexplode.wav", 0.1F, 53.0F);
-    sound_load(&sound_grenade_bounce, "wav/grenadebounce.wav", 0.1F, 48.0F);
-    sound_load(&sound_grenade_pin, "wav/pin.wav", 0.1F, 48.0F);
-
-    sound_load(&sound_hurt_fall, "wav/fallhurt.wav", 0.1F, 32.0F);
-
-    sound_load(&sound_pickup, "wav/pickup.wav", 0.1F, 1024.0F);
-    sound_load(&sound_horn, "wav/horn.wav", 0.1F, 1024.0F);
-
-    sound_load(&sound_rifle_shoot, "wav/semishoot.wav", 0.1F, 96.0F);
-    sound_load(&sound_rifle_reload, "wav/semireload.wav", 0.1F, 16.0F);
-    sound_load(&sound_smg_shoot, "wav/smgshoot.wav", 0.1F, 96.0F);
-    sound_load(&sound_smg_reload, "wav/smgreload.wav", 0.1F, 16.0F);
-    sound_load(&sound_shotgun_shoot, "wav/shotgunshoot.wav", 0.1F, 96.0F);
-    sound_load(&sound_shotgun_reload, "wav/shotgunreload.wav", 0.1F, 16.0F);
-    sound_load(&sound_shotgun_cock, "wav/cock.wav", 0.1F, 16.0F);
-
-    sound_load(&sound_hitground, "wav/hitground.wav", 0.1F, 32.0F);
-    sound_load(&sound_hitplayer, "wav/hitplayer.wav", 0.1F, 32.0F);
-    sound_load(&sound_build, "wav/build.wav", 0.1F, 32.0F);
-
-    sound_load(&sound_spade_woosh, "wav/woosh.wav", 0.1F, 32.0F);
-    sound_load(&sound_spade_whack, "wav/whack.wav", 0.1F, 32.0F);
-
-    sound_load(&sound_death, "wav/death.wav", 0.1F, 24.0F);
-    sound_load(&sound_beep1, "wav/beep1.wav", 0.1F, 1024.0F);
-    sound_load(&sound_beep2, "wav/beep2.wav", 0.1F, 1024.0F);
-    sound_load(&sound_switch, "wav/switch.wav", 0.1F, 1024.0F);
-    sound_load(&sound_empty, "wav/empty.wav", 0.1F, 1024.0F);
-    sound_load(&sound_intro, "wav/intro.wav", 0.1F, 1024.0F);
-
-    sound_load(&sound_debris, "wav/debris.wav", 0.1F, 53.0F);
-    sound_load(&sound_bounce, "wav/bounce.wav", 0.1F, 32.0F);
-    sound_load(&sound_impact, "wav/impact.wav", 0.1F, 53.0F);
+void sound_deinit() {
+#ifdef USE_SOUND
+    if (device != NULL)
+        alcCloseDevice(device);
 #endif
 }

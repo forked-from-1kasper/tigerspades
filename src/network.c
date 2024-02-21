@@ -283,7 +283,7 @@ void getPacketBlockAction(uint8_t * data, int len) {
                 map_set(x, 63 - z, y, color);
 
                 if (play_sound)
-                    sound_create(SOUND_WORLD, &sound_build, x + 0.5F, 63 - z + 0.5F, y + 0.5F);
+                    sound_create(SOUND_WORLD, sound(SOUND_BUILD), x + 0.5F, 63 - z + 0.5F, y + 0.5F);
             }
             break;
         }
@@ -318,8 +318,12 @@ void getPacketBlockLine(uint8_t * data, int len) {
         }
     }
 
-    sound_create(SOUND_WORLD, &sound_build, (sx + ex) * 0.5F + 0.5F, (63 - sz + 63 - ez) * 0.5F + 0.5F,
-                 (sy + ey) * 0.5F + 0.5F);
+    sound_create(
+        SOUND_WORLD, sound(SOUND_BUILD),
+        (sx + ex) * 0.5F + 0.5F,
+        (63 - sz + 63 - ez) * 0.5F + 0.5F,
+        (sy + ey) * 0.5F + 0.5F
+    );
 }
 
 void getPacketChatMessage(uint8_t * data, int len) {
@@ -330,40 +334,46 @@ void getPacketChatMessage(uint8_t * data, int len) {
     Codepage codepage = CP437; char * msg = p.message;
     if (msg[0] == '\xFF') { msg++; size--; codepage = UTF8; }
 
-    char n[32] = {0}; char m[256];
+    char n[32] = {0}; char buff[256];
     switch (p.chat_type) {
-        case CHAT_ERROR: sound_create(SOUND_LOCAL, &sound_beep2, 0.0F, 0.0F, 0.0F);
-        case CHAT_BIG: chat_showpopup(msg, size, codepage, 5.0F, Red); return;
-        case CHAT_INFO: chat_showpopup(msg, size, codepage, 5.0F, White); return;
-        case CHAT_WARNING:
-            sound_create(SOUND_LOCAL, &sound_beep1, 0.0F, 0.0F, 0.0F);
+        case CHAT_ERROR: sound_create(SOUND_LOCAL, sound(SOUND_BEEP2), 0.0F, 0.0F, 0.0F);
+        case CHAT_BIG:   chat_showpopup(msg, size, codepage, 5.0F, Red); return;
+        case CHAT_INFO:  chat_showpopup(msg, size, codepage, 5.0F, White); return;
+
+        case CHAT_WARNING: {
+            sound_create(SOUND_LOCAL, sound(SOUND_BEEP1), 0.0F, 0.0F, 0.0F);
             chat_showpopup(msg, size, codepage, 5.0F, Yellow);
             return;
-        case CHAT_SYSTEM:
+        }
+
+        case CHAT_SYSTEM: {
             if (p.player_id == 255) {
                 strncpy(network_custom_reason, msg, 16);
                 return; // don’t add message to chat
             }
-            m[0] = 0;
+            buff[0] = 0;
             break;
-        case CHAT_ALL:
-        case CHAT_TEAM:
+        }
+
+        case CHAT_ALL: case CHAT_TEAM: {
             if (p.player_id < PLAYERS_MAX && players[p.player_id].connected) {
                 switch (players[p.player_id].team) {
                     case TEAM_1: sprintf(n, "%s (%s)", players[p.player_id].name, gamestate.team_1.name); break;
                     case TEAM_2: sprintf(n, "%s (%s)", players[p.player_id].name, gamestate.team_2.name); break;
                     case TEAM_SPECTATOR: sprintf(n, "%s (Spectator)", players[p.player_id].name); break;
                 }
-                sprintf(m, "%s: ", n);
+                sprintf(buff, "%s: ", n);
             } else {
-                sprintf(m, ": ");
+                sprintf(buff, ": ");
             }
+
             break;
+        }
     }
 
     {
-        size_t offset = strlen(m);
-        convert(m + offset, sizeof(m) - offset, UTF8, msg, size, codepage);
+        size_t offset = strlen(buff);
+        convert(buff + offset, sizeof(buff) - offset, UTF8, msg, size, codepage);
     }
 
     TrueColor color = {0, 0, 0, 255};
@@ -381,7 +391,7 @@ void getPacketChatMessage(uint8_t * data, int len) {
         default: color.r = color.g = color.b = 255; break;
     }
 
-    chat_add(0, color, m, sizeof(m), UTF8);
+    chat_add(0, color, buff, sizeof(buff), UTF8);
 }
 
 static inline void addExtInfoEntry(uint8_t id, uint8_t version, size_t * index) {
@@ -466,7 +476,7 @@ void getPacketSetHP(uint8_t * data, int len) {
 
     if (p.type == DAMAGE_SOURCE_GUN) {
         local_player.last_damage_timer = window_time();
-        sound_create(SOUND_LOCAL, &sound_hitplayer, 0.0F, 0.0F, 0.0F);
+        sound_create(SOUND_LOCAL, sound(SOUND_HITPLAYER), 0.0F, 0.0F, 0.0F);
     }
 
     local_player.last_damage = ntohv3f(p.pos);
@@ -597,7 +607,7 @@ void getPacketStateData(uint8_t * data, int len) {
         }
     } else log_error("Unknown gamemode (%d)!", p.gamemode);
 
-    sound_create(SOUND_LOCAL, &sound_intro, 0.0F, 0.0F, 0.0F);
+    sound_create(SOUND_LOCAL, sound(SOUND_INTRO), 0.0F, 0.0F, 0.0F);
 
     fog_color[0] = ((float) p.fog.r) / 255.0F;
     fog_color[1] = ((float) p.fog.g) / 255.0F;
@@ -687,7 +697,7 @@ void getPacketKillAction(uint8_t * data, int len) {
             local_player.death_time       = window_time();
             local_player.respawn_time     = p.respawn_time;
             local_player.respawn_cnt_last = 255;
-            sound_create(SOUND_LOCAL, &sound_death, 0.0F, 0.0F, 0.0F);
+            sound_create(SOUND_LOCAL, sound(SOUND_DEATH), 0.0F, 0.0F, 0.0F);
 
             if (p.player_id != p.killer_id) {
                 local_player.last_damage_timer = local_player.death_time;
@@ -824,7 +834,7 @@ void getPacketTerritoryCapture(uint8_t * data, int len) {
 
     if (gamestate.gamemode_type == GAMEMODE_TC && p.tent < gamestate.gamemode.tc.territory_count) {
         gamestate.gamemode.tc.territory[p.tent].team = TEAM(p.team);
-        sound_create(SOUND_LOCAL, p.winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
+        sound_create(SOUND_LOCAL, sound(p.winning ? SOUND_HORN : SOUND_PICKUP), 0.0F, 0.0F, 0.0F);
         char x = (int) (gamestate.gamemode.tc.territory[p.tent].pos.x / 64.0F) + 'A';
         char y = (int) (gamestate.gamemode.tc.territory[p.tent].pos.y / 64.0F) + '1';
 
@@ -876,7 +886,7 @@ void getPacketIntelCapture(uint8_t * data, int len) {
                 sprintf(capture_str, "%s has captured the %s Intel", players[p.player_id].name, gamestate.team_1.name);
                 break;
         }
-        sound_create(SOUND_LOCAL, p.winning ? &sound_horn : &sound_pickup, 0.0F, 0.0F, 0.0F);
+        sound_create(SOUND_LOCAL, sound(p.winning ? SOUND_HORN : SOUND_PICKUP), 0.0F, 0.0F, 0.0F);
         players[p.player_id].score += 10;
         chat_add(0, Red, capture_str, sizeof(capture_str), UTF8);
 
@@ -919,7 +929,7 @@ void getPacketIntelPickup(uint8_t * data, int len) {
         }
 
         chat_add(0, Red, pickup_str, sizeof(pickup_str), UTF8);
-        sound_create(SOUND_LOCAL, &sound_pickup, 0.0F, 0.0F, 0.0F);
+        sound_create(SOUND_LOCAL, sound(SOUND_PICKUP), 0.0F, 0.0F, 0.0F);
     }
 }
 
@@ -951,7 +961,7 @@ void getPacketRestock(uint8_t * data, int len) {
     local_player.grenades = 3;
     weapon_set(true);
 
-    sound_create(SOUND_LOCAL, &sound_switch, 0.0F, 0.0F, 0.0F);
+    sound_create(SOUND_LOCAL, sound(SOUND_SWITCH), 0.0F, 0.0F, 0.0F);
 }
 
 void getPacketFogColor(uint8_t * data, int len) {

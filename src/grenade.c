@@ -159,7 +159,7 @@ bool grenade_update_single(void * obj, void * user) {
     float dt = *((float*) user);
 
     if (window_time() - g->created > g->fuse_length) {
-        sound_create(SOUND_WORLD, grenade_inwater(g) ? &sound_explode_water : &sound_explode, g->pos.x, g->pos.y,
+        sound_create(SOUND_WORLD, sound(grenade_inwater(g) ? SOUND_EXPLODE_WATER : SOUND_EXPLODE), g->pos.x, g->pos.y,
                      g->pos.z);
         particle_create(grenade_inwater(g) ? map_get(g->pos.x, 0, g->pos.z) : gray, g->pos.x, g->pos.y + 1.5F,
                         g->pos.z, 20.0F, 1.5F, 64, 0.1F, 0.5F);
@@ -167,7 +167,7 @@ bool grenade_update_single(void * obj, void * user) {
         return true;
     } else {
         if (grenade_move(g, dt) == 2)
-            sound_create(SOUND_WORLD, &sound_grenade_bounce, g->pos.x, g->pos.y, g->pos.z);
+            sound_create(SOUND_WORLD, sound(SOUND_GRENADE_BOUNCE), g->pos.x, g->pos.y, g->pos.z);
 
         return false;
     }

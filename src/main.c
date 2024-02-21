@@ -710,6 +710,7 @@ void deinit() {
     if (network_connected)
         network_disconnect();
     window_deinit();
+    sound_deinit();
 }
 
 void on_error(int i, const char * s) {

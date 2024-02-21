@@ -20,89 +20,43 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-#ifdef USE_SOUND
-    #if __APPLE__
-        #include <OpenAL/al.h>
-        #include <OpenAL/alc.h>
-    #else
-        #include <AL/al.h>
-        #include <AL/alc.h>
-    #endif
-#endif
-
 #include <BetterSpades/player.h>
 
 #define SOUND_SCALE 0.6F
 
-enum sound_space {
+typedef enum {
     SOUND_WORLD,
     SOUND_LOCAL,
-};
+} SoundSpace;
 
 extern int sound_enabled;
 
-typedef struct {
-    ALuint openal_buffer;
-    float min, max;
-} WAV;
+typedef struct _WAV WAV;
 
-extern WAV sound_footstep1;
-extern WAV sound_footstep2;
-extern WAV sound_footstep3;
-extern WAV sound_footstep4;
+enum WAV {
+    SOUND_FOOTSTEP1, SOUND_FOOTSTEP2, SOUND_FOOTSTEP3, SOUND_FOOTSTEP4,
+    SOUND_WADE1, SOUND_WADE2, SOUND_WADE3, SOUND_WADE4,
+    SOUND_JUMP, SOUND_JUMP_WATER, SOUND_LAND, SOUND_LAND_WATER, SOUND_HURT_FALL,
+    SOUND_EXPLODE, SOUND_EXPLODE_WATER, SOUND_GRENADE_BOUNCE, SOUND_GRENADE_PIN,
+    SOUND_RIFLE_SHOOT, SOUND_RIFLE_RELOAD, SOUND_SMG_SHOOT, SOUND_SMG_RELOAD,
+    SOUND_SHOTGUN_SHOOT, SOUND_SHOTGUN_RELOAD, SOUND_SHOTGUN_COCK,
+    SOUND_HITGROUND, SOUND_HITPLAYER, SOUND_BUILD,
+    SOUND_SPADE_WOOSH, SOUND_SPADE_WHACK, SOUND_DEATH,
+    SOUND_BEEP1, SOUND_BEEP2, SOUND_SWITCH, SOUND_EMPTY, SOUND_INTRO,
+    SOUND_DEBRIS, SOUND_BOUNCE, SOUND_IMPACT, SOUND_PICKUP, SOUND_HORN,
 
-extern WAV sound_wade1;
-extern WAV sound_wade2;
-extern WAV sound_wade3;
-extern WAV sound_wade4;
+    SOUND_FIRST = SOUND_FOOTSTEP1,
+    SOUND_LAST  = SOUND_HORN
+};
 
-extern WAV sound_jump;
-extern WAV sound_jump_water;
-
-extern WAV sound_land;
-extern WAV sound_land_water;
-
-extern WAV sound_hurt_fall;
-
-extern WAV sound_explode;
-extern WAV sound_explode_water;
-extern WAV sound_grenade_bounce;
-extern WAV sound_grenade_pin;
-
-extern WAV sound_pickup;
-extern WAV sound_horn;
-
-extern WAV sound_rifle_shoot;
-extern WAV sound_rifle_reload;
-extern WAV sound_smg_shoot;
-extern WAV sound_smg_reload;
-extern WAV sound_shotgun_shoot;
-extern WAV sound_shotgun_reload;
-extern WAV sound_shotgun_cock;
-
-extern WAV sound_hitground;
-extern WAV sound_hitplayer;
-extern WAV sound_build;
-
-extern WAV sound_spade_woosh;
-extern WAV sound_spade_whack;
-
-extern WAV sound_death;
-extern WAV sound_beep1;
-extern WAV sound_beep2;
-extern WAV sound_switch;
-extern WAV sound_empty;
-extern WAV sound_intro;
-
-extern WAV sound_debris;
-extern WAV sound_bounce;
-extern WAV sound_impact;
+extern WAV * sound(enum WAV);
 
 void sound_volume(float vol);
-void sound_create_sticky(WAV * w, Player * player, int player_id);
-void sound_create(enum sound_space option, WAV * w, float x, float y, float z);
+void sound_create_sticky(WAV *, Player * player, int player_id);
+void sound_create(SoundSpace, WAV *, float x, float y, float z);
 void sound_update(void);
-void sound_load(WAV * wav, char* name, float min, float max);
+void sound_load(WAV *, const char * filename, float min, float max);
 void sound_init(void);
+void sound_deinit(void);
 
 #endif

@@ -293,17 +293,18 @@ size_t strsize(const char *, size_t maxsize);
 
                         // NOTE: These options are intended for testing purposes only.
                         // NOTE: Don’t cry if you got banned for using this on a public server.
-                        // ┌───────────────┬──────────────┬─────────────────────────────────────────────────────────────────────┐
-                        // │ Easy to spot? │ Easy to fix? │ Reason                                                              │
-                        // ├───────────────┼──────────────┼─────────────────────────────────────────────────────────────────────┤
-#define HACK_NORELOAD 0 // │ Yes           │ Kinda        │ Hit packets are not checked for shooting without PacketWeaponInput. │
-#define HACK_NORECOIL 0 // │ For spectator │ No           │ Recoil is client-side.                                              │
-#define HACK_NOSPREAD 0 // │ For spectator │ No           │ Spread is client-side.                                              │
-#define HACK_WALLHACK 0 // │ Yes           │ Yes          │ Hit packets are not checked for shooting through walls.             │
-#define HACK_NOFOG    0 // │ No            │ Impossible?  │ Fog is (totally) client-side.                                       │
-#define HACK_MAPHACK  0 // │ No            │ Strongly no  │ Player’s position data is always sent to everyone in full.          │
-#define HACK_ESP      0 // │ Kinda         │ Strongly no  │ Same as previous.                                                   │
-                        // └───────────────┴──────────────┴─────────────────────────────────────────────────────────────────────┘
-#define HACKS_ENABLED (HACK_NORELOAD || HACK_NORECOIL || HACK_NOSPREAD || HACK_WALLHACK || HACK_MAPHACK || HACK_NOFOG || HACK_ESP)
+                        // ┌───────────────┬──────────────┬──────────────────────────────────────────────────────────────────────────┐
+                        // │ Easy to spot? │ Easy to fix? │ Reason                                                                   │
+                        // ├───────────────┼──────────────┼──────────────────────────────────────────────────────────────────────────┤
+#define HACK_NORELOAD 0 // │ Yes           │ Kinda        │ Hit packets are not checked for shooting without PacketWeaponInput.      │
+#define HACK_NORECOIL 0 // │ For spectator │ No           │ Recoil is client-side.                                                   │
+#define HACK_NOSPREAD 0 // │ For spectator │ No           │ Spread is client-side.                                                   │
+#define HACK_WALLHACK 0 // │ Yes           │ Yes          │ Hit packets are not checked for shooting through walls.                  │
+#define HACK_NOFOG    0 // │ No            │ Impossible?  │ Fog is (totally) client-side.                                            │
+#define HACK_MAPHACK  0 // │ No            │ Strongly no  │ Player’s position data is always sent to everyone in full.               │
+#define HACK_ESP      0 // │ Kinda         │ Strongly no  │ Same as previous.                                                        │
+#define HACK_HEADSHOT 0 // │ Kinda         │ No           │ It’s hard to determine actual headshot in the presence of non-zero ping. │
+                        // └───────────────┴──────────────┴──────────────────────────────────────────────────────────────────────────┘
+#define HACKS_ENABLED (HACK_NORELOAD || HACK_NORECOIL || HACK_NOSPREAD || HACK_WALLHACK || HACK_MAPHACK || HACK_NOFOG || HACK_ESP || HACK_HEADSHOT)
 
 #endif

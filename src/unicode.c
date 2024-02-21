@@ -171,13 +171,13 @@ void convert(char * dest, size_t outsize, Codepage outpage,
         if (outsize == 1) break; // always write terminating zero
 
         size = decodeSize(inpage, src[0]);
-        if (size < insize) {
+        if (size <= insize) {
             codepoint = decode(inpage, (uint8_t *) src);
             src += size; insize -= size;
         } else break;
 
         size = encodeSize(outpage, codepoint);
-        if (size < outsize) {
+        if (size < outsize) { // always leave one byte for the terminating zero
             encode(outpage, (uint8_t *) dest, codepoint);
             dest += size; outsize -= size;
         } else break;

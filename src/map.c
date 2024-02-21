@@ -418,7 +418,7 @@ static bool falling_blocks_update(void * obj, void * user) {
         collapsing->v.z *= 0.85F;
         collapsing->rotation++;
         collapsing->rotation &= 3;
-        sound_create(SOUND_WORLD, &sound_bounce, collapsing->p.x, collapsing->p.y, collapsing->p.z);
+        sound_create(SOUND_WORLD, sound(SOUND_BOUNCE), collapsing->p.x, collapsing->p.y, collapsing->p.z);
 
         if (absf(collapsing->v.y) < 0.1F) {
             ht_iterate(&collapsing->voxels, collapsing, falling_blocks_particles);
@@ -450,7 +450,7 @@ void map_collapsing_update(float dt) {
         MapCollapsing res;
         channel_await(&map_result_queue, &res);
 
-        sound_create(SOUND_WORLD, &sound_debris, res.p.x, res.p.y, res.p.z);
+        sound_create(SOUND_WORLD, sound(SOUND_DEBRIS), res.p.x, res.p.y, res.p.z);
 
         entitysys_add(&map_collapsing_structures, &res);
     }

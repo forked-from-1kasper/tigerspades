@@ -42,19 +42,19 @@ void weapon_update() {
         if (players[local_player.id].weapon == WEAPON_SHOTGUN) {
             if (window_time() - weapon_reload_start >= 0.5F) {
 
-                WAV * snd;
+                WAV * wav = NULL;
                 if (local_player.ammo < 6 && local_player.ammo_reserved > 0) {
                     local_player.ammo++;
                     local_player.ammo_reserved--;
 
                     weapon_reload_start = window_time();
-                    snd = &sound_shotgun_reload;
+                    wav = sound(SOUND_SHOTGUN_RELOAD);
                 } else {
                     weapon_reload_inprogress = 0;
-                    snd = &sound_shotgun_cock;
+                    wav = sound(SOUND_SHOTGUN_COCK);
                 }
 
-                sound_create(SOUND_LOCAL, snd, 0.0F, 0.0F, 0.0F);
+                sound_create(SOUND_LOCAL, wav, 0.0F, 0.0F, 0.0F);
             }
         } else if (window_time() - weapon_reload_start >= t) {
             local_player.ammo += bullets;
@@ -112,18 +112,18 @@ float weapon_delay(int gun) {
 
 WAV * weapon_sound(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE:   return &sound_rifle_shoot;
-        case WEAPON_SMG:     return &sound_smg_shoot;
-        case WEAPON_SHOTGUN: return &sound_shotgun_shoot;
+        case WEAPON_RIFLE:   return sound(SOUND_RIFLE_SHOOT);
+        case WEAPON_SMG:     return sound(SOUND_SMG_SHOOT);
+        case WEAPON_SHOTGUN: return sound(SOUND_SHOTGUN_SHOOT);
         default:             return NULL;
     }
 }
 
 WAV * weapon_sound_reload(int gun) {
     switch (gun) {
-        case WEAPON_RIFLE:   return &sound_rifle_reload;
-        case WEAPON_SMG:     return &sound_smg_reload;
-        case WEAPON_SHOTGUN: return &sound_shotgun_reload;
+        case WEAPON_RIFLE:   return sound(SOUND_RIFLE_RELOAD);
+        case WEAPON_SMG:     return sound(SOUND_SMG_RELOAD);
+        case WEAPON_SHOTGUN: return sound(SOUND_SHOTGUN_RELOAD);
         default:             return NULL;
     }
 }
@@ -294,8 +294,11 @@ void weapon_shoot() {
 
         switch (hit.type) {
             case CAMERA_HITTYPE_PLAYER: {
-                sound_create_sticky((hit.player_section == HITTYPE_HEAD) ? &sound_spade_whack : &sound_hitplayer,
-                                    players + hit.player_id, hit.player_id);
+                sound_create_sticky(
+                    sound(hit.player_section == HITTYPE_HEAD ? SOUND_SPADE_WHACK : SOUND_HITPLAYER),
+                    players + hit.player_id, hit.player_id
+                );
+
                 particle_create(
                     Red,
                     players[hit.player_id].physics.eye.x,
@@ -306,10 +309,13 @@ void weapon_shoot() {
 
                 PacketHit contained;
                 contained.player_id = hit.player_id;
-                contained.hit_type  = hit.player_section;
+                #if HACK_HEADSHOT
+                contained.hit_type = HITTYPE_HEAD;
+                #else
+                contained.hit_type = hit.player_section;
+                #endif
                 sendPacketHit(&contained, 0);
 
-                // printf("hit on %s (%i)\n", players[hit.player_id].name, h.hit_type);
                 break;
             }
 
@@ -324,8 +330,11 @@ void weapon_shoot() {
                     contained.pos.z       = 63 - hit.y;
                     sendPacketBlockAction(&contained, 0);
                 } else {
-                    particle_create(map_get(hit.x, hit.y, hit.z), hit.xb + 0.5F, hit.yb + 0.5F, hit.zb + 0.5F, 2.5F,
-                                    1.0F, 4, 0.1F, 0.25F);
+                    particle_create(
+                        map_get(hit.x, hit.y, hit.z),
+                        hit.xb + 0.5F, hit.yb + 0.5F, hit.zb + 0.5F,
+                        2.5F, 1.0F, 4, 0.1F, 0.25F
+                    );
                 }
                 break;
             }
@@ -379,5 +388,6 @@ void weapon_shoot() {
         players[local_player.id].pos.y,
         players[local_player.id].pos.z
     );
+
     particle_create_casing(&players[local_player.id]);
 }
