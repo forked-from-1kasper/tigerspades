@@ -39,7 +39,7 @@ void particle_create_casing(Player *);
 void particle_create(TrueColor color, float x, float y, float z, float velocity, float velocity_y, int amount,
                      float min_size, float max_size);
 
-typedef struct { float x, y, z, value; } Vertex;
+typedef struct { Vector3f pos; float value; } Vertex;
 typedef struct { int index, begin, end; Vertex data[]; } Trajectory;
 typedef struct { size_t size, length; uint8_t * head; } Projectiles;
 

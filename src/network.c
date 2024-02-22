@@ -658,14 +658,14 @@ void getPacketStateData(uint8_t * data, int len) {
             }
             if (r == LIBDEFLATE_SUCCESS) {
                 map_vxl_load(decompressed, decompressed_size);
-//#ifndef USE_TOUCH
+/*#ifndef USE_TOUCH
                 char filename[128];
                 sprintf(filename, "cache/%08X.vxl", libdeflate_crc32(0, decompressed, decompressed_size));
                 log_info("%s", filename);
-                FILE* f = fopen(filename, "wb");
+                FILE * f = fopen(filename, "wb");
                 fwrite(decompressed, 1, decompressed_size, f);
                 fclose(f);
-//#endif
+#endif*/
                 chunk_rebuild_all();
                 break;
             }
@@ -1053,9 +1053,7 @@ void getPacketBulletTrace(uint8_t * data, int len) {
     if (p.origin) { t->index = p.index; t->begin = t->end = 0; }
     if (t->index != p.index) return;
 
-    t->data[t->end].x     = p.pos.x;
-    t->data[t->end].y     = 64.0F - p.pos.z; // ???
-    t->data[t->end].z     = p.pos.y;
+    t->data[t->end].pos   = ntohv3f(p.pos);
     t->data[t->end].value = p.value;
 
     NEXT(t->end, projectiles);

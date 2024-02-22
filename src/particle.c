@@ -81,7 +81,7 @@ void trajectories_render_all() {
             TrueColorf color = value2Color(vertex->value);
             glColor3f(color.r, color.g, color.b);
 
-            glVertex3f(vertex->x, vertex->y, vertex->z);
+            glVertex3f(vertex->pos.x, vertex->pos.y, vertex->pos.z);
         };
 
         glEnd();
