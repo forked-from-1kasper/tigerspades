@@ -171,7 +171,7 @@ Subfont upload_subfont(const char * filename, int texsize, uint16_t height) {
     free(buff); free(pagebuff); fclose(file); return font;
 }
 
-static enum font_type font_current_type = FONT_FIXEDSYS;
+static FontType font_current_type = FONT_FIXEDSYS;
 
 Subfont unifont, uvga;
 
@@ -180,7 +180,7 @@ Subfont * primarySubfonts[] = {&uvga, &unifont}, * secondarySubfonts[] = {&unifo
 Font primary   = {.replacement = 0xFFFD, .length = 2, .height = 16, .special = &uvga,    .subfonts = primarySubfonts};
 Font secondary = {.replacement = 0xFFFD, .length = 1, .height = 16, .special = &unifont, .subfonts = secondarySubfonts};
 
-Font * choose_font(enum font_type type) {
+static Font * choose_font(FontType type) {
     switch (type) {
         case FONT_FIXEDSYS: return &primary;
         case FONT_SMALLFNT: return &secondary;
@@ -194,8 +194,10 @@ void font_init() {
     uvga    = upload_subfont("fonts/uvga.bitmap", max_size, 16);
 }
 
-void font_select(enum font_type type) {
+FontType font_select(FontType type) {
+    FontType old = font_current_type;
     font_current_type = type;
+    return old;
 }
 
 Subfont * get_glyph(Font * font, uint32_t codepoint, Glyph * outglyph) {

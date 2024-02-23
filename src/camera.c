@@ -90,18 +90,22 @@ void camera_update(float dt) {
     }
 }
 
+Vector3f camera_orientation() {
+    return (Vector3f) {
+        .x = sin(camera.rot.x) * sin(camera.rot.y),
+        .y = cos(camera.rot.y),
+        .z = cos(camera.rot.x) * sin(camera.rot.y)
+    };
+}
+
 void camera_hit_fromplayer(CameraHit * hit, int player_id, float range) {
-    if (player_id != local_player.id) {
-        camera_hit(hit, player_id, players[player_id].physics.eye.x,
-                   players[player_id].physics.eye.y + player_height(&players[player_id]),
-                   players[player_id].physics.eye.z, players[player_id].orientation.x, players[player_id].orientation.y,
-                   players[player_id].orientation.z, range);
-    } else {
-        camera_hit(hit, player_id, players[player_id].physics.eye.x,
-                   players[player_id].physics.eye.y + player_height(&players[player_id]),
-                   players[player_id].physics.eye.z, sin(camera.rot.x) * sin(camera.rot.y), cos(camera.rot.y),
-                   cos(camera.rot.x) * sin(camera.rot.y), range);
-    }
+    Vector3f o = player_id != local_player.id ? players[player_id].orientation : camera_orientation();
+
+    camera_hit(
+        hit, player_id, players[player_id].physics.eye.x,
+        players[player_id].physics.eye.y + player_height(&players[player_id]),
+        players[player_id].physics.eye.z, o.x, o.y, o.z, range
+    );
 }
 
 void camera_hit(CameraHit * hit, int exclude_player, float x, float y, float z, float ray_x, float ray_y,

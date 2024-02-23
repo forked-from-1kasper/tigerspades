@@ -53,6 +53,7 @@ enum {
     CAMERA_HITTYPE_PLAYER = 2
 };
 
+Vector3f camera_orientation(void);
 void camera_hit_fromplayer(CameraHit *, int player_id, float range);
 void camera_hit(CameraHit *, int exclude_player, float x, float y, float z, float ray_x, float ray_y,
                 float ray_z, float range);

@@ -55,7 +55,6 @@ Options settings = {
     .multisamples      = 0,
     .greedy_meshing    = 0,
     .vsync             = 1,
-    .show_fps          = 0,
     .voxlap_models     = 0,
     .force_displaylist = 0,
     .smooth_fog        = 0,
@@ -128,7 +127,6 @@ void config_save() {
     config_setf("client", "mouse_sensitivity", settings.mouse_sensitivity);
     config_seti("client", "show_news",         settings.show_news);
     config_seti("client", "vol",               settings.volume);
-    config_seti("client", "show_fps",          settings.show_fps);
     config_seti("client", "voxlap_models",     settings.voxlap_models);
     config_seti("client", "force_displaylist", settings.force_displaylist);
     config_seti("client", "inverty",           settings.invert_y);
@@ -223,8 +221,6 @@ static int config_read_key(void * user, const char * section, const char * name,
         } else if (!strcmp(name, "vol")) {
             settings.volume = max(min(atoi(value), 10), 0);
             sound_volume(settings.volume / 10.0F);
-        } else if (!strcmp(name, "show_fps")) {
-            settings.show_fps = atoi(value);
         } else if (!strcmp(name, "voxlap_models")) {
             settings.voxlap_models = atoi(value);
         } else if (!strcmp(name, "force_displaylist")) {
@@ -440,6 +436,7 @@ void config_reload() {
         config_register_key(WINDOW_KEY_TAB,          TOOLKIT_KEY_TAB,          "view_score",        0, "Score");
         config_register_key(WINDOW_KEY_MAP,          TOOLKIT_KEY_MAP,          "view_map",          1, "Map");
         config_register_key(WINDOW_KEY_NETWORKSTATS, TOOLKIT_KEY_NETWORKSTATS, "network_stats",     1, "Network stats");
+        config_register_key(WINDOW_KEY_DEBUG,        TOOLKIT_KEY_F3,           "debug",             1, "Debug screen");
     }
 
     CATEGORY(NULL) {
@@ -584,16 +581,6 @@ void config_reload() {
                  .max      = 1,
                  .help     = "Dark chat background",
                  .name     = "Chat shadow",
-                 .category = "Interface"
-             });
-    list_add(&config_settings,
-             &(Setting) {
-                 .value    = &settings_tmp.show_fps,
-                 .type     = CONFIG_TYPE_INT,
-                 .min      = 0,
-                 .max      = 1,
-                 .name     = "Show fps",
-                 .help     = "Show current fps and ping ingame",
                  .category = "Interface"
              });
     list_add(&config_settings,

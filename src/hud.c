@@ -882,6 +882,41 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 chat[0][0][l] = 0;
             }
 
+            float top = settings.window_height - 11.0F * scale;
+
+            if (window_key_down(WINDOW_KEY_DEBUG)) {
+                char buff[64]; FontType old = font_select(FONT_SMALLFNT);
+                glColor3f(1.0F, 1.0F, 1.0F);
+
+                sprintf(buff, "TigerSpades %s (%s)", BETTERSPADES_VERSION, GIT_COMMIT_HASH);
+                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+
+                sprintf(buff, "%i ms, %i fps", network_ping(), (int) fps);
+                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+
+                Vector3f r = camera.mode == CAMERAMODE_FPS ? players[local_player.id].pos
+                                                           : camera.pos;
+
+                sprintf(buff, "XYZ: %.02f / %.02f / %.02f", r.x, r.y, r.z);
+                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+
+                Vector3f o = camera.mode == CAMERAMODE_FPS ? players[local_player.id].orientation
+                                                           : camera_orientation();
+
+                sprintf(buff, "Facing: %.04f / %.04f / %.04f", o.x, o.y, o.z);
+                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+
+                sprintf(
+                    buff, "RGB: #%02X%02X%02X",
+                    players[local_player.id].block.r,
+                    players[local_player.id].block.g,
+                    players[local_player.id].block.b
+                );
+                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+
+                font_select(old);
+            }
+
             for (int k = 0; k < 6; k++) {
                 if (window_time() - chat_timer[0][k + 1] < 10.0F || chat_input_mode != CHAT_NO_INPUT) {
                     glColor3ub(chat_color[0][k + 1].r, chat_color[0][k + 1].g, chat_color[0][k + 1].b);
@@ -892,8 +927,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 if (window_time() - chat_timer[1][k + 1] < 10.0F) {
                     glColor3ub(chat_color[1][k + 1].r, chat_color[1][k + 1].g, chat_color[1][k + 1].b);
 
-                    font_render(11.0F * scale, settings.window_height - 22.0F * scale - 18.0F * scale * k,
-                                1.0F * scale, chat[1][k + 1], UTF8);
+                    font_render(11.0F * scale, top - 18.0F * scale * k, 1.0F * scale, chat[1][k + 1], UTF8);
                 }
             }
 
@@ -1199,16 +1233,6 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
         }
 
         glColor3f(1.0F, 1.0F, 1.0F);
-    }
-
-    if (settings.show_fps) {
-        char debug_str[16];
-        font_select(FONT_FIXEDSYS);
-        glColor3f(1.0F, 1.0F, 1.0F);
-        sprintf(debug_str, "%i ms", network_ping());
-        font_render(11.0F * scale, settings.window_height * 0.33F, 2.0F * scale, debug_str, UTF8);
-        sprintf(debug_str, "%i FPS", (int) fps);
-        font_render(11.0F * scale, settings.window_height * 0.33F - 32.0F * scale, 2.0F * scale, debug_str, UTF8);
     }
 
 #ifdef USE_TOUCH

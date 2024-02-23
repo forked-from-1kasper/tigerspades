@@ -61,7 +61,6 @@ typedef struct {
     int   vsync;
     float mouse_sensitivity;
     int   show_news;
-    int   show_fps;
     int   volume;
     int   voxlap_models;
     int   force_displaylist;

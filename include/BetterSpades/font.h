@@ -23,15 +23,15 @@
 #include <BetterSpades/common.h>
 #include <stdbool.h>
 
-enum font_type {
+typedef enum {
     FONT_FIXEDSYS,
     FONT_SMALLFNT,
-};
+} FontType;
 
 void font_init(void);
 float font_length(int scale, const char *, Codepage);
 void font_render(float x, float y, int scale, const char *, Codepage);
 void font_centered(float x, float y, int scale, const char *, Codepage);
-void font_select(enum font_type type);
+FontType font_select(FontType type);
 
 #endif
