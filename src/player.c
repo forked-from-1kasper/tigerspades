@@ -339,6 +339,7 @@ void player_render_all() {
                 camera_hit_fromplayer(&hit, k, 4.0F);
                 if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
                     hit.type = CAMERA_HITTYPE_NONE;
+
                 switch (hit.type) {
                     case CAMERA_HITTYPE_BLOCK: {
                         sound_create(SOUND_WORLD, sound(SOUND_HITGROUND), hit.x + 0.5F, hit.y + 0.5F, hit.z + 0.5F);
@@ -373,6 +374,7 @@ void player_render_all() {
                             players[hit.player_id].physics.eye.z,
                             3.5F, 1.0F, 8, 0.1F, 0.4F
                         );
+
                         if (k == local_player.id) {
                             PacketHit contained;
                             contained.player_id = hit.player_id;
@@ -384,8 +386,9 @@ void player_render_all() {
 
                     case CAMERA_HITTYPE_NONE: sound_create_sticky(sound(SOUND_SPADE_WOOSH), players + k, k); break;
                 }
-                players[k].spade_use_type = 1;
-                players[k].spade_used = 1;
+
+                players[k].spade_use_type  = 1;
+                players[k].spade_used      = 1;
                 players[k].spade_use_timer = window_time();
             }
 

@@ -56,21 +56,21 @@ typedef enum {
     CUBE_FACE_Z_P,
 } TesselatorCubeFace;
 
-void tesselator_create(Tesselator * t, TesselatorVertexType type, int has_normal);
-void tesselator_clear(Tesselator * t);
-void tesselator_free(Tesselator * t);
-void tesselator_draw(Tesselator * t, int with_color);
-void tesselator_glx(Tesselator * t, GLXDisplayList * x);
-void tesselator_set_color(Tesselator * t, TrueColor color);
-void tesselator_set_normal(Tesselator * t, int8_t x, int8_t y, int8_t z);
-void tesselator_addi(Tesselator * t, int16_t * coords, TrueColor * colors, int8_t * normals);
-void tesselator_addf(Tesselator * t, float * coords, TrueColor * colors, int8_t * normals);
-void tesselator_addi_simple(Tesselator * t, int16_t * coords);
-void tesselator_addf_simple(Tesselator * t, float * coords);
-void tesselator_addi_cube_face(Tesselator * t, TesselatorCubeFace face, int16_t x, int16_t y, int16_t z);
-void tesselator_addi_cube_face_adv(Tesselator * t, TesselatorCubeFace face, int16_t x, int16_t y,
+void tesselator_create(Tesselator *, TesselatorVertexType type, int has_normal);
+void tesselator_clear(Tesselator *);
+void tesselator_free(Tesselator *);
+void tesselator_draw(Tesselator *, int with_color);
+void tesselator_glx(Tesselator *, GLXDisplayList *);
+void tesselator_set_color(Tesselator *, TrueColor color);
+void tesselator_set_normal(Tesselator *, int8_t x, int8_t y, int8_t z);
+void tesselator_addi(Tesselator *, int16_t * coords, TrueColor * colors, int8_t * normals);
+void tesselator_addf(Tesselator *, float * coords, TrueColor * colors, int8_t * normals);
+void tesselator_addi_simple(Tesselator *, int16_t * coords);
+void tesselator_addf_simple(Tesselator *, float * coords);
+void tesselator_addi_cube_face(Tesselator *, TesselatorCubeFace face, int16_t x, int16_t y, int16_t z);
+void tesselator_addi_cube_face_adv(Tesselator *, TesselatorCubeFace face, int16_t x, int16_t y,
                                    int16_t z, int16_t sx, int16_t sy, int16_t sz);
-void tesselator_addf_cube_face(Tesselator * t, TesselatorCubeFace face, float x, float y, float z,
+void tesselator_addf_cube_face(Tesselator *, TesselatorCubeFace face, float x, float y, float z,
                                float sz);
 
 #endif

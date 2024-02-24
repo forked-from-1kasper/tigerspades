@@ -267,7 +267,7 @@ static inline void setbgr(uint8_t * const buff, size_t * index, RGB3i color) {
     setu8le(buff, index, color.r);
 }
 
-static inline TrueColor getBGRA(uint8_t * const buff, size_t * index) {
+static inline TrueColor getbgra(uint8_t * const buff, size_t * index) {
     uint8_t b = getu8le(buff, index);
     uint8_t g = getu8le(buff, index);
     uint8_t r = getu8le(buff, index);

@@ -126,7 +126,7 @@ void kv6_load(kv6 * model, const char * name, uint8_t * buff, float scale) {
         CHECK_ALLOCATION_ERROR(model->voxels)
 
         for (size_t k = 0; k < model->voxel_count; k++) {
-            model->voxels[k].color    = getBGRA(buff, &index); // for whatever reason .kv6 seems to be stored in BGRA
+            model->voxels[k].color    = getbgra(buff, &index); // for whatever reason .kv6 seems to be stored in BGRA
             model->voxels[k].z        = (model->zsiz - 1) - getu16le(buff, &index);
             model->voxels[k].visfaces = getu8le(buff, &index); // 0x00zZyYxX
             model->voxels[k].color.a  = getu8le(buff, &index); // compressed normal vector (also referred to as lighting)
