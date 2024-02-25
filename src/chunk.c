@@ -80,7 +80,7 @@ void chunk_init() {
 
     pthread_mutex_init(&chunk_block_queue_lock, NULL);
 
-    int chunk_enabled_cores = min(max(window_cpucores() / 2, 1), CHUNK_WORKERS_MAX);
+    int chunk_enabled_cores = clamp(1, CHUNK_WORKERS_MAX, window_cpucores() / 2);
     log_info("%i cores enabled for chunk generation", chunk_enabled_cores);
 
     pthread_t threads[chunk_enabled_cores];

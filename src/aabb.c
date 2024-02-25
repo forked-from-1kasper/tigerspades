@@ -83,13 +83,13 @@ bool aabb_intersection(AABB * a, AABB * b) {
 bool aabb_intersection_terrain(AABB * a, int miny) {
     AABB terrain_cube;
 
-    int min_x = min(max(floor(a->min[X]) - 1, 0),    map_size_x);
-    int min_y = min(max(floor(a->min[Y]) - 1, miny), map_size_y);
-    int min_z = min(max(floor(a->min[Z]) - 1, 0),    map_size_z);
+    int min_x = clamp(0,    map_size_x, floor(a->min[X]) - 1);
+    int min_y = clamp(miny, map_size_y, floor(a->min[Y]) - 1);
+    int min_z = clamp(0,    map_size_z, floor(a->min[Z]) - 1);
 
-    int max_x = min(max(ceil(a->max[X]) + 1, 0), map_size_x);
-    int max_y = min(max(ceil(a->max[Y]) + 1, 0), map_size_y);
-    int max_z = min(max(ceil(a->max[Z]) + 1, 0), map_size_z);
+    int max_x = clamp(0, map_size_x, ceil(a->max[X]) + 1);
+    int max_y = clamp(0, map_size_y, ceil(a->max[Y]) + 1);
+    int max_z = clamp(0, map_size_z, ceil(a->max[Z]) + 1);
 
     for (int x = min_x; x < max_x; x++) {
         for (int z = min_z; z < max_z; z++) {

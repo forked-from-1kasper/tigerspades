@@ -1105,26 +1105,23 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 tracer_minimap(0, scale, view_x, view_z);
 
                 if (gamestate.gamemode_type == GAMEMODE_CTF) {
-                    float tent1_x = min(max(gamestate.gamemode.ctf.team_1_base.x, view_x), view_x + 128.0F) - view_x;
-                    float tent1_y = min(max(gamestate.gamemode.ctf.team_1_base.y, view_z), view_z + 128.0F) - view_z;
+                    float tent1_x = clamp(view_x, view_x + 128.0F, gamestate.gamemode.ctf.team_1_base.x) - view_x;
+                    float tent1_y = clamp(view_z, view_z + 128.0F, gamestate.gamemode.ctf.team_2_base.y) - view_z;
 
-                    float tent2_x = min(max(gamestate.gamemode.ctf.team_2_base.x, view_x), view_x + 128.0F) - view_x;
-                    float tent2_y = min(max(gamestate.gamemode.ctf.team_2_base.y, view_z), view_z + 128.0F) - view_z;
+                    float tent2_x = clamp(view_x, view_x + 128.0F, gamestate.gamemode.ctf.team_2_base.x) - view_x;
+                    float tent2_y = clamp(view_z, view_z + 128.0F, gamestate.gamemode.ctf.team_2_base.y) - view_z;
 
                     if (map_object_visible(gamestate.gamemode.ctf.team_1_base.x, 0.0F,
-                                          gamestate.gamemode.ctf.team_1_base.y)) {
+                                           gamestate.gamemode.ctf.team_1_base.y)) {
                         glColorRGB3ib(gamestate.team_1.color, 0.94F);
                         texture_draw_rotated(texture(TEXTURE_MEDICAL), minimap_x + tent1_x * scale,
                                              minimap_y - tent1_y * scale, 16 * scale, 16 * scale, 0.0F);
                     }
 
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_1_INTEL)) {
-                        float intel_x
-                            = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.x, view_x), view_x + 128.0F)
-                            - view_x;
-                        float intel_y
-                            = min(max(gamestate.gamemode.ctf.team_1_intel_location.dropped.y, view_z), view_z + 128.0F)
-                            - view_z;
+                        float intel_x = clamp(view_x, view_x + 128.0F, gamestate.gamemode.ctf.team_1_intel_location.dropped.x) - view_x;
+                        float intel_y = clamp(view_z, view_z + 128.0F, gamestate.gamemode.ctf.team_1_intel_location.dropped.y) - view_z;
+
                         glColorRGB3i(gamestate.team_1.color);
                         texture_draw_rotated(texture(TEXTURE_INTEL), minimap_x + intel_x * scale,
                                              minimap_y - intel_y * scale, 16 * scale, 16 * scale, 0.0F);
@@ -1138,12 +1135,9 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     }
 
                     if (!HASBIT(gamestate.gamemode.ctf.intels, TEAM_2_INTEL)) {
-                        float intel_x
-                            = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.x, view_x), view_x + 128.0F)
-                            - view_x;
-                        float intel_y
-                            = min(max(gamestate.gamemode.ctf.team_2_intel_location.dropped.y, view_z), view_z + 128.0F)
-                            - view_z;
+                        float intel_x = clamp(view_x, view_x + 128.0F, gamestate.gamemode.ctf.team_2_intel_location.dropped.x) - view_x;
+                        float intel_y = clamp(view_z, view_z + 128.0F, gamestate.gamemode.ctf.team_2_intel_location.dropped.y) - view_z;
+
                         glColorRGB3i(gamestate.team_2.color);
                         texture_draw_rotated(texture(TEXTURE_INTEL), minimap_x + intel_x * scale,
                                              minimap_y - intel_y * scale, 16 * scale, 16 * scale, 0.0F);
@@ -1158,8 +1152,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                             default: case TEAM_SPECTATOR: glColor3ub(0, 0, 0);
                         }
 
-                        float t_x = min(max(gamestate.gamemode.tc.territory[k].pos.x, view_x), view_x + 128.0F) - view_x;
-                        float t_y = min(max(gamestate.gamemode.tc.territory[k].pos.y, view_z), view_z + 128.0F) - view_z;
+                        float t_x = clamp(view_x, view_x + 128.0F, gamestate.gamemode.tc.territory[k].pos.x) - view_x;
+                        float t_y = clamp(view_z, view_z + 128.0F, gamestate.gamemode.tc.territory[k].pos.y) - view_z;
                         texture_draw_rotated(texture(TEXTURE_COMMAND), minimap_x + t_x * scale,
                                              minimap_y - t_y * scale, 12 * scale, 12 * scale, 0.0F);
                     }
@@ -1951,10 +1945,9 @@ static void hud_ingame_touch(void * finger, int action, float x, float y, float 
         if ((camera.mode == CAMERAMODE_FPS || camera.mode == CAMERAMODE_SPECTATOR)
            && norm2f(f->start.x, f->start.y, settings.window_height * 0.3F, settings.window_height * 0.7F) <
               sqrf(settings.window_height * 0.15F)) {
-            float mx = max(min(x - settings.window_height * 0.3F, settings.window_height * 0.2F),
-                           -settings.window_height * 0.2F);
-            float my = max(min(y - settings.window_height * 0.7F, settings.window_height * 0.2F),
-                           -settings.window_height * 0.2F);
+            float mx = clamp(-settings.window_height * 0.2F, settings.window_height * 0.2F, x - settings.window_height * 0.3F);
+            float my = clamp(-settings.window_height * 0.2F, settings.window_height * 0.2F, y - settings.window_height * 0.7F);
+
             hud_ingame_touch_x = mx;
             hud_ingame_touch_y = -my;
             if (absf(mx) > settings.window_height * 0.045F) {

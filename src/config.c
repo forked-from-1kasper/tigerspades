@@ -219,7 +219,7 @@ static int config_read_key(void * user, const char * section, const char * name,
         } else if (!strcmp(name, "show_news")) {
             settings.show_news = atoi(value);
         } else if (!strcmp(name, "vol")) {
-            settings.volume = max(min(atoi(value), 10), 0);
+            settings.volume = clamp(0, 10, atoi(value));
             sound_volume(settings.volume / 10.0F);
         } else if (!strcmp(name, "voxlap_models")) {
             settings.voxlap_models = atoi(value);
