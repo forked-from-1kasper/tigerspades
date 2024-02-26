@@ -515,7 +515,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
             if (!k) {
                 sprintf(dbg_str, "out: %i b/s", network_stats[1].outgoing);
-                font_render(8.0F * scale + 80 * scale, 212.0F * scale, 1.0F * scale, dbg_str, UTF8);
+                font_render(8.0F * scale + 80 * scale, 212.0F * scale, 1.0F * scale, dbg_str, ASCII);
             }
 
             glColor3f(0.0F, 1.0F, 0.0F);
@@ -523,7 +523,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
             if (!k) {
                 sprintf(dbg_str, "in: %i b/s", network_stats[1].ingoing);
-                font_render(8.0F * scale, 212.0F * scale, 1.0F * scale, dbg_str, UTF8);
+                font_render(8.0F * scale, 212.0F * scale, 1.0F * scale, dbg_str, ASCII);
             }
 
             glColor3f(1.0F, 0.0F, 0.0F);
@@ -532,7 +532,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
             if (!k) {
                 sprintf(dbg_str, "ping: %i ms", network_stats[1].avg_ping);
-                font_render(8.0F * scale, 202.0F * scale, 1.0F * scale, dbg_str, UTF8);
+                font_render(8.0F * scale, 202.0F * scale, 1.0F * scale, dbg_str, ASCII);
             }
         }
         font_select(FONT_FIXEDSYS);
@@ -559,11 +559,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
         char str[128];
         sprintf(str, "Receiving %i KiB / %i KiB", compressed_chunk_data_offset / 1024, compressed_chunk_data_estimate / 1024);
-        font_centered(settings.window_width / 2.0F, settings.window_height * 0.25F - 20.0F * scale, 2.0F * scale, str, UTF8);
+        font_centered(settings.window_width / 2.0F, settings.window_height * 0.25F - 20.0F * scale, 2.0F * scale, str, ASCII);
 
         font_select(FONT_SMALLFNT);
         glColor3f(1.0F, 1.0F, 0.0F);
-        font_render(0.0F, 16.0F * scale, 1.0F * scale, "Created by ByteBit, visit https://github.com/xtreme8000/BetterSpades", UTF8);
+        font_render(0.0F, 16.0F * scale, 1.0F * scale, "Created by ByteBit, visit https://github.com/xtreme8000/BetterSpades", ASCII);
         font_select(FONT_FIXEDSYS);
     } else {
         if (window_key_down(WINDOW_KEY_HIDEHUD))
@@ -574,20 +574,20 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             char join_str[48];
 
             sprintf(join_str, "Press 1 to join %s", gamestate.team_1.name);
-            font_centered(settings.window_width / 4.0F, 61 * scale, 1.0F * scale, join_str, UTF8);
+            font_centered(settings.window_width / 4.0F, 61 * scale, 1.0F * scale, join_str, ASCII);
 
-            font_centered(settings.window_width / 2.0F, 61 * scale, 1.0F * scale, "Press 2 to spectate", UTF8);
+            font_centered(settings.window_width / 2.0F, 61 * scale, 1.0F * scale, "Press 2 to spectate", ASCII);
 
             sprintf(join_str, "Press 3 to join %s", gamestate.team_2.name);
-            font_centered(settings.window_width / 4.0F * 3.0F, 61 * scale, 1.0F * scale, join_str, UTF8);
+            font_centered(settings.window_width / 4.0F * 3.0F, 61 * scale, 1.0F * scale, join_str, ASCII);
             glColor3f(1.0F, 1.0F, 1.0F);
         }
 
         if (screen_current == SCREEN_GUN_SELECT) {
             glColor3f(1.0F, 0.0F, 0.0F);
-            font_centered(settings.window_width / 4.0F * 1.0F, 61 * scale, 1.0F * scale, "Press 1 to select", UTF8);
-            font_centered(settings.window_width / 4.0F * 2.0F, 61 * scale, 1.0F * scale, "Press 2 to select", UTF8);
-            font_centered(settings.window_width / 4.0F * 3.0F, 61 * scale, 1.0F * scale, "Press 3 to select", UTF8);
+            font_centered(settings.window_width / 4.0F * 1.0F, 61 * scale, 1.0F * scale, "Press 1 to select", ASCII);
+            font_centered(settings.window_width / 4.0F * 2.0F, 61 * scale, 1.0F * scale, "Press 2 to select", ASCII);
+            font_centered(settings.window_width / 4.0F * 3.0F, 61 * scale, 1.0F * scale, "Press 3 to select", ASCII);
             glColor3f(1.0F, 1.0F, 1.0F);
         }
 
@@ -597,7 +597,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 sprintf(ping_str, "Ping: %i ms", network_ping());
                 font_select(FONT_SMALLFNT);
                 glColor3f(1.0F, 0.0F, 0.0F);
-                font_centered(settings.window_width / 2.0F, settings.window_height * 0.92F, 1.0F * scale, ping_str, UTF8);
+                font_centered(settings.window_width / 2.0F, settings.window_height * 0.92F, 1.0F * scale, ping_str, ASCII);
                 font_select(FONT_FIXEDSYS);
             }
 
@@ -620,7 +620,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             }
 
             font_centered(settings.window_width * 0.25F, settings.window_height - 15 * scale, 2.0F * scale, gamestate.team_1.name, UTF8);
-            font_centered(settings.window_width * 0.25F, settings.window_height - 47 * scale, 3.0F * scale, score_str, UTF8);
+            font_centered(settings.window_width * 0.25F, settings.window_height - 47 * scale, 3.0F * scale, score_str, ASCII);
 
             glColorRGB3i(gamestate.team_2.color);
             switch (gamestate.gamemode_type) {
@@ -639,7 +639,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             }
 
             font_centered(settings.window_width * 0.75F, settings.window_height - 15 * scale, 2.0F * scale, gamestate.team_2.name, UTF8);
-            font_centered(settings.window_width * 0.75F, settings.window_height - 47 * scale, 3.0F * scale, score_str, UTF8);
+            font_centered(settings.window_width * 0.75F, settings.window_height - 47 * scale, 3.0F * scale, score_str, ASCII);
 
             PlayerTable pt[PLAYERS_MAX];
             int connected = 0;
@@ -681,11 +681,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 font_render(settings.window_width / 4.0F * mul - font_length(1.0F * scale, players[pt[k].id].name, UTF8),
                             (427 - 16 * cntt[mul - 1]) * scale, 1.0F * scale, players[pt[k].id].name, UTF8);
                 font_render(settings.window_width / 4.0F * mul + 8.82F * scale, (427 - 16 * cntt[mul - 1]) * scale,
-                            1.0F * scale, id_str, UTF8);
+                            1.0F * scale, id_str, ASCII);
                 if (mul != 2) {
                     sprintf(id_str, "%i", pt[k].score);
                     font_render(settings.window_width / 4.0F * mul + 44.1F * scale,
-                                (427 - 16 * cntt[mul - 1]) * scale, 1.0F * scale, id_str, UTF8);
+                                (427 - 16 * cntt[mul - 1]) * scale, 1.0F * scale, id_str, ASCII);
                 }
                 cntt[mul - 1]++;
             }
@@ -708,14 +708,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             font_select(FONT_FIXEDSYS);
             glColor3f(1.0F, 1.0F, 0.0F);
             font_centered(settings.window_width / 2.0F, settings.window_height, 1.0F * scale,
-                          "Click to switch players", UTF8);
+                          "Click to switch players", ASCII);
             if (window_time() - local_player.death_time <= local_player.respawn_time) {
                 glColor3f(1.0F, 0.0F, 0.0F);
                 int cnt = local_player.respawn_time - (int)(window_time() - local_player.death_time);
                 char coin[16];
                 sprintf(coin, "Respawn in %i s", cnt);
                 font_centered(settings.window_width / 2.0F,
-                              48.0F * scale * (cameracontroller_bodyview_mode ? 2.0F : 1.0F), 3.0F * scale, coin, UTF8);
+                              48.0F * scale * (cameracontroller_bodyview_mode ? 2.0F : 1.0F), 3.0F * scale, coin, ASCII);
                 if (local_player.respawn_cnt_last != cnt) {
                     if (cnt < 4)
                         sound_create(SOUND_LOCAL, sound(cnt == 1 ? SOUND_BEEP1 : SOUND_BEEP2), 0.0F, 0.0F, 0.0F);
@@ -780,7 +780,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 glColor3f(1, 1, 1);
 
             char hp[4]; sprintf(hp, "%i", health);
-            font_render(8.0F * scale, 32.0F * scale, 2.0F * scale, hp, UTF8);
+            font_render(8.0F * scale, 32.0F * scale, 2.0F * scale, hp, ASCII);
 
             char item_mini_str[32]; int off = 0;
             glColor3f(1.0F, 1.0F, 1.0F);
@@ -804,7 +804,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 }
             }
 
-            font_render(settings.window_width - font_length(2.0F * scale, item_mini_str, UTF8) - 8.0F * scale - off, 32.0F * scale, 2.0F * scale, item_mini_str, UTF8);
+            font_render(settings.window_width - font_length(2.0F * scale, item_mini_str, ASCII) - 8.0F * scale - off, 32.0F * scale, 2.0F * scale, item_mini_str, ASCII);
 
             glColor3f(1.0F, 1.0F, 1.0F);
             if (players[local_id].held_item == TOOL_BLOCK) {
@@ -867,11 +867,11 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 switch (chat_input_mode) {
                     case CHAT_ALL_INPUT:
                         font_render(11.0F * scale, chat_y + 36.0F * scale, 1.0F * scale,
-                                    "Global:", UTF8);
+                                    "Global:", ASCII);
                         break;
                     case CHAT_TEAM_INPUT:
                         font_render(11.0F * scale, chat_y + 36.0F * scale, 1.0F * scale,
-                                    "Team:", UTF8);
+                                    "Team:", ASCII);
                         break;
                 }
                 int l = strlen(chat[0][0]);
@@ -889,22 +889,22 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 glColor3f(1.0F, 1.0F, 1.0F);
 
                 sprintf(buff, "TigerSpades %s (%s)", BETTERSPADES_VERSION, GIT_COMMIT_HASH);
-                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+                font_render(11.0F * scale, top, scale, buff, ASCII); top -= 16.0F * scale;
 
                 sprintf(buff, "%i ms, %i fps", network_ping(), (int) fps);
-                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+                font_render(11.0F * scale, top, scale, buff, ASCII); top -= 16.0F * scale;
 
                 Vector3f r = camera.mode == CAMERAMODE_FPS ? players[local_player.id].pos
                                                            : camera.pos;
 
                 sprintf(buff, "XYZ: %.02f / %.02f / %.02f", r.x, r.y, r.z);
-                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+                font_render(11.0F * scale, top, scale, buff, ASCII); top -= 16.0F * scale;
 
                 Vector3f o = camera.mode == CAMERAMODE_FPS ? players[local_player.id].orientation
                                                            : camera_orientation();
 
                 sprintf(buff, "Facing: %.04f / %.04f / %.04f", o.x, o.y, o.z);
-                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+                font_render(11.0F * scale, top, scale, buff, ASCII); top -= 16.0F * scale;
 
                 sprintf(
                     buff, "RGB: #%02X%02X%02X",
@@ -912,7 +912,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                     players[local_player.id].block.g,
                     players[local_player.id].block.b
                 );
-                font_render(11.0F * scale, top, scale, buff, UTF8); top -= 16.0F * scale;
+                font_render(11.0F * scale, top, scale, buff, ASCII); top -= 16.0F * scale;
 
                 font_select(old);
             }
@@ -937,7 +937,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
             glColor3f(1.0F, 1.0F, 1.0F);
             texture_draw(texture(TEXTURE_SPLASH), (settings.window_width - 240 * scale) * 0.5F, settings.window_height - 1 * scale, 240 * scale, 180 * scale);
             glColor3f(1.0F, 1.0F, 0.0F);
-            font_centered(settings.window_width / 2.0F, settings.window_height - 180 * scale, 2 * scale, "CONTROLS", UTF8);
+            font_centered(settings.window_width / 2.0F, settings.window_height - 180 * scale, 2 * scale, "CONTROLS", ASCII);
             char help_str[2][12][16] = {{"Movement", "Weapons", "Reload", "Jump", "Crouch", "Sneak",
                                          "Sprint", "Map", "Change Team", "Change Weapon", "Global Chat",
                                          "Team Chat"},
@@ -945,10 +945,10 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                                          "SHIFT", "M", ",", ".", "T", "Y"}};
 
             for (int k = 0; k < 12; k++) {
-                font_render(settings.window_width / 2.0F - font_length(1.0F * scale, help_str[0][k], UTF8),
-                            settings.window_height - (180 + 32 + 16 * k) * scale, 1.0F * scale, help_str[0][k], UTF8);
-                font_render(settings.window_width / 2.0F + font_length(1.0F * scale, " ", UTF8),
-                            settings.window_height - (180 + 32 + 16 * k) * scale, 1.0F * scale, help_str[1][k], UTF8);
+                font_render(settings.window_width / 2.0F - font_length(1.0F * scale, help_str[0][k], ASCII),
+                            settings.window_height - (180 + 32 + 16 * k) * scale, 1.0F * scale, help_str[0][k], ASCII);
+                font_render(settings.window_width / 2.0F + font_length(1.0F * scale, " ", ASCII),
+                            settings.window_height - (180 + 32 + 16 * k) * scale, 1.0F * scale, help_str[1][k], ASCII);
             }
 
             glColor3f(1.0F, 1.0F, 1.0F);
@@ -998,8 +998,8 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 font_select(FONT_SMALLFNT);
                 char c[2] = {0};
                 for (int k = 0; k < 8; k++) {
-                    c[0] = 'A' + k; font_centered(minimap_x + (64 * k + 32) * scale, minimap_y + 16.0F * scale, 1.0F * scale, c, UTF8);
-                    c[0] = '1' + k; font_centered(minimap_x - 8 * scale, minimap_y - (64 * k + 32 - 4) * scale, 1.0F * scale, c, UTF8);
+                    c[0] = 'A' + k; font_centered(minimap_x + (64 * k + 32) * scale, minimap_y + 16.0F * scale, 1.0F * scale, c, ASCII);
+                    c[0] = '1' + k; font_centered(minimap_x - 8 * scale, minimap_y - (64 * k + 32 - 4) * scale, 1.0F * scale, c, ASCII);
                 }
                 font_select(FONT_FIXEDSYS);
 
@@ -1092,7 +1092,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                 float minimap_y = settings.window_height - 15 * scale;
 
                 char sector_str[3] = {(int)(camera.pos.x / 64.0F) + 'A', (int)(camera.pos.z / 64.0F) + '1', 0};
-                font_centered(minimap_x + 64 * scale, minimap_y - 129 * scale, 2.0F * scale, sector_str, UTF8);
+                font_centered(minimap_x + 64 * scale, minimap_y - 129 * scale, 2.0F * scale, sector_str, ASCII);
 
                 glColor3ub(0, 0, 0);
                 texture_draw_empty(minimap_x - 1 * scale, minimap_y + 1 * scale, 130 * scale, 130 * scale);
@@ -1211,13 +1211,13 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
 
         if (show_exit) {
             glColor3f(1.0F, 0.0F, 0.0F);
-            font_render(settings.window_width / 2.0F - font_length(3.0F * scale, "EXIT GAME? Y/N", UTF8) / 2.0F,
-                        settings.window_height / 2.0F + 48.0F * scale, 3.0F * scale, "EXIT GAME? Y/N", UTF8);
+            font_render(settings.window_width / 2.0F - font_length(3.0F * scale, "EXIT GAME? Y/N", ASCII) / 2.0F,
+                        settings.window_height / 2.0F + 48.0F * scale, 3.0F * scale, "EXIT GAME? Y/N", ASCII);
 
             char play_time[128];
             sprintf(play_time, "Playing for %i min. %02i sec.", (int) window_time() / 60, (int) window_time() % 60);
-            font_render(settings.window_width / 2.0F - font_length(2.0F * scale, play_time, UTF8) / 2.0F,
-                        settings.window_height, 2.0F * scale, play_time, UTF8);
+            font_render(settings.window_width / 2.0F - font_length(2.0F * scale, play_time, ASCII) / 2.0F,
+                        settings.window_height, 2.0F * scale, play_time, ASCII);
         }
 
         if (window_time() - chat_popup_timer < chat_popup_duration) {
@@ -1248,7 +1248,7 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                              settings.window_height * 0.96F, settings.window_height * 0.15F,
                              settings.window_height * 0.1F, 0.0F);
         font_centered(settings.window_height * (0.2F + 0.175F * k), settings.window_height * 0.98F,
-                      settings.window_height * 0.04F, str, UTF8);
+                      settings.window_height * 0.04F, str, ASCII);
         k++;
     }
     if (hud_ingame_onscreencontrol(64, str, -1)) {
@@ -1256,14 +1256,14 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
                              settings.window_height * 0.6F, settings.window_height * 0.15F,
                              settings.window_height * 0.1F, 0.0F);
         font_centered(settings.window_width - settings.window_height * 0.075F, settings.window_height * 0.62F,
-                      settings.window_height * 0.04F, str, UTF8);
+                      settings.window_height * 0.04F, str, ASCII);
     }
     if (hud_ingame_onscreencontrol(65, str, -1)) {
         texture_draw_rotated(texture(TEXTURE_UI_INPUT), settings.window_width - settings.window_height * 0.075F,
                              settings.window_height * 0.45F, settings.window_height * 0.15F,
                              settings.window_height * 0.1F, 0.0F);
         font_centered(settings.window_width - settings.window_height * 0.075F, settings.window_height * 0.47F,
-                      settings.window_height * 0.04F, str, UTF8);
+                      settings.window_height * 0.04F, str, ASCII);
     }
 #endif
 }
@@ -1455,7 +1455,7 @@ static void hud_ingame_mouseclick(double x, double y, int button, int action, in
                     sound_create(SOUND_LOCAL, sound(SOUND_EMPTY), 0.0F, 0.0F, 0.0F);
 
                     static const char popup[] = "RELOAD";
-                    chat_showpopup(popup, sizeof(popup), UTF8, 0.4F, Red);
+                    chat_showpopup(popup, sizeof(popup), ASCII, 0.4F, Red);
                 }
             }
         }
@@ -1637,7 +1637,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
                 sound_volume(settings.volume / 10.0F);
                 char volstr[64];
                 sprintf(volstr, "Volume: %i", settings.volume);
-                chat_add(0, Red, volstr, sizeof(volstr), UTF8);
+                chat_add(0, Red, volstr, sizeof(volstr), ASCII);
             }
 
             if ((key == WINDOW_KEY_CURSOR_UP || key == WINDOW_KEY_CURSOR_DOWN || key == WINDOW_KEY_CURSOR_LEFT || key == WINDOW_KEY_CURSOR_RIGHT)

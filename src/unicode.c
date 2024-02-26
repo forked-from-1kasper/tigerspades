@@ -88,6 +88,7 @@ uint8_t encodeSize(Codepage codepage, uint32_t codepoint) {
                           : codepoint <= 0xFFFF   ? 3
                           : codepoint <= 0x10FFFF ? 4
                           : 0;
+        case ASCII:  return 1;
         case CP437:  return 1;
         case CP1252: return 1;
         default:     return 0;
@@ -116,8 +117,9 @@ void encode(Codepage codepage, uint8_t * dest, uint32_t codepoint) {
             break;
         }
 
-        case CP437:  dest[0] = revlookup(codepoint, cp437);  break;
-        case CP1252: dest[0] = revlookup(codepoint, cp1252); break;
+        case ASCII:  dest[0] = codepoint <= 0x7f ? codepoint : '?'; break;
+        case CP437:  dest[0] = revlookup(codepoint, cp437);         break;
+        case CP1252: dest[0] = revlookup(codepoint, cp1252);        break;
     }
 }
 
@@ -128,6 +130,7 @@ uint8_t decodeSize(Codepage codepage, const uint8_t byte) {
                           : OCT3(byte) ? 3
                           : OCT4(byte) ? 4
                           : 1;
+        case ASCII:  return 1;
         case CP437:  return 1;
         case CP1252: return 1;
         default:     return 0;
@@ -154,8 +157,9 @@ uint32_t decode(Codepage codepage, const uint8_t * bytes) {
             else return 0xFFFD;
         }
 
-        case CP437:  return cp437[*bytes];
-        case CP1252: return cp1252[*bytes];
+        case ASCII:  return bytes[0] <= 0x7F ? bytes[0] : '?';
+        case CP437:  return cp437[bytes[0]];
+        case CP1252: return cp1252[bytes[0]];
     }
 
     return 0;
