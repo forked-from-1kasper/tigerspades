@@ -464,7 +464,8 @@ void window_fromsettings() {
     reshape(hud_window, width, height);
 }
 
-int window_pressed_keys[64] = {0};
+#define WINDOW_KEY_TOTAL (WINDOW_KEY_LAST + 1)
+int window_pressed_keys[WINDOW_KEY_TOTAL] = {0};
 
 int window_key_down(int key) {
     return window_pressed_keys[key] > 0;

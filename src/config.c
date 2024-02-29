@@ -437,6 +437,7 @@ void config_reload() {
         config_register_key(WINDOW_KEY_MAP,          TOOLKIT_KEY_MAP,          "view_map",          1, "Map");
         config_register_key(WINDOW_KEY_NETWORKSTATS, TOOLKIT_KEY_NETWORKSTATS, "network_stats",     1, "Network stats");
         config_register_key(WINDOW_KEY_DEBUG,        TOOLKIT_KEY_F3,           "debug",             1, "Debug screen");
+        config_register_key(WINDOW_KEY_TRACE_CLEAN,  TOOLKIT_KEY_F4,           "trace_clean",       0, "Clean up bullets");
     }
 
     CATEGORY(NULL) {

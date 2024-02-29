@@ -28,7 +28,7 @@
 
 static int quit = 0;
 
-static struct window_finger fingers[8];
+static WindowFinger fingers[8];
 
 void window_init(int * argc, char ** argv) {
     static WindowInstance i;
@@ -126,7 +126,7 @@ void window_update() {
 
             case SDL_FINGERDOWN:
                 if (hud_active->input_touch) {
-                    struct window_finger * f;
+                    WindowFinger * f;
                     for (int k = 0; k < 8; k++) {
                         if (!fingers[k].full) {
                             fingers[k].finger = event.tfinger.fingerId;
@@ -148,7 +148,7 @@ void window_update() {
 
             case SDL_FINGERUP:
                 if (hud_active->input_touch) {
-                    struct window_finger * f;
+                    WindowFinger * f;
                     for (int k = 0; k < 8; k++) {
                         if (fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
                             fingers[k].full = 0;
@@ -164,7 +164,7 @@ void window_update() {
 
             case SDL_FINGERMOTION:
                 if (hud_active->input_touch) {
-                    struct window_finger * f;
+                    WindowFinger * f;
                     for (int k = 0; k < 8; k++) {
                         if (fingers[k].full && fingers[k].finger == event.tfinger.fingerId) {
                             f = fingers + k;

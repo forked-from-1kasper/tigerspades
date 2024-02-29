@@ -39,7 +39,7 @@ enum {
     TOUCH_UP,
 };
 
-enum window_keys {
+typedef enum {
     WINDOW_KEY_UNKNOWN,
     WINDOW_KEY_UP,
     WINDOW_KEY_DOWN,
@@ -88,29 +88,29 @@ enum window_keys {
     WINDOW_KEY_SELECT2,
     WINDOW_KEY_SELECT3,
     WINDOW_KEY_DEBUG,
-};
+    WINDOW_KEY_TRACE_CLEAN,
+
+    WINDOW_KEY_FIRST = WINDOW_KEY_UNKNOWN,
+    WINDOW_KEY_LAST  = WINDOW_KEY_TRACE_CLEAN
+} WindowKey;
+
+typedef enum {
+    WINDOW_MOUSE_LMB,
+    WINDOW_MOUSE_MMB,
+    WINDOW_MOUSE_RMB,
+} WindowButton;
 
 enum {
     WINDOW_CURSOR_DISABLED,
     WINDOW_CURSOR_ENABLED,
 };
 
-enum window_buttons {
-    WINDOW_MOUSE_LMB,
-    WINDOW_MOUSE_MMB,
-    WINDOW_MOUSE_RMB,
-};
+typedef struct {
+    int64_t finger; float down_time; int full;
+    struct { float x, y; } start;
+} WindowFinger;
 
-struct window_finger {
-    int64_t finger;
-    float down_time;
-    int full;
-    struct {
-        float x, y;
-    } start;
-};
-
-extern int window_pressed_keys[64];
+extern int window_pressed_keys[];
 
 #define WINDOW_NOMOUSELOC -1
 

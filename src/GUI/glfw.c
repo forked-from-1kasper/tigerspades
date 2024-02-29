@@ -170,7 +170,7 @@ void window_init(int * argc, char ** argv) {
         glfwSetInputMode(hud_window->impl, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 }
 
-static void gamepad_translate_key(GLFWgamepadstate * state, GLFWgamepadstate * old, int gamepad, enum window_keys key) {
+static void gamepad_translate_key(GLFWgamepadstate * state, GLFWgamepadstate * old, int gamepad, WindowKey key) {
     if (!old->buttons[gamepad] && state->buttons[gamepad]) {
         keys(hud_window, key, WINDOW_PRESS, 0);
 
@@ -184,8 +184,7 @@ static void gamepad_translate_key(GLFWgamepadstate * state, GLFWgamepadstate * o
     }
 }
 
-static void gamepad_translate_button(GLFWgamepadstate * state, GLFWgamepadstate * old, int gamepad,
-                                     enum window_buttons button) {
+static void gamepad_translate_button(GLFWgamepadstate * state, GLFWgamepadstate * old, int gamepad, WindowButton button) {
     if (!old->buttons[gamepad] && state->buttons[gamepad]) {
         mouse_click(hud_window, button, WINDOW_PRESS, 0);
     } else if (old->buttons[gamepad] && !state->buttons[gamepad]) {

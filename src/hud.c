@@ -48,6 +48,7 @@
 #include <BetterSpades/font.h>
 #include <BetterSpades/unicode.h>
 #include <BetterSpades/player.h>
+#include <BetterSpades/particle.h>
 #include <BetterSpades/opengl.h>
 
 #include <parson.h>
@@ -568,6 +569,9 @@ static void hud_ingame_render(mu_Context * ctx, float scale) {
     } else {
         if (window_key_down(WINDOW_KEY_HIDEHUD))
             return;
+
+        if (window_key_down(WINDOW_KEY_TRACE_CLEAN))
+            trajectories_reset();
 
         if (screen_current == SCREEN_TEAM_SELECT) {
             glColor3f(1.0F, 0.0F, 0.0F);
@@ -1888,7 +1892,7 @@ static void hud_ingame_keyboard(int key, int action, int mods, int internal) {
 
 static void hud_ingame_touch(void * finger, int action, float x, float y, float dx, float dy) {
     window_setmouseloc(x, y);
-    struct window_finger * f = (struct window_finger*) finger;
+    WindowFinger * f = (WindowFinger *) finger;
 
     if (action != TOUCH_MOVE) {
         int k = 0;

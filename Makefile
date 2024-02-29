@@ -21,13 +21,18 @@ ODEPS   := $(CDEPS:$(DEPSDIR)/%.c=$(BUILDDIR)/%.o)
 CFILES  := $(shell find $(SRCDIR) -type f -name '*.c')
 OFILES  := $(CFILES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 
-CFLAGS  = -std=gnu99 -Wall -pedantic
+CFLAGS ?=
+CFLAGS += -std=gnu99 -Wall -pedantic
 CFLAGS += -DBETTERSPADES_MAJOR=$(MAJOR)
 CFLAGS += -DBETTERSPADES_MINOR=$(MINOR)
 CFLAGS += -DBETTERSPADES_PATCH=$(PATCH)
 CFLAGS += -DBETTERSPADES_VERSION=\"v$(MAJOR).$(MINOR).$(PATCH)\"
 CFLAGS += -DGIT_COMMIT_HASH=\"$(shell git describe --always --dirty)\"
-CFLAGS += -DUSE_SOUND -DLOG_USE_COLOR
+CFLAGS += -DUSE_SOUND
+
+EXTFLAGS ?=
+EXTFLAGS += -std=gnu99
+EXTFLAGS += -DLOG_USE_COLOR
 
 UNAME := $(shell uname -s)
 
@@ -104,7 +109,7 @@ $(OFILES): $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 
 $(ODEPS): $(BUILDDIR)/%.o: $(DEPSDIR)/%.c
 	mkdir -p `dirname $@`
-	$(CC) $(CFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
+	$(CC) $(EXTFLAGS) -c $< -o $@ -I$(INCLUDEDIR)
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
