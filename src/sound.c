@@ -301,7 +301,7 @@ void sound_init() {
 
 void sound_deinit() {
 #ifdef USE_SOUND
-    if (device != NULL)
-        alcCloseDevice(device);
+    //if (device != NULL)
+    //    alcCloseDevice(device);
 #endif
 }
