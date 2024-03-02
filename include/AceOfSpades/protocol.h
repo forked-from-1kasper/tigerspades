@@ -156,9 +156,18 @@ enum {
 enum Extension {
     EXT_PLAYER_PROPERTIES = 0x00,
     EXT_TRACE_BULLETS     = 0x10,
+    EXT_HIT_EFFECTS       = 0x11,
     EXT_256PLAYERS        = 0xC0,
     EXT_MESSAGES          = 0xC1,
     EXT_KICKREASON        = 0xC2,
+};
+
+enum HitEffectTarget {
+    HITEFFECT_GROUND = 0,
+    HITEFFECT_HEAD   = 1,
+    HITEFFECT_TORSO  = 2,
+    HITEFFECT_ARMS   = 3,
+    HITEFFECT_LEGS   = 4,
 };
 
 #define begin(T) typedef struct _##T T; struct _##T {

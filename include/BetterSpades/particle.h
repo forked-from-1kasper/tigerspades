@@ -45,6 +45,8 @@ typedef struct { size_t size, length; uint8_t * head; } Projectiles;
 
 extern Projectiles projectiles;
 
+extern bool local_hit_effects;
+
 void trajectories_render_all(void);
 void trajectories_reset(void);
 

@@ -292,7 +292,7 @@ void weapon_shoot() {
         if (hit.y == 0 && hit.type == CAMERA_HITTYPE_BLOCK)
             hit.type = CAMERA_HITTYPE_NONE;
 
-        switch (hit.type) {
+        if (local_hit_effects) switch (hit.type) {
             case CAMERA_HITTYPE_PLAYER: {
                 sound_create_sticky(
                     sound(hit.player_section == HITTYPE_HEAD ? SOUND_SPADE_WHACK : SOUND_HITPLAYER),
@@ -321,6 +321,7 @@ void weapon_shoot() {
 
             case CAMERA_HITTYPE_BLOCK: {
                 map_damage(hit.x, hit.y, hit.z, weapon_block_damage(players[local_player.id].weapon));
+
                 if (map_damage_action(hit.x, hit.y, hit.z) && hit.y > 1) {
                     PacketBlockAction contained;
                     contained.action_type = ACTION_DESTROY;

@@ -414,8 +414,12 @@ void getPacketExtInfo(uint8_t * data, int len) {
             for (int k = 0; k < p.length; k++) {
                 readPacketExtInfoEntry(data + sizePacketExtInfo + k * sizePacketExtInfoEntry, &ext);
 
-                log_info("Extension 0x%02X of version %i", ext.id, ext.version);
-                if (ext.id >= 192) log_info("(which is packetless)");
+                log_info(
+                    "Extension 0x%02X of version %i %s",
+                    ext.id, ext.version, ext.id >= 192 ? "(which is packetless)" : ""
+                );
+
+                if (ext.id == EXT_HIT_EFFECTS) local_hit_effects = false;
             }
         } else log_info("Server does not support extensions");
 
@@ -426,6 +430,7 @@ void getPacketExtInfo(uint8_t * data, int len) {
         addExtInfoEntry(EXT_MESSAGES,          1, &index); length++;
         addExtInfoEntry(EXT_KICKREASON,        1, &index); length++;
         addExtInfoEntry(EXT_TRACE_BULLETS,     1, &index); length++;
+        addExtInfoEntry(EXT_HIT_EFFECTS,       1, &index); length++;
 
         PacketExtInfo reply; reply.length = length;
         sendPacketExtInfo(&reply, index);
@@ -1061,6 +1066,21 @@ void getPacketBulletTrace(uint8_t * data, int len) {
     if (t->begin == t->end) NEXT(t->begin, projectiles);
 }
 
+void getPacketHitEffect(uint8_t * data, int len) {
+    READPACKET(PacketHitEffect, p, data);
+
+    Vector3f r = ntohv3f(p.pos);
+    Vector3i b = ntohv3i(p.block);
+
+    if (p.target != HITEFFECT_GROUND) {
+        WAV * wav = sound(p.target == HITEFFECT_HEAD ? SOUND_SPADE_WHACK : SOUND_HITPLAYER);
+        sound_create(SOUND_WORLD, wav, r.x, r.y, r.z);
+    } else map_damage(b.x, b.y, b.z, 15);
+
+    TrueColor color = p.target == HITEFFECT_GROUND ? map_get(b.x, b.y, b.z) : Red;
+    particle_create(color, r.x, r.y, r.z, 2.5F, 1.0F, 8, 0.1F, 0.25F);
+}
+
 void network_updateColor() {
     PacketSetColor contained;
     contained.player_id = local_player.id;
@@ -1094,17 +1114,23 @@ void network_disconnect() {
 int network_connect_sub(char * ip, int port, int version) {
     ENetAddress address;
     ENetEvent event;
+
     enet_address_set_host(&address, ip);
     address.port = port;
     peer = enet_host_connect(client, &address, 1, version);
+
     network_logged_in = 0;
     *network_custom_reason = 0;
+
     memset(network_stats, 0, sizeof(NetworkStat) * 40);
+
     if (peer == NULL) return 0;
 
     if (enet_host_service(client, &event, 2500) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
         network_received_packets = 0;
         network_connected = 1;
+
+        local_hit_effects = true;
 
         float start = window_time();
         while (window_time() - start < 1.0F) { // listen connection for 1s, check if server disconnects
@@ -1352,4 +1378,5 @@ void network_init() {
 
     packets[PACKET_EXT_BASE + EXT_PLAYER_PROPERTIES] = getPacketPlayerProperties;
     packets[PACKET_EXT_BASE + EXT_TRACE_BULLETS]     = getPacketBulletTrace;
+    packets[PACKET_EXT_BASE + EXT_HIT_EFFECTS]       = getPacketHitEffect;
 }

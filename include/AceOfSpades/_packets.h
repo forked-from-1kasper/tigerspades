@@ -267,4 +267,10 @@
         f32(value)
         u8(origin)
     end()
+
+    begin(PacketHitEffect)
+        v3f(pos)
+        v3i(block)
+        u8(target)
+    end()
 #endif

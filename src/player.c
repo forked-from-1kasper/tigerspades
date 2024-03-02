@@ -417,6 +417,7 @@ void player_render_all() {
                 players[k].spade_use_timer = window_time();
             }
         }
+
         if (k != local_player.id) {
             if (camera_CubeInFrustum(players[k].pos.x, players[k].pos.y, players[k].pos.z, 1.0F, 2.0F)
                && norm2f(players[k].pos.x, players[k].pos.z, camera.pos.x, camera.pos.z) <=
@@ -452,7 +453,8 @@ void player_render_all() {
                                players[k].physics.eye.y + player_height(&players[k]), players[k].physics.eye.z, o[0],
                                o[1], o[2]);
                     particle_create_casing(&players[k]);
-                    switch (hit.type) {
+
+                    if (local_hit_effects) switch (hit.type) {
                         case CAMERA_HITTYPE_PLAYER: {
                             sound_create_sticky(
                                 sound(hit.player_section == HITTYPE_HEAD ? SOUND_SPADE_WHACK : SOUND_HITPLAYER),
@@ -475,6 +477,7 @@ void player_render_all() {
                             break;
                         }
                     }
+
                     players[k].gun_shoot_timer = window_time();
                 }
             }
