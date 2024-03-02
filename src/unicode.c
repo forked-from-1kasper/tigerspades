@@ -200,11 +200,16 @@ bool isASCII(const uint8_t * data, size_t size) {
 
 size_t encodeMagic(char * dest, size_t outsize, const char * src, size_t insize) {
     if (!isASCII((const uint8_t *) src, insize)) {
-        dest[0] = '\xFF'; dest++; outsize--;
-    }
+        dest[0] = '\xFF';
 
-    size_t size = min(insize, outsize);
-    strncpy(dest, src, size); return size;
+        size_t size = min(insize, outsize - 1);
+        strncpy(dest + 1, src, size);
+        return size + 1;
+    } else {
+        size_t size = min(insize, outsize);
+        strncpy(dest, src, size);
+        return size;
+    }
 }
 
 void decodeMagic(char * dest, size_t outsize, const char * src, size_t insize) {
