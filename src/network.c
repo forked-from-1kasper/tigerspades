@@ -1075,7 +1075,7 @@ void getPacketHitEffect(uint8_t * data, int len) {
     if (p.target != HITEFFECT_GROUND) {
         WAV * wav = sound(p.target == HITEFFECT_HEAD ? SOUND_SPADE_WHACK : SOUND_HITPLAYER);
         sound_create(SOUND_WORLD, wav, r.x, r.y, r.z);
-    } else map_damage(b.x, b.y, b.z, 15);
+    } else if (b.y > 0) map_damage(b.x, b.y, b.z, 15);
 
     TrueColor color = p.target == HITEFFECT_GROUND ? map_get(b.x, b.y, b.z) : Red;
     particle_create(color, r.x, r.y, r.z, 2.5F, 1.0F, 8, 0.1F, 0.25F);
