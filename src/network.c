@@ -227,10 +227,11 @@ void getPacketBlockAction(uint8_t * data, int len) {
     switch (p.action_type) {
         case ACTION_DESTROY: {
             if (63 - z > 0) {
+                TrueColor col = map_get(x, 63 - z, y);
+
                 map_set(x, 63 - z, y, White);
                 map_update_physics(x, 63 - z, y);
 
-                TrueColor col = map_get(x, 63 - z, y);
                 particle_create(col, x + 0.5F, 63 - z + 0.5F, y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
             }
             break;
@@ -255,13 +256,16 @@ void getPacketBlockAction(uint8_t * data, int len) {
                 map_set(x, 63 - z - 1, y, White);
                 map_update_physics(x, 63 - z - 1, y);
             }
+
             if ((63 - z + 0) > 1) {
+                TrueColor col = map_get(x, 63 - z, y);
+
                 map_set(x, 63 - z + 0, y, White);
                 map_update_physics(x, 63 - z + 0, y);
 
-                TrueColor col = map_get(x, 63 - z, y);
                 particle_create(col, x + 0.5F, 63 - z + 0.5F, y + 0.5F, 2.5F, 1.0F, 8, 0.1F, 0.25F);
             }
+
             if ((63 - z + 1) > 1) {
                 map_set(x, 63 - z + 1, y, White);
                 map_update_physics(x, 63 - z + 1, y);
