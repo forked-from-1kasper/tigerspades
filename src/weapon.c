@@ -41,8 +41,8 @@ void weapon_update() {
     if (weapon_reload_inprogress) {
         if (players[local_player.id].weapon == WEAPON_SHOTGUN) {
             if (window_time() - weapon_reload_start >= 0.5F) {
-
                 WAV * wav = NULL;
+
                 if (local_player.ammo < 6 && local_player.ammo_reserved > 0) {
                     local_player.ammo++;
                     local_player.ammo_reserved--;

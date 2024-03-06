@@ -1076,13 +1076,15 @@ void getPacketHitEffect(uint8_t * data, int len) {
     Vector3f r = ntohv3f(p.pos);
     Vector3i b = ntohv3i(p.block);
 
-    if (p.target != HITEFFECT_GROUND) {
-        WAV * wav = sound(p.target == HITEFFECT_HEAD ? SOUND_SPADE_WHACK : SOUND_HITPLAYER);
+    if (p.target != HITEFFECT_BLOCK) {
+        WAV * wav = sound(p.target == HITEFFECT_HEADSHOT ? SOUND_SPADE_WHACK : SOUND_HITPLAYER);
         sound_create(SOUND_WORLD, wav, r.x, r.y, r.z);
     } else if (b.y > 0) map_damage(b.x, b.y, b.z, 15);
 
-    TrueColor color = p.target == HITEFFECT_GROUND ? map_get(b.x, b.y, b.z) : Red;
-    particle_create(color, r.x, r.y, r.z, 2.5F, 1.0F, 8, 0.1F, 0.25F);
+    if (p.target == HITEFFECT_BLOCK)
+        particle_create(map_get(b.x, b.y, b.z), r.x, r.y, r.z, 2.5F, 1.0F, 4, 0.1F, 0.25F);
+    else
+        particle_create(Red, r.x, r.y, r.z, 3.5F, 1.0F, 8, 0.1F, 0.4F);
 }
 
 void network_updateColor() {

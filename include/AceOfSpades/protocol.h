@@ -163,11 +163,9 @@ enum Extension {
 };
 
 enum HitEffectTarget {
-    HITEFFECT_GROUND = 0,
-    HITEFFECT_HEAD   = 1,
-    HITEFFECT_TORSO  = 2,
-    HITEFFECT_ARMS   = 3,
-    HITEFFECT_LEGS   = 4,
+    HITEFFECT_BLOCK    = 0,
+    HITEFFECT_HEADSHOT = 1,
+    HITEFFECT_PLAYER   = 2,
 };
 
 #define begin(T) typedef struct _##T T; struct _##T {
