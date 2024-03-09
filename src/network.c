@@ -380,19 +380,15 @@ void getPacketChatMessage(uint8_t * data, int len) {
         convert(buff + offset, sizeof(buff) - offset, UTF8, msg, size, codepage);
     }
 
-    TrueColor color = {0, 0, 0, 255};
+    TrueColor color = {255, 255, 255, 255};
     switch (p.chat_type) {
-        case CHAT_SYSTEM: color.r = 255; break;
+        case CHAT_SYSTEM: color = Red; break;
         case CHAT_TEAM: {
             switch (players[p.player_id].connected ? players[p.player_id].team : players[local_player.id].team) {
                 case TEAM_1: color.r = gamestate.team_1.color.r; color.g = gamestate.team_1.color.g; color.b = gamestate.team_1.color.b; break;
                 case TEAM_2: color.r = gamestate.team_2.color.r; color.g = gamestate.team_2.color.g; color.b = gamestate.team_2.color.b; break;
-                default: break;
             }
-            break;
         }
-
-        default: color.r = color.g = color.b = 255; break;
     }
 
     chat_add(0, color, buff, sizeof(buff), UTF8);
